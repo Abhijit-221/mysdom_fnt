@@ -1,0 +1,31 @@
+/* ======================================
+   PAGINATION
+====================================== */
+
+.um-pagination {
+  margin-top: 15px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.um-pagination button {
+  padding: 5px 10px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.um-pagination button:hover:not(:disabled) {
+  background: #17a673;
+  color: #fff;
+  border-color: #17a673;
+}
+
+.um-pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

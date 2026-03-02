@@ -1,0 +1,166 @@
+.service-details-wrapper {
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.service-details-card {
+    width: 100%;
+    max-width: 800px;
+    background: #f1f6ff;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+/* Header */
+.service-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.service-details-header h2 {
+    color: #000000;
+    font-size: 22px;
+}
+
+/* Detail Items */
+.detail-item {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-item label {
+    font-size: 13px;
+    color: #000000;
+    margin-bottom: 6px;
+}
+
+.detail-item p {
+    color: #464343;
+    font-size: 15px;
+}
+
+/* Inputs */
+.detail-item input,
+.detail-item textarea,
+.detail-item select {
+    background: #ffffff;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 10px;
+    color: #050505;
+    font-size: 14px;
+    outline: none;
+    transition: 0.3s;
+}
+
+.detail-item textarea {
+    resize: none;
+    min-height: 100px;
+}
+
+.detail-item input:focus,
+.detail-item textarea:focus,
+.detail-item select:focus {
+    border-color: #38bdf8;
+}
+
+/* Status Badge */
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    width: fit-content;
+}
+
+.status-badge.active {
+    background: #22c55e;
+    color: white;
+}
+
+.status-badge.inactive {
+    background: #ef4444;
+    color: white;
+}
+
+/* Buttons */
+.edit-btn,
+.save-btn,
+.cancel-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.edit-btn {
+    background: #38bdf8;
+    color: #0f172a;
+}
+
+.edit-btn:hover {
+    background: #0ea5e9;
+}
+
+.cancel-btn {
+    background: #334155;
+    color: #f1f5f9;
+}
+
+.cancel-btn:hover {
+    background: #475569;
+}
+
+.edit-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.saved-btn {
+    display: flex;           /* Makes button a flex container */
+    align-items: center;     /* Vertically centers icon + text */
+    justify-content: center; /* Horizontally centers content */
+    gap: 6px;                /* Adds space between icon and "Save" */
+    padding: 10px 16px;      /* Horizontal padding for better fit */
+    background: #22c55e;
+    color: white;
+    border: none;            /* Removes default border */
+    border-radius: 6px;      /* Optional: subtle rounding */
+    cursor: pointer;         /* Hand cursor on hover */
+    font-size: 14px;         /* Ensures consistent text size */
+    white-space: nowrap;     /* Prevents text wrap */
+}
+
+.saved-btn:hover {
+    background: #16a34a;
+}
+/* Back section */
+.back-action{
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+}
+.back-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.3s;
+    background-color: #636765;
+}

@@ -1,0 +1,132 @@
+/* ─────────────────────────────────────────
+   EMERGENT · Global Styles & Design Tokens
+   ───────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Design Tokens ── */
+:root {
+  /* Colors */
+  --clr-bg:           #f9f9f7;
+  --clr-bg-alt:       #f2f2ee;
+  --clr-surface:      #ffffff;
+  --clr-border:       #e6e6df;
+  --clr-border-md:    #d0d0c6;
+  --clr-text-1:       #181816;
+  --clr-text-2:       #56564f;
+  --clr-text-3:       #96968e;
+  --clr-ink:          #181816;
+  --clr-ink-hover:    #2c2c28;
+  --clr-tag:          #eeeee8;
+  --clr-green:        #22c55e;
+  --clr-amber:        #f59e0b;
+  --clr-red:          #ef4444;
+
+  /* Typography */
+  --font-display:     'Syne', sans-serif;
+  --font-body:        'DM Sans', sans-serif;
+  --font-mono:        'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* Spacing scale */
+  --sp-1: 4px;   --sp-2: 8px;   --sp-3: 12px;
+  --sp-4: 16px;  --sp-5: 20px;  --sp-6: 24px;
+  --sp-8: 32px;  --sp-10: 40px; --sp-12: 48px;
+
+  /* Radii */
+  --r-sm:  6px;
+  --r-md:  10px;
+  --r-lg:  14px;
+  --r-xl:  20px;
+  --r-2xl: 28px;
+  --r-pill: 9999px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.05);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.04);
+  --shadow-md: 0 6px 20px rgba(0,0,0,.09), 0 2px 8px rgba(0,0,0,.05);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,.11), 0 4px 16px rgba(0,0,0,.06);
+
+  /* Motion */
+  --ease:       cubic-bezier(.4, 0, .2, 1);
+  --ease-out:   cubic-bezier(0, 0, .2, 1);
+  --ease-spring:cubic-bezier(.34, 1.56, .64, 1);
+  --dur-fast:   150ms;
+  --dur-base:   220ms;
+  --dur-slow:   380ms;
+}
+
+/* ── Base ── */
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--clr-bg);
+  color: var(--clr-text-1);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; border: none; background: none; font-family: var(--font-body); }
+input, textarea { font-family: var(--font-body); }
+img { display: block; max-width: 100%; }
+
+::selection { background: var(--clr-ink); color: #fff; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--clr-border-md); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--clr-text-3); }
+
+/* ── Keyframes ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideLeft {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .4; }
+}
+@keyframes barGrow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Utility animation classes ── */
+.anim-fade-up   { animation: fadeUp  var(--dur-slow) var(--ease-out) both; }
+.anim-fade-up-1 { animation: fadeUp  var(--dur-slow) var(--ease-out) 80ms both; }
+.anim-fade-up-2 { animation: fadeUp  var(--dur-slow) var(--ease-out) 180ms both; }
+.anim-fade-up-3 { animation: fadeUp  var(--dur-slow) var(--ease-out) 280ms both; }
+.anim-fade-up-4 { animation: fadeUp  var(--dur-slow) var(--ease-out) 360ms both; }
+.anim-scale-in  { animation: scaleIn var(--dur-slow) var(--ease-spring) both; }
+.spin           { animation: spin 1s linear infinite; }
+.pulse          { animation: pulse 2s ease infinite; }

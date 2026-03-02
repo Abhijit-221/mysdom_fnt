@@ -1,0 +1,146 @@
+.dashboard {
+  padding: 80px 20px;
+  background: #f8fafc;
+  font-family: "Inter", sans-serif;
+}
+
+.dashboard-container {
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* Header */
+
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.dashboard-header .tag {
+  color: #e11d48;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dashboard-header h2 {
+  font-size: 30px;
+  margin: 10px 0;
+}
+
+.dashboard-header p {
+  color: #64748b;
+}
+
+/* Top Stats */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.stat-box {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #10b981;
+}
+
+.stat-box h3 {
+  margin: 10px 0;
+}
+
+.positive {
+  color: #10b981;
+  font-size: 14px;
+}
+
+.negative {
+  color: #ef4444;
+  font-size: 14px;
+}
+
+/* Table */
+
+.table-card {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 40px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.table-header {
+  background: #15803d;
+  color: white;
+  padding: 15px 20px;
+  font-weight: 600;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: #f1f5f9;
+}
+
+th, td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.status.active {
+  background: #dcfce7;
+  color: #15803d;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+/* Bottom Cards */
+
+.bottom-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.bottom-card {
+  padding: 25px;
+  border-radius: 12px;
+  color: white;
+}
+
+.bottom-card.green {
+  background: linear-gradient(90deg, #15803d, #10b981);
+}
+
+.bottom-card.pink {
+  background: linear-gradient(90deg, #e11d48, #f43f5e);
+}
+
+.bottom-card.purple {
+  background: linear-gradient(90deg, #7c3aed, #a855f7);
+}
+
+/* Responsive */
+
+@media (max-width: 992px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bottom-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

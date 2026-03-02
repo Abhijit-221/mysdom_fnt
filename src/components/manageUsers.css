@@ -1,0 +1,245 @@
+/* ======================================
+   PAGE CONTAINER (NO FLEX CENTERING)
+====================================== */
+
+.user-management {
+  padding: 30px 40px;
+  background: #f4f6f9;
+  min-height: 100%;
+  font-family: "Inter", sans-serif;
+}
+
+/* ======================================
+   HEADER
+====================================== */
+
+.user-management-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.user-management-header h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #222;
+}
+
+.um-add-btn {
+  background: #17a673;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.um-add-btn:hover {
+  background: #138a5e;
+}
+
+/* ======================================
+   SEARCH BAR
+====================================== */
+
+.um-search-container {
+  margin-bottom: 15px;
+}
+
+.um-search-container input {
+  width: 250px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #dcdcdc;
+  font-size: 13px;
+}
+
+.um-search-container input:focus {
+  outline: none;
+  border-color: #17a673;
+}
+
+/* ======================================
+   TABLE WRAPPER
+====================================== */
+
+.um-table {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+/* ======================================
+   TABLE STRUCTURE
+====================================== */
+
+.um-table-head,
+.um-table-row {
+  display: grid;
+  grid-template-columns: 1.5fr 2fr 1fr 1fr 0.8fr;
+  align-items: center;
+  padding: 14px 20px;
+}
+
+.um-table-head {
+  background: #f9fafb;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.um-table-row {
+  font-size: 14px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s ease;
+}
+
+.um-table-row:hover {
+  background: #f7faf9;
+}
+
+/* ======================================
+   COLUMN ALIGNMENT
+====================================== */
+
+.um-table-head span:nth-child(3),
+.um-table-head span:nth-child(4),
+.um-table-head span:nth-child(5),
+.um-table-row span:nth-child(3),
+.um-table-row span:nth-child(4) {
+  text-align: center;
+}
+
+/* ======================================
+   TEXT
+====================================== */
+
+.um-name {
+  font-weight: 600;
+  color: #111827;
+}
+
+.um-email {
+  color: #4b5563;
+  font-size: 13px;
+}
+
+/* ======================================
+   ROLE BADGE
+====================================== */
+
+.um-role-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.um-role-badge.admin {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.um-role-badge.user {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.um-role-badge.superadmin {
+  background: #ede9fe;
+  color: #6b21a8;
+}
+
+/* ======================================
+   STATUS BADGE
+====================================== */
+
+/* STATUS TOGGLE BUTTON */
+
+.um-status-toggle {
+  border: none;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.um-status-toggle.active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.um-status-toggle.inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.um-status-toggle:hover {
+  opacity: 0.85;
+  transform: scale(1.05);
+}
+
+/* ======================================
+   ACTION BUTTONS
+====================================== */
+
+.um-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.icon-btn {
+  border: none;
+  background: #f3f4f6;
+  padding: 7px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: #e5e7eb;
+}
+
+/* ======================================
+   PAGINATION
+====================================== */
+
+.um-pagination {
+  margin-top: 15px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.um-pagination button {
+  padding: 5px 10px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.um-pagination button:hover:not(:disabled) {
+  background: #17a673;
+  color: #fff;
+  border-color: #17a673;
+}
+
+.um-pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

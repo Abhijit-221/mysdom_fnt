@@ -1,0 +1,144 @@
+.topbar {
+    width: 100%;
+    background: #0f172a; /* deep navy */
+    border-bottom: 1px solid #1e293b;
+    font-size: 14px;
+}
+
+.topbar-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Left */
+.topbar-left a {
+    color: #cbd5e1;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.topbar-left a:hover {
+    color: #38bdf8;
+}
+
+/* Center Divider */
+.topbar-divider {
+    color: #334155;
+}
+
+/* Right Section */
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Profile */
+.profile {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #cbd5e1;
+}
+
+.username {
+    font-size: 13px;
+}
+
+/* Buttons */
+.login-btn,
+.logout-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid #334155;
+    background: transparent;
+    color: #cbd5e1;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.login-btn:hover {
+    background: #38bdf8;
+    border-color: #38bdf8;
+    color: #0f172a;
+}
+
+.logout-btn:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: white;
+}
+
+/* Navbar */
+.navbar {
+  background: #f4f4f4;
+  padding: 8px 40px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.logo-green {
+  color: #0aa66e;
+}
+
+.logo-pink {
+  color: #e63c84;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 30px;
+  font-weight: 500;
+  color: #333;
+}
+
+.nav-links li {
+  cursor: pointer;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Base button style */
+.nav-buttons button {
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Outline */
+.btn-outline {
+  border: 1px solid #0aa66e;
+  background: transparent;
+  color: #0aa66e;
+}
+
+/* Filled */
+.nav-btn-primary {
+  border: 1px solid #0aa66e;   /* add border to match height */
+  background: #0aa66e;
+  color: white;
+}

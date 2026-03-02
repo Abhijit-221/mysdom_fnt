@@ -1,0 +1,154 @@
+/* Background gradient */
+.carousel-wrapper {
+  /* min-height: 100vh; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* background: linear-gradient(90deg, #0f9d6e, #d81b60); */
+  padding: 40px;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* Card */
+.carousel-card {
+  width: 1100px;
+  height: 480px;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+}
+
+/* Slide */
+.carousel-slide {
+  display: none;
+  width: 100%;
+  height: 100%;
+}
+
+.carousel-slide.active {
+  display: flex;
+}
+
+/* Left Content */
+.carousel-content {
+  flex: 1;
+  padding: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.carousel-content h1 {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #1c1c1c;
+}
+
+.carousel-content p {
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.date {
+  font-weight: 600;
+  color: #333;
+}
+
+.tag {
+  display: inline-block;
+  background: #fce4ec;
+  color: #d81b60;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+/* Button */
+.cta-btn {
+  margin-top: 20px;
+  padding: 12px 22px;
+  background: #0f9d6e;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+  width: fit-content;
+}
+
+.cta-btn:hover {
+  background: #0c7d57;
+}
+
+/* Right Image */
+.carousel-image {
+  flex: 1;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+/* Dark overlay for image */
+.carousel-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.3), transparent);
+}
+
+/* Navigation Arrows */
+.nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.4);
+  border: none;
+  color: white;
+  font-size: 24px;
+  padding: 8px 14px;
+  cursor: pointer;
+  border-radius: 50%;
+  z-index: 10;
+}
+
+.nav.left {
+  left: 20px;
+}
+
+.nav.right {
+  right: 20px;
+}
+
+.nav:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* Indicators */
+.indicators {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.dot {
+  height: 8px;
+  width: 8px;
+  margin: 0 6px;
+  background: #ccc;
+  display: inline-block;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.active-dot {
+  width: 24px;
+  border-radius: 20px;
+  background: #0f9d6e;
+}
