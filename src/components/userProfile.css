@@ -63,6 +63,10 @@
   flex-direction: column;
 }
 
+.form-group .default-select{
+  color: #9ca3af;
+}
+
 .profile-form label {
   font-size: 13px;
   margin-bottom: 6px;
@@ -83,19 +87,32 @@
   border-color: #17a673;
 }
 
-.save-btn {
-  margin-top: 15px;
-  width: 100%;
-  padding: 10px;
-  background: #17a673;
-  color: white;
-  border: none;
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+}
+.back-btn {
   border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
-  transition: 0.2s ease;
+  transition: 0.3s ease;
+  border: none;
+  color: white;
+}
+.save-btn {
+  padding: 10px 20px;
+  min-width: 110px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.3s ease;
+  border: none;
+  color: white;
+  background: #22c55e;
 }
 
 .save-btn:hover {
-  background: #138a5e;
+  background: #16a34a;
 }

@@ -13,6 +13,12 @@ import ManageUsers from "../components/ManageUsers";
 import UserProfile from "../components/UserProfile";
 import Services from "../components/serviceComponent/Services";
 import ServiceDetails from "../components/serviceComponent/ServiceDetails";
+import ClientList from "../components/client/ClientList";
+import AddClient from "../components/client/AddClient";
+import ServiceAdd from "../components/serviceComponent/ServiceAdd";
+import BgvRequestList from "../components/BGVRequest/BGVRequestList";
+import BgvRequestForm from "../components/BGVRequest/BVGRequestForm";
+import AddClientService from "../components/client/AddClientService";
 
 
 
@@ -33,20 +39,58 @@ const AppRoutes = () => {
         />
         <Route path="/users/:id" element={
           <ProtectedRoute>
-              <UserProfile/> 
+            <UserProfile />
           </ProtectedRoute>
-          } />
+        } />
         <Route path="/services" element={
           <ProtectedRoute>
             <Services />
           </ProtectedRoute>
-        } 
+        }
+        />
+        <Route path="/service/add" element={
+          <ProtectedRoute>
+            <ServiceAdd />
+          </ProtectedRoute>
+        }
         />
         <Route path="/service/:id" element={
           <ProtectedRoute>
             <ServiceDetails />
           </ProtectedRoute>
-        } 
+        }
+        />
+        <Route path="/clients" element={
+          <ProtectedRoute>
+            <ClientList />
+          </ProtectedRoute>
+        }
+        />
+        <Route path="/client/add" element={
+          <ProtectedRoute>
+            <AddClient />
+          </ProtectedRoute>
+        }
+        />
+        {/* client service */}
+        <Route path="/client/service-add" element={
+          <ProtectedRoute>
+            <AddClientService />
+          </ProtectedRoute>
+        }
+        />
+        {/* bgv routes */}
+        <Route path="/bgv/list" element={
+          <ProtectedRoute>
+            <BgvRequestList />
+          </ProtectedRoute>
+        }
+        />
+        <Route path="/bgv/add" element={
+          <ProtectedRoute>
+            <BgvRequestForm />
+          </ProtectedRoute>
+        }
         />
       </Route>
 

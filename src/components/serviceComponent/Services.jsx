@@ -4,13 +4,15 @@ import ServiceGrid from '../ServiceGrid';
 import axiosInstance from '../../api/axiosInstance';
 import './services.css'
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 function Services() {
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
-    const [limit] = useState(10);
+    const [limit] = useState(12);
     const [totalPages, setTotalPages] = useState(1);
     const [services,setServices] = useState([]);
+    const navigate = useNavigate();
     let user = JSON.parse(localStorage.getItem('user'));
     console.log('getuser:',user);
      const fetchServices = async () => {
@@ -78,7 +80,7 @@ function Services() {
                                 }}
                             />
                         </div>
-                        {['admin','superadmin'].includes(user?.role)&&<button className="add-service-btn">
+                        {['admin','superadmin'].includes(user?.role)&&<button className="add-service-btn" onClick={()=>(navigate('/service/add'))}>
                             + Add Service
                         </button>}
                          

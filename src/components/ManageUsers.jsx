@@ -54,9 +54,9 @@ function ManageUsers() {
     const handleStatusToggle = async (user) => {
         try {
             const token = localStorage.getItem("token");
-            console.log("user:-->", user);
+            // console.log("user:-->", user);
             const formData = new FormData();
-            formData.append("id", user._id);
+            formData.append("id", user.id);
             formData.append("isActive", !user.isActive);
             const user2 = await axiosInstance.post(
                 `/auth/user-update`,
@@ -68,7 +68,7 @@ function ManageUsers() {
                     },
                 }
             );
-            console.log(user2);
+            // console.log(user2);
             toast.success(user2.data.message);
             // Refresh user list
             fetchUsers();
@@ -137,7 +137,7 @@ function ManageUsers() {
                     <div className="no-data">No users found</div>
                 ) : (
                     users.map((user) => (
-                        <div key={user._id} className="um-table-row">
+                        <div key={user.id} className="um-table-row">
                             <span>{user.username}</span>
                             <span>{user.email}</span>
 
@@ -155,13 +155,13 @@ function ManageUsers() {
 
                             <span className="um-actions">
                                 <button className="icon-btn view"
-                                    onClick={() => navigate(`/users/${user._id}`)}
+                                    onClick={() => navigate(`/users/${user.id}`)}
                                 >
                                     <FaEye />
                                 </button>
 
                                 <button className="icon-btn edit"
-                                    onClick={() => navigate(`/users/${user._id}`)}
+                                    onClick={() => navigate(`/users/${user.id}`)}
                                 >
                                     <FaEdit />
                                 </button>

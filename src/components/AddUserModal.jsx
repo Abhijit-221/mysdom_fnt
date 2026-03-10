@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import "./AddUserModal.css";
@@ -10,16 +10,38 @@ function AddUserModal({ close, refresh }) {
         email: "",
         password: "",
         role: "user",
+        client: ""
     });
+    const [clients, setClients] = useState([]);
 
+
+    useEffect(() => {
+        const fetchClients = async () => {
+            try {
+                const res = await axiosInstance.get("/client/get-all");
+                setClients(res.data.data || []);
+            } catch (err) {
+                console.log(err);
+            }
+        };
+
+        fetchClients();
+    }, []);
     const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+
+        setForm((prev) => ({
+            ...prev,
+            [name]: value,
+            ...(name === "role" && value !== "user" ? { client: "" } : {})
+        }));
     };
 
     let token = localStorage.getItem('token');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log("form:",form);
         const url = "/auth/user-add";
         // console.log("url:", url);
         // console.log('token:', token);
@@ -91,12 +113,27 @@ function AddUserModal({ close, refresh }) {
                         required
                     />
 
-                    <select name="role" onChange={handleChange}>
+                    <select name="role" onChange={handleChange} value={form.role}>
                         <option value="user">User</option>
                         <option value="admin">Admin</option>
                         {/* <option value="superadmin">Super Admin</option> */}
                     </select>
+                    {form.role === "user" && (
+                        <select
+                            name="client"
+                            onChange={handleChange}
+                            value={form.client}
+                            required
+                        >
+                            <option value="">Select Client *</option>
 
+                            {clients.map((client) => (
+                                <option key={client.id} value={client.id}>
+                                    {client.companyName}
+                                </option>
+                            ))}
+                        </select>
+                    )}
                     <div className="adduser-buttons">
                         <button
                             type="button"

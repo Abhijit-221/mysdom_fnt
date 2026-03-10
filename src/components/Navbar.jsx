@@ -60,8 +60,10 @@ const Navbar = () => {
           {/* Menu */}
           <ul className="nav-links">
             <li onClick={()=>(navigate('/services'))}>Services</li>
-            <li>Industries </li>
-            <li>Resources </li>
+            {(user?.role === "admin" || user?.role === "superadmin") && (
+              <li><Link to="/clients">Clients</Link></li>
+            )}
+            <li><Link to="/bgv/list">Resources</Link></li>
             {(user?.role === "admin" || user?.role === "superadmin") && (
               <li><Link to="/manage-users">Manage Users</Link></li>
             )}

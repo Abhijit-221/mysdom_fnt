@@ -30,12 +30,14 @@ const Login = () => {
             console.log(response?.data?.data?.token)
             // ✅ Save token
             let user = {
+                id:response?.data?.data?.id,
                 email:response?.data?.data?.email,
                 username:response?.data?.data?.username,
                 role:response?.data?.data?.role,
             }
             localStorage.setItem("token", response?.data?.data?.token);
             localStorage.setItem("user", JSON.stringify(user));
+            login(user);
 
             toast.success("Login Successful 🎉");
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./userProfile.css";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import axiosInstance from "../api/axiosInstance";
 
@@ -9,7 +9,7 @@ function UserProfile() {
   const [user, setUser] = useState(null);
   const [preview, setPreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
-
+  const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const { id } = useParams();
 
@@ -26,26 +26,26 @@ function UserProfile() {
       );
 
       setUser(res.data.data);
-      // console.log (`http://localhost:3000/${res.data.data.profilePicture}`);
+      console.log (`http://localhost:3000/${res.data.data.profilePicture}`);
       setPreview(`http://localhost:3000/${res.data.data.profilePicture}`);
     } catch (err) {
       if (err.response) {
-                // Server responded with error (4xx, 5xx)
-                console.log("Status:", err.response.status);
-                console.log("Data:", err.response.data);
+        // Server responded with error (4xx, 5xx)
+        console.log("Status:", err.response.status);
+        console.log("Data:", err.response.data);
 
-                toast.error(err.response.data.message || "Server Error");
-            }
-            else if (err.request) {
-                // Request was sent but no response received
-                console.log("No response received:", err.request);
-                toast.error("No response from server");
-            }
-            else {
-                // Something else happened
-                console.log("Error:", err.message);
-                toast.error(err.message);
-            }
+        toast.error(err.response.data.message || "Server Error");
+      }
+      else if (err.request) {
+        // Request was sent but no response received
+        console.log("No response received:", err.request);
+        toast.error("No response from server");
+      }
+      else {
+        // Something else happened
+        console.log("Error:", err.message);
+        toast.error(err.message);
+      }
     }
   };
 
@@ -65,53 +65,85 @@ function UserProfile() {
     setPreview(URL.createObjectURL(file));
   };
 
+
+  const [errorMsg, setErrorMsg] = useState("");
+
   // Submit Update
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMsg("");
+
+    // 🔹 Frontend Validation
+    if (!user.username || user.username.trim() === "") {
+      toast.error("Username cannot be empty");
+      return;
+    }
+
+    if (!user.gender) {
+      toast.error("Please select a gender");
+      return;
+    }
+
+    if (user.phone && user.phone.trim() === "") {
+      toast.error("Phone number cannot be empty");
+      return;
+    }
 
     try {
       const formData = new FormData();
-      formData.append("id", user._id);
+      formData.append("id", user.id);
       formData.append("username", user.username);
-    //   formData.append("email", user.email);
       formData.append("gender", user.gender);
+
+      if (user.phone) {
+        formData.append("phone", user.phone);
+      }
 
       if (imageFile) {
         formData.append("profile_pic", imageFile);
       }
 
       await axiosInstance.post(
-         `/auth/user-update`,
-                formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "multipart/form-data",
-                    },
-                }
+        `/auth/user-update`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
-      toast("Profile Updated Successfully");
+      toast.success("Profile Updated Successfully");
       fetchProfile();
-    } catch (err) {
-        console.log(err)
-      if (err.response) {
-                // Server responded with error (4xx, 5xx)
-                console.log("Status:", err.response.status);
-                console.log("Data:", err.response.data);
 
-                toast.error(err.response.data.message || "Server Error");
-            }
-            else if (err.request) {
-                // Request was sent but no response received
-                console.log("No response received:", err.request);
-                toast.error("No response from server");
-            }
-            else {
-                // Something else happened
-                console.log("Error:", err.message);
-                toast.error(err.message);
-            }
+    } catch (err) {
+      handleApiError(err);
+    }
+  };
+
+  const handleApiError = (err) => {
+    if (err.response) {
+      const data = err.response.data;
+
+      // 🔹 If backend sends validation errors array
+      if (data.errors && Array.isArray(data.errors)) {
+        data.errors.forEach((error) => {
+          toast.error(error.msg);
+        });
+        return;
+      }
+
+      // 🔹 If backend sends single message
+      if (data.message) {
+        toast.error(data.message);
+        return;
+      }
+
+      toast.error("Something went wrong");
+    } else if (err.request) {
+      toast.error("No response from server");
+    } else {
+      toast.error(err.message);
     }
   };
 
@@ -168,7 +200,20 @@ function UserProfile() {
             //   onChange={handleChange}
             />
           </div>
-
+          <div className="form-group">
+            <label>Phone Number</label>
+            <input
+              type="text"
+              name="phone"
+              value={user.phone || ""}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, ""); // remove non-digits
+                setUser({ ...user, phone: value });
+              }}
+              maxLength={10}
+              placeholder="Enter phone number"
+            />
+          </div>
           <div className="form-group">
             <label>Gender</label>
             <select
@@ -176,15 +221,25 @@ function UserProfile() {
               value={user.gender}
               onChange={handleChange}
             >
+              <option className='default-select' value="">Select Gender</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
               <option value="other">Other</option>
             </select>
           </div>
 
-          <button type="submit" className="save-btn">
-            Save Changes
-          </button>
+          <div className="form-actions">
+            <button type="submit" className="save-btn">
+              Save Changes
+            </button>
+            <button
+              type="button"
+              className="back-btn"
+              onClick={() => navigate("/manage-users")}
+            >
+              Back
+            </button>
+          </div>
 
         </form>
       </div>

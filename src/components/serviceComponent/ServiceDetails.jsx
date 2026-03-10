@@ -10,56 +10,56 @@ export default function ServiceDetails({ service }) {
   const { user } = useContext(AuthContext);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
-  const {id} = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const fetchServices = async () => {
-        try {
-            const res = await axiosInstance.get(
-                `/service/${id}`,
-            );
+    try {
+      const res = await axiosInstance.get(
+        `/service/${id}`,
+      );
 
-            const serviceData = res?.data?.data || {};
-            if(serviceData && serviceData.isActive){
-                serviceData.status='active'
-            }else{
-                serviceData.status='inactive'
-            }
-            // delete serviceData.isActive;
-            setFormData(serviceData);
+      const serviceData = res?.data?.data || {};
+      if (serviceData && serviceData.isActive) {
+        serviceData.status = 'active'
+      } else {
+        serviceData.status = 'inactive'
+      }
+      // delete serviceData.isActive;
+      setFormData(serviceData);
 
-        } catch (err) {
-            if (err.response) {
-                // Server responded with error (4xx, 5xx)
-                console.log("Status:", err.response.status);
-                console.log("Data:", err.response.data);
+    } catch (err) {
+      if (err.response) {
+        // Server responded with error (4xx, 5xx)
+        console.log("Status:", err.response.status);
+        console.log("Data:", err.response.data);
 
-                toast.error(err.response.data.message || "Server Error");
-            }
-            else if (err.request) {
-                // Request was sent but no response received
-                console.log("No response received:", err.request);
-                toast.error("No response from server");
-            }
-            else {
-                // Something else happened
-                console.log("Error:", err.message);
-                toast.error(err.message);
-            }
-        }
-    };
-    useEffect(() => {
-        fetchServices();
-    }, []);
+        toast.error(err.response.data.message || "Server Error");
+      }
+      else if (err.request) {
+        // Request was sent but no response received
+        console.log("No response received:", err.request);
+        toast.error("No response from server");
+      }
+      else {
+        // Something else happened
+        console.log("Error:", err.message);
+        toast.error(err.message);
+      }
+    }
+  };
+  useEffect(() => {
+    fetchServices();
+  }, []);
 
   const canEdit = ["admin", "superadmin"].includes(
     user?.role?.toLowerCase()?.trim()
   );
 
   const handleChange = (e) => {
-    let status={};
-    if(e.target.name==='status'){
-        status.isActive=e.target.value==="active"?true:false
+    let status = {};
+    if (e.target.name === 'status') {
+      status.isActive = e.target.value === "active" ? true : false
     }
     setFormData({
       ...formData,
@@ -68,51 +68,51 @@ export default function ServiceDetails({ service }) {
     });
   };
 
-  const handleSave = async() =>{
+  const handleSave = async () => {
     let updatedData = {
-          id: formData._id,
-          ...(formData.name && { name: formData.name }),
-          ...(formData.description && { description: formData.description }),
-          ...(typeof formData.isActive !== 'undefined' && { isActive: formData.isActive })
-        };
-        console.log("updatedData:",updatedData);
-        try {
-            const res = await axiosInstance.put(
-                `/service/update`,
-                updatedData
-            );
+      id: formData.id,
+      ...(formData.name && { name: formData.name }),
+      ...(formData.description && { description: formData.description }),
+      ...(typeof formData.isActive !== 'undefined' && { isActive: formData.isActive })
+    };
+    console.log("updatedData:", updatedData);
+    try {
+      const res = await axiosInstance.put(
+        `/service/update`,
+        updatedData
+      );
 
-            const serviceData = res?.data?.data || {};
-            if(serviceData && serviceData.isActive){
-                serviceData.status='active'
-            }else{
-                serviceData.status='inactive'
-            }
-            // delete serviceData.isActive;
-            setFormData(serviceData);
-            toast.success("Service saved");
+      const serviceData = res?.data?.data || {};
+      if (serviceData && serviceData.isActive) {
+        serviceData.status = 'active'
+      } else {
+        serviceData.status = 'inactive'
+      }
+      // delete serviceData.isActive;
+      setFormData(serviceData);
+      toast.success("Service saved");
 
-        } catch (err) {
-           if (err.response) {
-                // Server responded with error (4xx, 5xx)
-                console.log("Status:", err.response.status);
-                console.log("Data:", err.response.data);
+    } catch (err) {
+      if (err.response) {
+        // Server responded with error (4xx, 5xx)
+        console.log("Status:", err.response.status);
+        console.log("Data:", err.response.data);
 
-                toast.error(err.response.data.message || "Server Error");
-            }
-            else if (err.request) {
-                // Request was sent but no response received
-                console.log("No response received:", err.request);
-                toast.error("No response from server");
-            }
-            else {
-                // Something else happened
-                console.log("Error:", err.message);
-                toast.error(err.message);
-            }
-        }
+        toast.error(err.response.data.message || "Server Error");
+      }
+      else if (err.request) {
+        // Request was sent but no response received
+        console.log("No response received:", err.request);
+        toast.error("No response from server");
+      }
+      else {
+        // Something else happened
+        console.log("Error:", err.message);
+        toast.error(err.message);
+      }
+    }
   };
-
+  console.log(canEdit,isEditing);
   return (
     <div className="service-details-wrapper">
       <div className="service-details-card">
@@ -120,22 +120,22 @@ export default function ServiceDetails({ service }) {
         <div className="service-details-header">
           <h2>Service Details</h2>
 
-          {canEdit && !isEditing && (
-            // <button
-            //   className="edit-btn"
-            //   onClick={() => setIsEditing(true)}
-            // >
-            //   <Edit3 size={16} />
-            //   Edit
-            // </button>
+          {/* {canEdit && !isEditing && (
             <button
-                className="back-btn"
-                onClick={() => navigate("/services")}
-              >
-                <X size={16} />
-                Back
-              </button>
-          )}
+              className="edit-btn"
+              onClick={() => setIsEditing(true)}
+            >
+              <Edit3 size={16} />
+              Edit
+            </button> */}
+            <button
+              className="back-btn"
+              onClick={() => navigate("/services")}
+            >
+              <X size={16} />
+              Back
+            </button>
+          {/* )} */}
         </div>
 
         {/* VIEW MODE */}
@@ -154,28 +154,27 @@ export default function ServiceDetails({ service }) {
             <div className="detail-item">
               <label>Status</label>
               <span
-                className={`status-badge ${
-                  formData.status === "active" ? "active" : "inactive"
-                }`}
+                className={`status-badge ${formData.status === "active" ? "active" : "inactive"
+                  }`}
               >
                 {formData.status}
               </span>
             </div>
             <div className="back-action">
-                {/* <button
+              {/* <button
                 className="back-btn"
                 onClick={() => navigate("/services")}
               >
                 <X size={16} />
                 Back
               </button> */}
-              <button
-              className="edit-btn"
-              onClick={() => setIsEditing(true)}
-            >
-              <Edit3 size={16} />
-              Edit
-            </button>
+              {canEdit && <button
+                className="edit-btn"
+                onClick={() => setIsEditing(true)}
+              >
+                <Edit3 size={16} />
+                Edit
+              </button>}
             </div>
           </div>
         ) : (
