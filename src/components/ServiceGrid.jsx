@@ -17,7 +17,7 @@ function ServiceGrid({services}) {
 
               <p>{service.description}</p>
 
-              <a href={`/service/${service.id}`} className="learn-more">
+              <a href={`/service/getby/${service.id}`} className="learn-more">
                 Learn More <ArrowRight size={16} />
               </a>
             </div>

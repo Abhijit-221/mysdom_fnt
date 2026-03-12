@@ -16,7 +16,7 @@ export default function ServiceDetails({ service }) {
   const fetchServices = async () => {
     try {
       const res = await axiosInstance.get(
-        `/service/${id}`,
+        `/service/getby/${id}`,
       );
 
       const serviceData = res?.data?.data || {};

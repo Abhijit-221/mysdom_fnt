@@ -3,10 +3,21 @@ import "./navbar.css";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { FaUserCircle } from "react-icons/fa";
-import { MdOutlineLiveHelp } from "react-icons/md";
 
 const Navbar = () => {
   let navigate = useNavigate();
+
+  const handleAboutClick = () => {
+
+    if (location.pathname !== "/") {
+      navigate("/#about");
+      document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
+
+    } else {
+      document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
+    }
+
+  };
   function loginhandler() {
     navigate('/login');
   }
@@ -36,7 +47,7 @@ const Navbar = () => {
                   <span className="username">{user.username}</span>
                 </div>
 
-                <button className="logout-btn" onClick={()=>(logout())}>
+                <button className="logout-btn" onClick={() => (logout())}>
                   Logout
                 </button>
               </>
@@ -52,29 +63,31 @@ const Navbar = () => {
       <nav className="navbar">
         <div className="navbar-container">
           {/* Logo */}
-          <div className="logo" onClick={()=>(navigate('/'))}>
+          <div className="logo" onClick={() => (navigate('/'))}>
             <span className="logo-green">mys</span>
             <span className="logo-pink">dom</span>
           </div>
 
           {/* Menu */}
           <ul className="nav-links">
-            <li onClick={()=>(navigate('/services'))}>Services</li>
+            <li onClick={() => (navigate('/services'))}>Services</li>
             {(user?.role === "admin" || user?.role === "superadmin") && (
               <li><Link to="/clients">Clients</Link></li>
             )}
-            <li><Link to="/bgv/list">Resources</Link></li>
+            <li><Link to="/bgv/list">BGV</Link></li>
             {(user?.role === "admin" || user?.role === "superadmin") && (
               <li><Link to="/manage-users">Manage Users</Link></li>
             )}
-            <li>About Us</li>
-            <li>Contact</li>
+            <li onClick={handleAboutClick}>About Us</li>
+            <li>
+              <a href="#contact">Contact</a>
+            </li>
           </ul>
 
           {/* Buttons */}
           <div className="nav-buttons">
             <button className="btn-outline">Get Pricing</button>
-            <button className="nav-btn-primary" >Talk to sales</button>
+            <button className="nav-btn-primary" ><a href="#contact">Talk to sales</a></button>
           </div>
         </div>
       </nav>

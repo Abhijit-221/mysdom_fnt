@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../api/axiosInstance";
 import "./addClientService.css";
 import toast from "react-hot-toast";
+import { useParams } from "react-router-dom";
 
-function AddClientService({ clientId }) {
+function AddClientService() {
+
+    const { client_id } = useParams();
 
     const [client, setClient] = useState(null);
+    const [allServices, setAllServices] = useState([]);
     const [clientServices, setClientServices] = useState([]);
-    const [services, setServices] = useState([]);
-
     const [selectedService, setSelectedService] = useState("");
 
     useEffect(() => {
@@ -17,106 +19,99 @@ function AddClientService({ clientId }) {
         fetchClientServices();
     }, []);
 
+    // Client Details
     const fetchClientDetails = async () => {
         try {
-            const res = await axiosInstance.get(`/clients/${clientId}`);
+            const res = await axiosInstance.get(`/client/get/${client_id}`);
             setClient(res.data.data);
-        } catch (err) {
+        } catch {
             toast.error("Failed to load client");
         }
     };
 
+    // Fetch ALL services
     const fetchAllServices = async () => {
         try {
-            const res = await axiosInstance.get("/services");
-            setServices(res.data.data);
-        } catch (err) {
+            const res = await axiosInstance.get(`/service/get`);
+            setAllServices(res.data.data);
+        } catch (error) {
+            console.log(error);
             toast.error("Failed to load services");
         }
     };
 
+    // Fetch client assigned services
     const fetchClientServices = async () => {
         try {
-            const res = await axiosInstance.get(`/client-services/${clientId}`);
-            setClientServices(res.data.data);
-        } catch (err) {
+            const res = await axiosInstance.get(`/client-service/getby/${client_id}`);
+            const services = res.data.data.map(item => ({
+                ...item.service,
+                tatDays: item.tatDays
+            }));
+            console.log('res:', services)
+            setClientServices(services);
+        } catch {
             toast.error("Failed to load client services");
         }
     };
 
-    const handleAddService = async () => {
-        if (!selectedService) {
-            toast.error("Select a service first");
+    // Services NOT assigned
+    const availableServices = allServices.filter(
+        service => !clientServices.some(cs => cs.id === service.id)
+    );
+
+    // Add Service
+    const [showModal, setShowModal] = useState(false);
+    const [tatDays, setTatDays] = useState("");
+    const [selectedServiceId, setSelectedServiceId] = useState(null);
+    const submitService = async () => {
+
+        if (!tatDays) {
+            toast.error("Enter TAT days");
             return;
         }
 
         try {
-            await axiosInstance.post("/client-services/add", {
-                clientId,
-                serviceId: selectedService
+
+            await axiosInstance.post("/client-service/add", {
+                clientId: client_id,
+                serviceId: selectedServiceId,
+                tatDays: tatDays
             });
 
-            toast.success("Service added successfully");
+            toast.success("Service added");
+
+            setShowModal(false);
+            setTatDays("");
             fetchClientServices();
-            setSelectedService("");
 
         } catch (err) {
-            toast.error(err?.response?.data?.message || "Error adding service");
+            toast.error("Failed to add service");
         }
+
     };
 
     return (
+
         <div className="add-client-service">
 
-            {/* Client Details */}
+            {/* CLIENT DETAILS */}
             <div className="client-info-card">
 
                 <h2>Client Details</h2>
 
                 {client && (
                     <div className="client-details">
-                        <p><strong>Name:</strong> {client.name}</p>
-                        <p><strong>Email:</strong> {client.email}</p>
-                        <p><strong>Phone:</strong> {client.phone}</p>
-                        <p><strong>Company:</strong> {client.company}</p>
+                        <p><strong>Company Code:</strong> {client.clientCode}</p>
+                        <p><strong>Company Name:</strong> {client.companyName}</p>
+                        <p><strong>Email:</strong> {client.contactEmail}</p>
+                        <p><strong>Phone:</strong> {client.contactPhone}</p>
                     </div>
                 )}
 
             </div>
-
-
-            {/* Add Service */}
+            {/* CLIENT SERVICES */}
             <div className="add-service-section">
-
-                <h3>Add Service</h3>
-
-                <div className="service-form">
-
-                    <select
-                        value={selectedService}
-                        onChange={(e) => setSelectedService(e.target.value)}
-                    >
-                        <option value="">Select Service</option>
-
-                        {services.map((service) => (
-                            <option key={service.id} value={service.id}>
-                                {service.service_name}
-                            </option>
-                        ))}
-
-                    </select>
-
-                    <button onClick={handleAddService}>
-                        Add Service
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            {/* Client Services */}
-            <div className="client-service-list">
 
                 <h3>Client Services</h3>
 
@@ -124,9 +119,11 @@ function AddClientService({ clientId }) {
 
                     <thead>
                         <tr>
+                            <th>Sl No.</th>
                             <th>Service Name</th>
                             <th>Description</th>
-                            <th>Status</th>
+                            <th>Total Days</th>
+                            {/* <th>Status</th> */}
                         </tr>
                     </thead>
 
@@ -138,15 +135,12 @@ function AddClientService({ clientId }) {
                             </tr>
                         )}
 
-                        {clientServices.map((service) => (
+                        {clientServices.map((service, index) => (
                             <tr key={service.id}>
-                                <td>{service.service_name}</td>
+                                <td>{index + 1}</td>
+                                <td>{service.name}</td>
                                 <td>{service.description}</td>
-                                <td>
-                                    <span className="active-badge">
-                                        Active
-                                    </span>
-                                </td>
+                                <td>{service.tatDays}</td>
                             </tr>
                         ))}
 
@@ -156,7 +150,127 @@ function AddClientService({ clientId }) {
 
             </div>
 
+            {/* ADD SERVICE */}
+            <div className="add-service-section">
+
+                <h3>Add Service</h3>
+
+                {/* <div className="service-list">
+
+                    {availableServices.length === 0 && (
+                        <p>No services available to add</p>
+                    )}
+
+                    {availableServices.map(service => (
+
+                        <div key={service.id} className="service-card">
+
+                            <div className="service-info">
+                                <h4>{service.service_name}</h4>
+                                <p>{service.description}</p>
+                            </div>
+
+                            <button
+                                className="add-btn"
+                                onClick={() => handleAddService(service.id)}
+                            >
+                                + Add
+                            </button>
+
+                        </div>
+
+                    ))}
+
+                </div> */}
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Sl No.</th>
+                            <th>Service Name</th>
+                            <th>Description</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {availableServices.length === 0 && (
+                            <tr>
+                                <td colSpan="3">No services assigned</td>
+                            </tr>
+                        )}
+
+                        {availableServices.map((service, index) => (
+                            <tr key={service.id}>
+                                <td>{index + 1}</td>
+                                <td>{service.name}</td>
+                                <td>{service.description}</td>
+                                <td>
+                                    <button
+                                        className="add-btn"
+                                        onClick={() => {
+                                            setSelectedServiceId(service.id);
+                                            setShowModal(true);
+                                        }}
+                                    >
+                                        +
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+            {showModal && (
+                <div className="modal-overlay">
+
+                    <div className="modal-box">
+
+                        <h3>Add Service</h3>
+
+                        <div className="modal-body">
+
+                            <label>TAT Days</label>
+
+                            <input
+                                type="number"
+                                value={tatDays}
+                                onChange={(e) => setTatDays(e.target.value)}
+                                placeholder="Enter TAT days"
+                            />
+
+                        </div>
+
+                        <div className="modal-actions">
+
+                            <button
+                                className="cancel-btn"
+                                onClick={() => setShowModal(false)}
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                className="submit-btn"
+                                onClick={submitService}
+                            >
+                                Add Service
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            )}
+
         </div>
+
     );
 }
 

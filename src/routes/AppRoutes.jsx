@@ -54,7 +54,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
         />
-        <Route path="/service/:id" element={
+        <Route path="/service/getby/:id" element={
           <ProtectedRoute>
             <ServiceDetails />
           </ProtectedRoute>
@@ -73,7 +73,7 @@ const AppRoutes = () => {
         }
         />
         {/* client service */}
-        <Route path="/client/service-add" element={
+        <Route path="/client/service-add/:client_id" element={
           <ProtectedRoute>
             <AddClientService />
           </ProtectedRoute>

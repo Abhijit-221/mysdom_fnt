@@ -69,36 +69,96 @@
 
 
 
-/* Service Table */
-
-.client-service-list{
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+.service-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:15px;
+    margin-top:15px;
 }
 
-.client-service-list table{
-    width: 100%;
-    border-collapse: collapse;
+.service-card{
+    background:white;
+    border-radius:8px;
+    padding:15px;
+    width:220px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
 }
 
-.client-service-list th,
-.client-service-list td{
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-    text-align: left;
+.service-card h4{
+    margin:0 0 5px 0;
+    font-size:16px;
 }
 
-.client-service-list th{
-    background: #f5f5f5;
+.service-card p{
+    font-size:13px;
+    color:#666;
 }
 
+.add-btn{
+    margin-top:10px;
+    background:#3b6ff5;
+    color:white;
+    border:none;
+    padding:6px 10px;
+    border-radius:6px;
+    cursor:pointer;
+}
 
-.active-badge{
-    background: #16a34a;
-    color: white;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
+.add-btn:hover{
+    background:#2f5be0;
+}
+
+.modal-overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.4);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+
+.modal-box{
+  background:white;
+  padding:25px;
+  border-radius:8px;
+  width:300px;
+}
+
+.modal-body{
+  margin-top:15px;
+}
+
+.modal-body input{
+  width:100%;
+  padding:8px;
+  margin-top:5px;
+}
+
+.modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:20px;
+}
+
+.submit-btn{
+  background:#3b6ff5;
+  color:white;
+  border:none;
+  padding:7px 14px;
+  border-radius:5px;
+}
+
+.cancel-btn{
+  background:#ddd;
+  border:none;
+  padding:7px 14px;
+  border-radius:5px;
 }

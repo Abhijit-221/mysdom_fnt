@@ -111,7 +111,7 @@ export default function LandingPage() {
       </section>
 
           {/* WHY MYSDOM */}
-       <section className="why-mysdom">
+       <section className="why-mysdom" id="about">
           <WhyMysdom/>
        </section>
       {/* DIFFERENCE SECTION */}
