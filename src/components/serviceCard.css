@@ -1,17 +1,19 @@
-.services-section {
-  padding: 10px 10px;
-  background: #ffffff;
+/* Section */
+.mysdom-services-section {
+  padding: 60px 20px;
+  background: transparent; /* 🔥 main requirement */
   font-family: "Segoe UI", sans-serif;
 }
 
-.services-container {
+/* Container */
+.mysdom-services-container {
   max-width: 1200px;
   margin: 0 auto;
   text-align: center;
 }
 
-/* Top Small Tag */
-.services-tag {
+/* Tag */
+.mysdom-services-tag {
   color: #0f9d6e;
   font-weight: 600;
   letter-spacing: 1px;
@@ -19,16 +21,16 @@
   margin-bottom: 20px;
 }
 
-/* Main Title */
-.services-title {
+/* Title */
+.mysdom-services-title {
   font-size: 42px;
   font-weight: 700;
   margin-bottom: 20px;
-  color: #0f172a;
+  color: #000;
 }
 
 /* Subtitle */
-.services-subtitle {
+.mysdom-services-subtitle {
   max-width: 800px;
   margin: 0 auto 25px;
   color: #475569;
@@ -37,7 +39,7 @@
 }
 
 /* Explore Link */
-.explore-link {
+.mysdom-explore-link {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -48,34 +50,37 @@
   transition: 0.3s;
 }
 
-.explore-link:hover {
+.mysdom-explore-link:hover {
   gap: 12px;
 }
 
-/* Grid Layout */
-/* .services-grid {
+/* Grid */
+.mysdom-services-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 30px;
-} */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
 
-/* Card */
-/* .service-card {
-  border: 2px solid #0f9d6e;
-  border-radius: 16px;
-  padding: 10px 30px;
+/* Card (transparent) */
+.mysdom-service-card {
+  border: 1px solid rgba(15, 157, 110, 0.3);
+  border-radius: 5px;
+  padding: 20px 30px;
   text-align: left;
-  transition: 0.3s;
-  background: #f9fafb;
-} */
+  background: transparent; /* 🔥 transparent card */
+  backdrop-filter: blur(6px); /* optional glass effect */
+  transition: all 0.3s ease;
+}
 
-/* .service-card:hover {
+/* Hover */
+.mysdom-service-card:hover {
   transform: translateY(-6px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-} */
+  background-color: #e37498;
+}
 
-/* Icon Box */
-/* .icon-box {
+/* Icon */
+.mysdom-icon-box {
   width: 60px;
   height: 60px;
   background: linear-gradient(135deg, #d1fae5, #fce7f3);
@@ -85,51 +90,52 @@
   justify-content: center;
   color: #0f9d6e;
   margin-bottom: 20px;
-} */
+}
 
-/* Card Title */
-/* .service-card h3 {
+/* Title */
+.mysdom-service-card h3 {
   font-size: 20px;
-  margin-bottom: 15px;
-  color: #0f172a;
-} */
+  margin-bottom: 12px;
+  color: #676c77;
+}
 
-/* Description */
-/* .service-card p {
+/* Text */
+.mysdom-service-card p {
   font-size: 15px;
   color: #475569;
   line-height: 1.6;
   margin-bottom: 20px;
-} */
+}
 
 /* Learn More */
-/* .learn-more {
+.mysdom-learn-more {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   color: #e11d48;
   font-weight: 600;
   text-decoration: none;
-  transition: 0.3s;
-} */
+  transition: all 0.3s ease;
+}
 
-/* .learn-more:hover {
+.mysdom-learn-more:hover {
   gap: 10px;
-} */
+}
 
-/* Responsive */
-/* @media (max-width: 1024px) {
-  .services-grid {
+/* Tablet */
+@media (max-width: 1024px) {
+  .mysdom-services-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-} */
+}
 
-/* @media (max-width: 600px) {
-  .services-grid {
+/* Mobile */
+@media (max-width: 600px) {
+  .mysdom-services-grid {
     grid-template-columns: 1fr;
   }
 
-  .services-title {
+  .mysdom-services-title {
     font-size: 30px;
   }
-} */
+}

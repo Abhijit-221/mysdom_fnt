@@ -1,0 +1,112 @@
+/* Section */
+.mysdom-testimonial-section {
+  padding: 80px 20px;
+  background: #f8fafc;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* Container */
+.mysdom-testimonial-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Tag */
+.mysdom-testimonial-tag {
+  color: #e11d48;
+  font-weight: 600;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+/* Title */
+.mysdom-testimonial-title {
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 50px;
+  color: #111;
+}
+
+/* Grid */
+.mysdom-testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+}
+
+/* Card */
+.mysdom-testimonial-card {
+  background: #ffffff;
+  padding: 40px 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  position: relative;
+  transition: 0.3s ease;
+}
+
+.mysdom-testimonial-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Quote Icon */
+.mysdom-quote-icon {
+  font-size: 50px;
+  color: #f97316;
+  margin-bottom: 20px;
+}
+
+/* Text */
+.mysdom-testimonial-text {
+  font-size: 17px;
+  color: #475569;
+  line-height: 1.8;
+  margin-bottom: 30px;
+}
+
+/* User Box */
+.mysdom-testimonial-user {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border: 1px solid #e5e7eb;
+  padding: 15px;
+  border-radius: 10px;
+  background: #f9fafb;
+  position: relative;
+}
+
+/* Speech Arrow */
+.mysdom-testimonial-user::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 30px;
+  width: 20px;
+  height: 20px;
+  background: #f9fafb;
+  border-left: 1px solid #e5e7eb;
+  border-top: 1px solid #e5e7eb;
+  transform: rotate(45deg);
+}
+
+/* Avatar */
+.mysdom-user-avatar {
+  font-size: 28px;
+}
+
+/* Company */
+.mysdom-user-info p {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mysdom-testimonial-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mysdom-testimonial-title {
+    font-size: 28px;
+  }
+}

@@ -1,0 +1,281 @@
+/* GLOBAL */
+.about-page {
+  font-family: "Poppins", sans-serif;
+  color: #222;
+}
+
+/* SECTION TAG */
+.section-tag {
+  color: #ff4d7e;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 10px;
+  position: relative;
+  padding-left: 60px;
+}
+
+.section-tag::before {
+  content: "";
+  width: 40px;
+  height: 2px;
+  background: #ff4d7e;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.section-aboutdesc{
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+/* HERO */
+.about-hero {
+  position: relative;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+
+  /* RIGHT SIDE IMAGE */
+  /* background: url("/home1.webp") right center/cover no-repeat; */
+  background: linear-gradient(90deg, #0f7c5b, #d81b60);
+}
+
+/* DARK CURVED OVERLAY */
+.about-hero-overlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 55%;
+  background: #0a0a0a;
+
+  /* CURVED EFFECT */
+  border-top-right-radius: 300px;
+  border-bottom-right-radius: 300px;
+
+  z-index: 1;
+}
+
+/* CONTENT */
+.about-hero-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: 0 60px;
+}
+
+.about-hero-left {
+  max-width: 600px;
+  color: #fff;
+}
+
+/* BREADCRUMB */
+.about-breadcrumb {
+  font-size: 14px;
+  margin-bottom: 15px;
+  color: #ddd;
+}
+
+.about-breadcrumb span {
+  margin: 0 6px;
+}
+
+.about-breadcrumb .active {
+  color: #ff4d7e;
+  font-weight: 500;
+}
+
+/* TITLE */
+.about-hero-title {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .about-hero {
+    height: 280px;
+  }
+
+  .about-hero-overlay {
+    width: 100%;
+    border-radius: 0;
+    opacity: 0.8;
+  }
+
+  .about-hero-title {
+    font-size: 30px;
+  }
+
+  .about-hero-content {
+    padding: 0 20px;
+  }
+}
+
+
+
+/* SECTION */
+.about-section {
+  padding: 80px 10%;
+}
+
+.about-section.light {
+  background: #f8f8f8;
+}
+
+.about-container {
+  display: flex;
+  align-items: center;
+  gap: 50px;
+}
+
+.about-container.reverse {
+  flex-direction: row-reverse;
+}
+
+.about-text {
+  flex: 1;
+}
+
+.about-text h2 {
+  font-size: 36px;
+  margin-bottom: 20px;
+  line-height: 1.3;
+}
+
+.about-text p {
+  color: #555;
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+
+.about-image {
+  flex: 1;
+}
+
+.about-image img {
+  width: 100%;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* HISTORY */
+.history-section {
+  padding: 80px 10%;
+  text-align: center;
+}
+
+.history-header h2 {
+  font-size: 36px;
+  margin-top: 10px;
+}
+
+/* TIMELINE FIX */
+.timeline {
+  margin-top: 60px;
+  display: flex;
+  align-items: center;
+  gap: 50px;
+}
+
+.timeline-left,
+.timeline-right {
+  flex: 1;
+}
+
+.timeline-left img {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.timeline-card {
+  border: 1px solid #eee;
+  padding: 30px;
+  text-align: left;
+  position: relative;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+}
+
+.timeline-card .year {
+  background: #ff4d7e;
+  color: white;
+  padding: 6px 15px;
+  font-weight: bold;
+  display: inline-block;
+  margin-bottom: 10px;
+  border-radius: 4px;
+}
+
+/* CTA */
+.cta-section {
+  margin-top: 60px;
+  height: 250px;
+  /* background: url("/images/cta.jpg") center/cover no-repeat; */
+  display: flex;
+  align-items: center;
+}
+
+.cta-overlay {
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(15, 124, 91, 0.85),
+    rgba(216, 27, 96, 0.8)
+  );
+  padding: 50px 10%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.cta-overlay h2 {
+  font-size: 32px;
+}
+
+.cta-overlay button {
+  background: #ff4d7e;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: 0.3s;
+}
+
+.cta-overlay button:hover {
+  background: #e0436f;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+
+  .head-overlay {
+    padding: 60px 20px;
+  }
+
+  .head-overlay h1 {
+    font-size: 32px;
+  }
+
+  .about-container {
+    flex-direction: column;
+  }
+
+  .timeline {
+    flex-direction: column;
+  }
+
+  .cta-overlay {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+}

@@ -1,0 +1,134 @@
+.mysdom-carousel-section {
+  padding: 60px 20px;
+  background: transparent;
+  font-family: "Segoe UI", sans-serif;
+  text-align: center;
+}
+
+.mysdom-carousel-container {
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* Tag */
+.mysdom-carousel-tag {
+  color: #e11d48;
+  font-weight: 600;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+/* Title */
+.mysdom-carousel-title {
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 40px;
+}
+
+/* Wrapper */
+.mysdom-carousel-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Track */
+.mysdom-carousel-track {
+  display: flex;
+  position: relative;
+  height: 350px;
+}
+
+/* Card */
+.mysdom-carousel-card {
+  position: absolute;
+  width: 60%;
+  height: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: all 0.5s ease;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Image */
+.mysdom-carousel-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Active */
+.activeSlide {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+  z-index: 2;
+}
+
+/* Previous */
+.lastSlide {
+  opacity: 0.5;
+  transform: translateX(-120%) scale(0.9);
+  z-index: 1;
+}
+
+/* Next */
+.nextSlide {
+  opacity: 0.5;
+  transform: translateX(20%) scale(0.9);
+  z-index: 1;
+}
+
+/* Overlay */
+.mysdom-overlay {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 20px;
+  background: rgba(225, 29, 72, 0.7);
+  color: #fff;
+  text-align: left;
+}
+
+.mysdom-overlay h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.mysdom-overlay p {
+  margin: 5px 0 0;
+  font-size: 14px;
+}
+
+/* Arrows */
+.mysdom-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #ffffffcc;
+  border: none;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 20px;
+  border-radius: 50%;
+  z-index: 3;
+}
+
+.mysdom-arrow.left {
+  left: 10px;
+}
+
+.mysdom-arrow.right {
+  right: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mysdom-carousel-card {
+    width: 90%;
+  }
+
+  .mysdom-carousel-title {
+    font-size: 28px;
+  }
+}

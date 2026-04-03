@@ -2,28 +2,44 @@ import React from 'react'
 import {
   ShieldCheck,
   ArrowRight,
+  FingerprintPattern,
+  Gavel,
+  GlobeLock,
+  GraduationCap
 } from "lucide-react";
 import './serviceGrid.css'
-function ServiceGrid({services}) {
-    console.log("services---",services);
+function ServiceGrid({ services,user }) {
+  console.log("services---", services);
   return (
-    
-        <div className="services-grid">
-          {services.map((service, index) => (
-            <div className="service-card" key={index}>
-              <div className="icon-box"><ShieldCheck size={28} /></div>
 
-              <h3>{service.name}</h3>
-
-              <p>{service.description}</p>
-
-              <a href={`/service/getby/${service.id}`} className="learn-more">
-                Learn More <ArrowRight size={16} />
-              </a>
+    <div className="svcgrid-wrapper">
+      <div className="svcgrid-grid">
+        {services.map((service, index) => (
+          <div
+            className='svcgrid-card'
+            key={index}
+          >
+            <div className="svcgrid-icon">
+              <ShieldCheck size={30} />
             </div>
-          ))}
-        </div>
-    
+
+            <h3 className="svcgrid-title">{service.name}</h3>
+
+            <p className="svcgrid-desc">{service.description}</p>
+            {
+              user && 
+            // <a href={`/service/getby/${service.id}`} className="svcgrid-link">
+            //   Learn More <ArrowRight size={16} />
+            // </a>
+            <p className="svcgrid-link" onClick={()=>window.location.href=`/service/detail/${service.id}`}>
+              Learn More <ArrowRight size={16} />
+            </p>
+            }
+          </div>
+        ))}
+      </div>
+    </div>
+
   )
 }
 

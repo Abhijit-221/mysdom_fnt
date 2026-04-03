@@ -104,6 +104,11 @@
   margin-bottom: 20px;
 }
 
+.instructions-card a {
+  /* margin: 10px; */
+  margin-bottom: 10px;
+}
+
 .step {
   display: flex;
   gap: 15px;
@@ -143,6 +148,7 @@
 /* IMPORTANT NOTE */
 
 .important-note {
+  margin-top: 10px;
   background: #fff7ed;
   border: 1px solid #facc15;
   padding: 15px;

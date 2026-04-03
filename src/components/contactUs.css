@@ -1,0 +1,224 @@
+/* MAIN */
+.cu-container {
+  font-family: "Poppins", sans-serif;
+}
+
+/* HERO */
+.cu-hero {
+  position: relative;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+
+  /* RIGHT SIDE IMAGE */
+  /* background: url("/home1.webp") right center/cover no-repeat; */
+  background: linear-gradient(90deg, #0f7c5b, #d81b60);
+}
+
+.cu-hero-overlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 55%;
+  background: #0a0a0a;
+
+  /* CURVED EFFECT */
+  border-top-right-radius: 300px;
+  border-bottom-right-radius: 300px;
+
+  z-index: 1;
+}
+.cu-hero-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: 0 60px;
+}
+
+.cu-hero-left {
+  max-width: 600px;
+  color: #fff;
+}
+
+/* BREADCRUMB */
+.cu-breadcrumb {
+  font-size: 14px;
+  margin-bottom: 15px;
+  color: #ddd;
+}
+
+.cu-breadcrumb span {
+  margin: 0 6px;
+}
+.cu-breadcrumb .active {
+  color: #ff4d7e;
+  font-weight: 500;
+}
+.cu-hero-title {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .cu-hero {
+    height: 280px;
+  }
+
+  .cu-hero-overlay {
+    width: 100%;
+    border-radius: 0;
+    opacity: 0.8;
+  }
+
+  .cu-hero-title {
+    font-size: 30px;
+  }
+
+  .cu-hero-content {
+    padding: 0 20px;
+  }
+}
+
+
+/* CONTACT SECTION */
+.cu-contact-wrapper {
+  display: flex;
+  gap: 40px;
+  padding: 60px 80px;
+}
+
+/* MAP */
+.cu-map {
+  flex: 1;
+}
+
+.cu-map-frame {
+  width: 100%;
+  height: 450px;
+  border: none;
+  border-radius: 8px;
+}
+
+/* FORM */
+.cu-form-section {
+  flex: 1;
+}
+
+.cu-small-title {
+  color: #ff4d7e;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.cu-form-heading {
+  font-size: 32px;
+  margin-bottom: 30px;
+}
+
+.cu-form input,
+.cu-form textarea {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  outline: none;
+}
+
+.cu-input-row {
+  display: flex;
+  gap: 15px;
+}
+
+.cu-input-row input {
+  flex: 1;
+}
+
+.cu-submit-btn {
+  background: #ff4d7e;
+  color: #fff;
+  border: none;
+  padding: 14px 25px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.cu-submit-btn:hover {
+  background: #e43a6a;
+}
+
+/* INFO CARDS */
+.cu-info-section {
+  display: flex;
+  gap: 30px;
+  padding: 40px 80px;
+}
+
+/* LINK STYLE */
+.cu-link {
+  color: #333;
+  text-decoration: none;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+.cu-link:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* CARD HOVER EFFECT */
+.cu-card {
+  flex: 1;
+  background: #f5f5f5;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+/* Hover Animation */
+.cu-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  background: #ff4d7e;
+}
+
+/* Icon hover effect */
+.cu-card:hover .cu-icon {
+  transform: scale(1.2);
+  color: #ff4d7e;
+}
+
+.cu-icon {
+  font-size: 30px;
+  margin-bottom: 15px;
+  transition: 0.3s;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .cu-contact-wrapper {
+    flex-direction: column;
+    padding: 30px;
+  }
+
+  .cu-info-section {
+    flex-direction: column;
+    padding: 30px;
+  }
+
+  .cu-hero-overlay {
+    padding-left: 30px;
+  }
+
+  .cu-title {
+    font-size: 32px;
+  }
+}

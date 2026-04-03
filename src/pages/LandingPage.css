@@ -1,61 +1,54 @@
-/* GLOBAL */
-.landing {
+/* ===== GLOBAL ===== */
+.lp-wrapper {
   font-family: 'Inter', sans-serif;
   color: #1e293b;
 }
 
-.container {
+.lp-container {
   width: 90%;
   max-width: 1200px;
   margin: auto;
 }
 
-.text-center {
-  text-align: center;
-}
-
-/* ================= HERO ================= */
-
-.hero {
+/* ===== HERO ===== */
+.lp-hero {
   position: relative;
   background: linear-gradient(90deg, #0f7c5b, #d81b60);
-  color: white;
+  color: #fff;
   padding: 100px 0;
   overflow: hidden;
 }
 
-.hero-overlay {
+/* FIX: overlay should not block clicks */
+.lp-hero-overlay {
   position: absolute;
   inset: 0;
   background: rgba(0,0,0,0.25);
+  pointer-events: none;
 }
 
-.hero-content {
+.lp-hero-content {
+  position: relative;
+  z-index: 2;
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  /* position: relative; */
-  padding: 80px 0;
   align-items: center;
-  gap: 60px;
+  justify-content: space-between;
 }
 
-.hero-left h1 {
+.lp-hero-left {
+  max-width: 600px;
+}
+
+.lp-title {
   font-size: 60px;
   font-weight: 700;
 }
 
-.hero-left h1 span {
+.lp-title span {
   color: #ff6ea1;
 }
 
-.hero-left p {
-  margin-top: 20px;
-  max-width: 500px;
-  line-height: 1.6;
-}
-
-.badge {
+.lp-badge {
   background: rgba(255,255,255,0.15);
   padding: 8px 16px;
   border-radius: 20px;
@@ -64,113 +57,58 @@
   font-size: 14px;
 }
 
-/* BUTTONS */
-.btn-primary {
+/* BUTTON */
+.lp-buttons {
+  margin-top: 20px;
+}
+
+.lp-btn-primary {
   background: #ff2f8f;
-  color: white;
+  color: #fff;
   border: none;
   padding: 14px 22px;
   border-radius: 8px;
   cursor: pointer;
-  margin-right: 15px;
+  transition: 0.3s;
 }
 
-.btn-outline {
-  background: transparent;
-  border: 2px solid white;
-  padding: 12px 20px;
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
+.lp-btn-primary:hover {
+  background: #e0267a;
 }
 
-/* HERO STATS */
-.hero-stats {
- flex: 1;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
-
-.stat-card {
-   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 1.75rem 1.5rem;
-  text-align: center;
-  backdrop-filter: blur(8px);
-  transition: background 0.5s, transform 0.6s;
-}
-
-.stat-card h2 {
-  font-size: 28px;
-  color: #0aa66e;
-  margin-bottom: 8px;
-}
-
-.stat-card p {
-  color: #666;
-  font-size: 14px;
-}
-
-.stat-card:hover {
-  transform: translateX(-6px);
-}
-
-/* ================= DIFFERENCE ================= */
-
-.difference {
-  padding: 80px 0;
-  background: #f8fafc;
-}
-
-
-
-/* ================= SERVICES ================= */
-
-.services {
-  padding: 80px 0;
-}
-
-
-/* ================= WEBINAR ================= */
-
-.webinar {
+/* ===== SECTIONS ===== */
+.lp-webinar {
   padding: 80px 0;
   background: linear-gradient(90deg, #0f7c5b, #d81b60);
 }
 
+.lp-services {
+  /* margin-top: 0px; */
+  padding: 10px 0;
+}
 
+.lp-case {
+  padding: 10px 0;
+}
 
-/* ================= RESPONSIVE ================= */
+.lp-reviews {
+  padding: 10px 0;
+}
 
+/* ===== RESPONSIVE ===== */
 @media (max-width: 992px) {
-  .hero-content {
+  .lp-hero-content {
     flex-direction: column;
+    text-align: center;
   }
 
-  .difference-cards,
-  .service-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .webinar-card {
-    flex-direction: column;
-  }
-
-  .webinar-left,
-  .webinar-right {
-    width: 100%;
+  .lp-title {
+    font-size: 42px;
   }
 }
 
 @media (max-width: 600px) {
-  .difference-cards,
-  .service-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .hero-left h1 {
-    font-size: 40px;
+  .lp-title {
+    font-size: 32px;
   }
 }

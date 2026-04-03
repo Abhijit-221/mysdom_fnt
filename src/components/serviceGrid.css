@@ -1,81 +1,133 @@
+/* ===== WRAPPER ===== */
+.svcgrid-wrapper {
+  padding: 40px 0;
+}
 
-/* Grid Layout */
-.services-grid {
+/* ===== GRID ===== */
+.svcgrid-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 30px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
 }
 
-/* Card */
-.service-card {
-  border: 2px solid #0f9d6e;
-  border-radius: 16px;
-  padding: 10px 30px;
+/* ===== CARD ===== */
+.svcgrid-card {
+  max-width: 100%;
+  /* width: 30px; */
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  padding: 40px 30px;
   text-align: left;
-  transition: 0.3s;
-  background: #f9fafb;
+  transition: all 0.35s ease;
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
 }
 
-.service-card:hover {
+/* Hover effect */
+.svcgrid-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  /* background: linear-gradient(135deg, #ff4d7e, #d81b60); */
+  background: linear-gradient(135deg, #0AA66e, #d81b60);
+
 }
 
-/* Icon Box */
-.icon-box {
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, #d1fae5, #fce7f3);
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #0f9d6e;
+.svcgrid-card:hover h3,
+.svcgrid-card:hover p {
+  color: #fff;
+}
+
+
+
+/* ===== ACTIVE CARD (PINK ONE) ===== */
+.svcgrid-card {
+  /* background: linear-gradient(135deg, #ff4d7e, #d81b60); */
+  color: #fff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: none;
+}
+
+/* subtle circle effect */
+.svcgrid-card::after {
+  content: "";
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 200px;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+/* ===== ICON ===== */
+.svcgrid-icon {
   margin-bottom: 20px;
+  color: #e60343;
 }
 
-/* Card Title */
-.service-card h3 {
-  font-size: 20px;
+/* icon color in active */
+/* .svcgrid-card.active .svcgrid-icon {
+  color: #fff;
+} */
+
+/* ===== TITLE ===== */
+.svcgrid-title {
+  font-size: 22px;
+  font-weight: 700;
   margin-bottom: 15px;
   color: #0f172a;
 }
 
-/* Description */
-.service-card p {
+/* white text for active */
+/* .svcgrid-card .svcgrid-title {
+  color: #fff;
+} */
+
+/* ===== DESCRIPTION ===== */
+.svcgrid-desc {
   font-size: 15px;
-  color: #475569;
   line-height: 1.6;
+  color: #475569;
   margin-bottom: 20px;
 }
 
-/* Learn More */
-.learn-more {
+/* active desc */
+/* .svcgrid-card .svcgrid-desc {
+  color: rgba(255,255,255,0.9);
+} */
+
+/* ===== LINK ===== */
+.svcgrid-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #e11d48;
   font-weight: 600;
+  font-size: 14px;
+  color: #ff4d7e;
   text-decoration: none;
   transition: 0.3s;
 }
 
-.learn-more:hover {
-  gap: 10px;
+.svcgrid-link:hover {
+  gap: 5px;
+  color: #e5e7eb;
 }
 
+/* active link */
+/* .svcgrid-card .svcgrid-link {
+  color: #fff;
+} */
 
-@media (max-width: 1024px) {
-  .services-grid {
+/* ===== RESPONSIVE ===== */
+@media (max-width: 992px) {
+  .svcgrid-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 600px) {
-  .services-grid {
+  .svcgrid-grid {
     grid-template-columns: 1fr;
-  }
-  .services-title {
-    font-size: 30px;
   }
 }

@@ -8,14 +8,14 @@ const Navbar = () => {
   let navigate = useNavigate();
 
   const handleAboutClick = () => {
+    navigate("/about");
+    // if (location.pathname !== "/") {
+    //   navigate("/#about");
+    //   document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
 
-    if (location.pathname !== "/") {
-      navigate("/#about");
-      document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
-
-    } else {
-      document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
-    }
+    // } else {
+    //   document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
+    // }
 
   };
   function loginhandler() {
@@ -27,32 +27,31 @@ const Navbar = () => {
   return (
     <>
       {/* Top Bar */}
-      <div className="topbar">
-        <div className="topbar-container">
+      <div className="tb-wrapper">
+        <div className="tb-container">
 
           {/* LEFT */}
-          <div className="topbar-left">
-            <a href="/help">Get Help</a>
+          <div className="tb-left">
+            <p onClick={()=>navigate('/contact')}>Get Help</p>
           </div>
-
-          {/* CENTER */}
-          <div className="topbar-divider">|</div>
-
+          <div className="tb-devide">
+            |
+          </div>
           {/* RIGHT */}
-          <div className="topbar-right">
+          <div className="tb-right">
             {user ? (
               <>
-                <div className="profile">
-                  <FaUserCircle size={22} />
-                  <span className="username">{user.username}</span>
+                <div className="tb-profile">
+                  <FaUserCircle className="tb-user-icon" />
+                  <span className="tb-username">{user.username}</span>
                 </div>
 
-                <button className="logout-btn" onClick={() => (logout())}>
+                <button className="tb-logout-btn" onClick={logout}>
                   Logout
                 </button>
               </>
             ) : (
-              <button className="login-btn" onClick={loginhandler}>
+              <button className="tb-login-btn" onClick={loginhandler}>
                 Login
               </button>
             )}
@@ -64,30 +63,32 @@ const Navbar = () => {
         <div className="navbar-container">
           {/* Logo */}
           <div className="logo" onClick={() => (navigate('/'))}>
-            <span className="logo-green">mys</span>
-            <span className="logo-pink">dom</span>
+            {/* <span className="logo-green">mys</span>
+            <span className="logo-pink">dom</span> */}
+            <img src="logo.png" alt="" />
           </div>
 
           {/* Menu */}
           <ul className="nav-links">
+            <li onClick={()=>navigate('/')}>Home</li>
+            <li onClick={handleAboutClick}>About Us</li>
             <li onClick={() => (navigate('/services'))}>Services</li>
             {(user?.role === "admin" || user?.role === "superadmin") && (
               <li><Link to="/clients">Clients</Link></li>
             )}
-            <li><Link to="/bgv/list">BGV</Link></li>
+            <li><Link to="/product">Product</Link></li>
             {(user?.role === "admin" || user?.role === "superadmin") && (
               <li><Link to="/manage-users">Manage Users</Link></li>
             )}
-            <li onClick={handleAboutClick}>About Us</li>
-            <li>
-              <a href="#contact">Contact</a>
+            <li onClick={() => navigate('/contact')}>
+              Contact Us
             </li>
           </ul>
 
           {/* Buttons */}
           <div className="nav-buttons">
             <button className="btn-outline">Get Pricing</button>
-            <button className="nav-btn-primary" ><a href="#contact">Talk to sales</a></button>
+            <button className="nav-btn-primary" onClick={()=>navigate('/contact')} >Talk to sales</button>
           </div>
         </div>
       </nav>

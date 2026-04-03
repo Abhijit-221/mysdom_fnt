@@ -3,35 +3,35 @@ import "./webinarCarousel.css";
 
 const slides = [
   {
-    tag: "Webinar",
-    title: "Background Verification Trends In India 2025",
-    date: "February 15, 2025 (3:00 PM IST)",
-    speaker: "Speaker: Dr. Rajesh Kumar, Compliance Expert",
-    credits: "SHRM/HRCI credits offered",
-    button: "Register Now",
+    tag: "Brand Success",
+    title: "Cultivating success through reliable connections",
+    // date: "February 15, 2025 (3:00 PM IST)",
+    description: "We foster success by connecting businesses with reliable talent and partners, ensuring peace of mind through thorough hiring and verification services.",
+    // credits: "SHRM/HRCI credits offered",
+    // button: "Register Now",
     image:
       "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1200",
   },
-  {
-    tag: "eBook",
-    title: "Complete Guide to Employee Background Screening in India",
-    date: "March 10, 2025 (5:00 PM IST)",
-    speaker: "Speaker: Ananya Mehta, HR Tech Specialist",
-    credits: "Free certification included",
-    button: "Download Now",
-    image:
-      "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1200",
-  },
-  {
-    tag: "Report",
-    title: "2025: The Year Hiring Gets Smarter in India",
-    date: "April 2, 2025 (2:00 PM IST)",
-    speaker: "Speaker: Vikram Shah, Risk Consultant",
-    credits: "Limited seats available",
-    button: "Read Report",
-    image:
-      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=1200",
-  },
+  // {
+  //   tag: "eBook",
+  //   title: "Complete Guide to Employee Background Screening in India",
+  //   // date: "March 10, 2025 (5:00 PM IST)",
+  //   description: "Speaker: Ananya Mehta, HR Tech Specialist",
+  //   // credits: "Free certification included",
+  //   // button: "Download Now",
+  //   image:
+  //     "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1200",
+  // },
+  // {
+  //   tag: "Report",
+  //   title: "2025: The Year Hiring Gets Smarter in India",
+  //   // date: "April 2, 2025 (2:00 PM IST)",
+  //   description: "Speaker: Vikram Shah, Risk Consultant",
+  //   // credits: "Limited seats available",
+  //   // button: "Read Report",
+  //   image:
+  //     "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=1200",
+  // },
 ];
 
 export default function WebinarCarousel() {
@@ -63,10 +63,10 @@ export default function WebinarCarousel() {
             <div className="carousel-content">
               <span className="tag">{slide.tag}</span>
               <h1>{slide.title}</h1>
-              <p className="date">{slide.date}</p>
-              <p>{slide.speaker}</p>
-              <p>{slide.credits}</p>
-              <button className="cta-btn">{slide.button}</button>
+              {/* <p className="date">{slide.date}</p> */}
+              <p>{slide.description}</p>
+              {/* <p>{slide.credits}</p> */}
+              {/* <button className="cta-btn">{slide.button}</button> */}
             </div>
 
             <div

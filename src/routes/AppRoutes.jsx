@@ -19,6 +19,15 @@ import ServiceAdd from "../components/serviceComponent/ServiceAdd";
 import BgvRequestList from "../components/BGVRequest/BGVRequestList";
 import BgvRequestForm from "../components/BGVRequest/BVGRequestForm";
 import AddClientService from "../components/client/AddClientService";
+import BGVViewEditRequestForm from "../components/BGVRequest/BGVviewEditForm";
+import BGVStatusUpdate from "../components/BGVRequest/BGVStatusUpdate";
+import UploadCandidate from "../components/UploadCandidate";
+import About from "../components/About";
+import ContactUs from "../components/ContactUs";
+import Product from "../components/Product/Product";
+import ServiceDetailPage from "../components/serviceComponent/ServiceDetailPage";
+import UpdateService from "../components/serviceComponent/UpdateService";
+import CreateService from "../components/serviceComponent/CreateService";
 
 
 
@@ -29,6 +38,12 @@ const AppRoutes = () => {
       {/* Public Pages */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<ContactUs />} />
+        <Route path="/product" element={<Product />} />
+        <Route path="/service/detail/:id" element={<ServiceDetailPage />} />
+
+
         <Route
           path="/manage-users"
           element={
@@ -43,14 +58,21 @@ const AppRoutes = () => {
           </ProtectedRoute>
         } />
         <Route path="/services" element={
-          <ProtectedRoute>
+          // <ProtectedRoute>
             <Services />
-          </ProtectedRoute>
+          // </ProtectedRoute>
         }
         />
         <Route path="/service/add" element={
           <ProtectedRoute>
-            <ServiceAdd />
+            {/* <ServiceAdd /> */}
+            <CreateService />
+          </ProtectedRoute>
+        }
+        />
+        <Route path="/service/update/:id" element={
+          <ProtectedRoute>
+            <UpdateService />
           </ProtectedRoute>
         }
         />
@@ -89,6 +111,23 @@ const AppRoutes = () => {
         <Route path="/bgv/add" element={
           <ProtectedRoute>
             <BgvRequestForm />
+          </ProtectedRoute>
+        }
+        />
+        {/* <Route path="" element={<BGVViewEditRequestForm />} /> */}
+        <Route path="/bgv-view" element={
+          <ProtectedRoute>
+            <BGVViewEditRequestForm />
+          </ProtectedRoute>
+        }/>
+        <Route path="/bgv-update/:req_id" element={
+          <ProtectedRoute>
+            <BGVStatusUpdate />
+          </ProtectedRoute>
+        }/>
+        <Route path="/batch/upload" element={
+          <ProtectedRoute>
+            <UploadCandidate />
           </ProtectedRoute>
         }
         />

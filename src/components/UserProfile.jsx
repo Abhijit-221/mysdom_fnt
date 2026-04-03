@@ -26,8 +26,8 @@ function UserProfile() {
       );
 
       setUser(res.data.data);
-      console.log (`http://localhost:3000/${res.data.data.profilePicture}`);
-      setPreview(`http://localhost:3000/${res.data.data.profilePicture}`);
+      console.log (`${import.meta.env.VITE_BASE_URL}/${res.data.data.profilePicture}`);
+      setPreview(`${import.meta.env.VITE_BASE_URL}/${res.data.data.profilePicture}`);
     } catch (err) {
       if (err.response) {
         // Server responded with error (4xx, 5xx)

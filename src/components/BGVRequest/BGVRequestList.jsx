@@ -36,7 +36,7 @@ function BgvRequestList() {
     useEffect(() => {
         fetchRequests();
     }, [page, search]);
-    // console.log("requests:", requests);
+    // console.log("user:", user);
 
 
     function StatusFilter({ statusFilter, setStatusFilter }) {
@@ -60,10 +60,10 @@ function BgvRequestList() {
 
     return (
         <div className="bgv-container">
+            <div className="mysdom-bgv-header">
+                <div className="left-section">
+                    <h2>BGV <span>Requests</span></h2>
 
-            <div className="bgv-header">
-                <h2>BGV Request List</h2>
-                <div className="filter-section">
                     <div className="search-input">
                         <Search size={18} />
                         <input
@@ -76,10 +76,26 @@ function BgvRequestList() {
                             }}
                         />
                     </div>
-                    {/* <StatusFilter statusFilter={statusFilter} setStatusFilter={setStatusFilter} /> */}
-                    {user.role==='user' && <button className="add-request-btn" onClick={()=>(navigate('/bgv/add'))}>
-                        + Add Request
-                    </button>}
+                </div>
+
+                <div className="right-section">
+
+                    <div className="report-section">
+                        {user.role === 'user' && (
+                            <button className="add-request-btn" onClick={() => navigate('/bgv/add')}>
+                                + Add Request
+                            </button>
+                        )}
+                        {user.role === 'user' && (
+                            <a className="batch-upload-link" href="/batch/upload">
+                                ⬆️ Batch Upload
+                            </a>
+                        )}
+
+                        <a className="batch-download-link" href="/batch/upload">
+                            ⬇️ Report download
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -92,6 +108,7 @@ function BgvRequestList() {
                             <th>Candidate Name</th>
                             <th>Company</th>
                             <th>Email</th>
+                            <th>Phone</th>
                             <th>Status</th>
                             <th>Requested Date</th>
                             <th>Action</th>
@@ -112,6 +129,7 @@ function BgvRequestList() {
                                     <td>{req.candidate_name}</td>
                                     <td>{req.client.companyName}</td>
                                     <td>{req.candidate_email}</td>
+                                    <td>{req.candidate_phone}</td>
                                     <td>
                                         <span className={`status ${req.status}`}>
                                             {req.status = req.status === 'IN_PROGRESS' ? 'IN PROGRESS' : req.status === 'ON_HOLD' ? 'ON HOLD' : req.status}
@@ -120,8 +138,42 @@ function BgvRequestList() {
                                     <td>{new Date(req.createdAt).toLocaleDateString()}</td>
 
                                     <td className="actions">
-                                        <button className="view-btn">View</button>
-                                        {/* <button className="edit-btn">Edit</button> */}
+                                        {/* <button
+                                            className="view-btn"
+                                            onClick={() => navigate("/bgv-view", { state: { data: req } })}
+                                        >
+                                            View
+                                        </button> */}
+                                        <button
+                                            className="view-btn"
+                                            onClick={() =>
+                                                navigate("/bgv-view", {
+                                                    state: { data: req, mode: "view" }
+                                                })
+                                            }
+                                        >
+                                            View
+                                        </button>
+                                        {
+                                            user.role === 'user' ? <button
+                                                className="edit-btn"
+                                                onClick={() =>
+                                                    navigate(`/bgv-view`, {
+                                                        state: { data: req, mode: "edit", role: user.role }
+                                                    })
+                                                }
+                                            >
+                                                Edit
+                                            </button> : <button
+                                                className="edit-btn"
+                                                onClick={() =>
+                                                    navigate(`/bgv-update/${req.id}`)
+                                                }
+                                            >
+                                                Edit
+                                            </button>
+                                        }
+
                                     </td>
                                 </tr>
                             ))

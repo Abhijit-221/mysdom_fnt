@@ -11,7 +11,7 @@ function BgvRequestForm() {
   const [step, setStep] = useState(1);
 
   const [form, setForm] = useState({
-    clientId:"",
+    clientId: "",
     candidate_name: "",
     candidate_phone: "",
     candidate_email: "",
@@ -37,13 +37,13 @@ function BgvRequestForm() {
     gender: "",
     dob: "",
 
-    company_name: "",
-    employee_id: "",
-    employment_start: "",
-    employment_end: "",
-    job_title: "",
-    leaving_reason: "",
-    job_doc: null,
+    // company_name: "",
+    // employee_id: "",
+    // employment_start: "",
+    // employment_end: "",
+    // job_title: "",
+    // leaving_reason: "",
+    // job_doc: null,
 
     institute_name: "",
     university: "",
@@ -54,9 +54,25 @@ function BgvRequestForm() {
     specialization: "",
     passing_year: "",
     edu_doc: null,
-    assignedTo:"",
+    assignedTo: "",
     service: []
   });
+
+  /* ============================
+     EMPLOYMENT MULTIPLE STATE
+  ============================ */
+
+  const [employments, setEmployments] = useState([
+    {
+      company_name: "",
+      employee_id: "",
+      employment_start: "",
+      employment_end: "",
+      job_title: "",
+      leaving_reason: "",
+      job_doc: null
+    }
+  ]);
 
   const [services, setServices] = useState([]);
   // const [selectedService, setSelectedService] = useState("");
@@ -106,7 +122,86 @@ function BgvRequestForm() {
     }
   };
 
-  
+  /* ============================
+      EMPLOYMENT HANDLERS
+  ============================ */
+
+  const handleEmploymentChange = (index, e) => {
+
+    const { name, value, type, checked } = e.target;
+
+    let updated = [...employments];
+
+    if (type === "checkbox") {
+
+      updated[index][name] = checked;
+
+      if (checked) {
+        updated[index].employment_end = "";
+      }
+
+    } else {
+
+      updated[index][name] = value;
+
+    }
+
+    setEmployments(updated);
+  };
+
+  const handleEmploymentFile = (index, e) => {
+
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    if (!validateFile(file)) {
+      e.target.value = "";
+      return;
+    }
+
+    const updated = [...employments];
+    updated[index].job_doc = file;
+
+    setEmployments(updated);
+  };
+
+  const addEmployment = () => {
+    setEmployments([
+      ...employments,
+      {
+        company_name: "",
+        employee_id: "",
+        employment_start: "",
+        employment_end: "",
+        job_title: "",
+        leaving_reason: "",
+        isCurrent: false,
+        job_doc: null
+      }
+    ])
+  }
+  const removeEmployment = (index) => {
+    const updated = employments.filter((_, i) => i !== index);
+    setEmployments(updated);
+  }
+  const isLastEmploymentFilled = () => {
+
+    const last = employments[employments.length - 1];
+
+    if (
+      !last.company_name ||
+      !last.employee_id ||
+      !last.employment_start ||
+      !last.job_title
+    ) {
+      return false;
+    }
+
+    return true;
+  };
+
+
   useEffect(() => {
     fetchServices();
     fetchUser();
@@ -147,89 +242,108 @@ function BgvRequestForm() {
   };
 
   const [asignTouser, setAsignTouser] = useState("");
-const [clientId, setClientId] = useState("");
+  const [clientId, setClientId] = useState("");
 
-const fetchUser = async () => {
-  try {
+  const fetchUser = async () => {
+    try {
 
-    const user = JSON.parse(localStorage.getItem("user"));
+      const user = JSON.parse(localStorage.getItem("user"));
 
-    const respUser = await axiosInstance.get("/auth/users/get");
+      const respUser = await axiosInstance.get("/auth/users/get");
 
-    const users = respUser.data.data;
+      const users = respUser.data.data;
 
-    users.forEach((u) => {
+      users.forEach((u) => {
 
-      if (u.role === "superadmin") {
-        setAsignTouser(u.id);
-      }
+        if (u.role === "superadmin") {
+          setAsignTouser(u.id);
+        }
 
-      if (user.id === u.id) {
-        // console.log(user.id,'--',u.id,u.client);
-        setClientId(u.client);
-      }
+        if (user.id === u.id) {
+          // console.log(user.id,'--',u.id,u.client);
+          setClientId(u.client);
+        }
 
-    });
-    // setForm({ ...form, assignedTo:asignTouser ,clientId:clientId });
-    console.log("form:",asignTouser);
+      });
+      // setForm({ ...form, assignedTo:asignTouser ,clientId:clientId });
+      console.log("form:", asignTouser);
 
-  } catch (error) {
-    console.error(error);
-  }
-};
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const submitForm = async () => {
-  try {
+    try {
 
-    const formData = new FormData();
+      const formData = new FormData();
 
-    Object.entries(form).forEach(([key, value]) => {
+      Object.entries(form).forEach(([key, value]) => {
 
-      if (value === "" || value === null) return;
+        if (value === "" || value === null) return;
 
-      // ❗ skip service because we will append it separately
-      if (key === "service") return;
+        // ❗ skip service because we will append it separately
+        if (key === "service") return;
 
-      formData.append(key, value);
-    });
+        formData.append(key, value);
+      });
 
-    formData.append("clientId", clientId);
-    formData.append("assignedTo", asignTouser);
+      /* EMPLOYMENT ARRAY */
 
-    // ✅ append services as array
-    selectedServices.forEach((serviceId) => {
-      formData.append("service", serviceId);
-    });
+      employments.forEach((emp, index) => {
 
-    const res = await axiosInstance.post("/bgvrequest/apply", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+        Object.entries(emp).forEach(([key, value]) => {
 
-    navigate("/bgv/list");
+          if (value === "" || value === null) return;
 
-  } catch (error) {
-    console.log(error);
+          if (key === "job_doc") {
+            formData.append(`bgvEmployments[${index}][job_doc]`, value);
+          }
+          else {
+            formData.append(`bgvEmployments[${index}][${key}]`, value);
+          }
 
-    let message = "Failed to submit form";
+        })
 
-    // backend error
-    if (error.response) {
-      message = error.response?.data?.message || `Error ${error.response.status}`;
+      });
+
+      formData.append("clientId", clientId);
+      formData.append("assignedTo", asignTouser);
+
+      // ✅ append services as array
+      selectedServices.forEach((serviceId) => {
+        formData.append("service", serviceId);
+      });
+
+      const res = await axiosInstance.post("/bgvrequest/apply", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      navigate("/bgv/list");
+
+    } catch (error) {
+      console.log(error);
+
+      let message = "Failed to submit form";
+
+      // backend error
+      if (error.response) {
+        message = error.response?.data?.message || `Error ${error.response.status}`;
+      }
+      // request sent but no response
+      else if (error.request) {
+        message = "Server not responding. Please try again.";
+      }
+      // axios or other error
+      else {
+        message = error.message;
+      }
+
+      toast.error(message);
     }
-    // request sent but no response
-    else if (error.request) {
-      message = "Server not responding. Please try again.";
-    }
-    // axios or other error
-    else {
-      message = error.message;
-    }
-
-    toast.error(message);
-  }
-};
+  };
 
   return (
     <div className="bgv-overlay">
@@ -371,20 +485,111 @@ const fetchUser = async () => {
 
         {/* EMPLOYMENT */}
 
+        {/* ============================
+      EMPLOYMENT STEP
+============================ */}
+
         {step === 5 && (
+
           <div className="form-section">
 
             <h4>Employment Check</h4>
 
-            <div className="form-grid">
-              <input name="company_name" placeholder="Company Name" onChange={handleChange} />
-              <input name="employee_id" placeholder="Employee ID" onChange={handleChange} />
-              <input type="date" name="employment_start" onChange={handleChange} />
-              <input type="date" name="employment_end" onChange={handleChange} />
-              <input name="job_title" placeholder="Job Title" onChange={handleChange} />
-              <input name="leaving_reason" placeholder="Reason for Leaving" onChange={handleChange} />
-              <input type="file" name="job_doc" onChange={handleFile} />
-            </div>
+            {employments.map((emp, index) => (
+
+              <div key={index} className="employment-card">
+
+                <h5>Organization {index + 1}</h5>
+
+                <div className="form-grid">
+
+                  <input
+                    name="company_name"
+                    placeholder="Company Name"
+                    value={emp.company_name}
+                    onChange={(e) => handleEmploymentChange(index, e)}
+                  />
+
+                  <input
+                    name="employee_id"
+                    placeholder="Employee ID"
+                    value={emp.employee_id}
+                    onChange={(e) => handleEmploymentChange(index, e)}
+                  />
+
+                  <input
+                    type="date"
+                    name="employment_start"
+                    value={emp.employment_start}
+                    onChange={(e) => handleEmploymentChange(index, e)}
+                  />
+                  <label className="current-check">
+
+                    <input
+                      type="checkbox"
+                      name="is_current"
+                      checked={emp.is_current}
+                      disabled={
+                        employments.some((e, i) => e.is_current && i !== index)
+                      }
+                      onChange={(e) => handleEmploymentChange(index, e)}
+                    />
+
+                    Currently work here
+
+                  </label>
+                  {!emp.is_current && (
+                    <input
+                      type="date"
+                      name="employment_end"
+                      value={emp.employment_end}
+                      onChange={(e) => handleEmploymentChange(index, e)}
+                    />
+                  )}
+
+                  <input
+                    name="job_title"
+                    placeholder="Job Title"
+                    value={emp.job_title}
+                    onChange={(e) => handleEmploymentChange(index, e)}
+                  />
+
+                  <input
+                    name="leaving_reason"
+                    placeholder="Reason for Leaving"
+                    value={emp.leaving_reason}
+                    onChange={(e) => handleEmploymentChange(index, e)}
+                  />
+
+                  <input
+                    type="file"
+                    onChange={(e) => handleEmploymentFile(index, e)}
+                  />
+
+                </div>
+
+                {employments.length > 1 && (
+
+                  <button
+                    className="remove-btn"
+                    onClick={() => removeEmployment(index)}
+                  >
+                    Remove
+                  </button>
+
+                )}
+
+              </div>
+
+            ))}
+
+            <button
+              className="ad-btn"
+              onClick={addEmployment}
+              disabled={!isLastEmploymentFilled()}
+            >
+              + Add Organization
+            </button>
 
             <div className="form-footer">
               <button onClick={back}>Back</button>
