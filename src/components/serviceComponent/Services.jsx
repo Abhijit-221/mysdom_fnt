@@ -63,6 +63,54 @@ function Services() {
             logo: <Users size={30} />
         },
     ];
+
+
+    // mail config
+    const [form, setForm] = useState({
+        fullName: "",
+        email: "",
+        subject: "Consultation",
+        message: "",
+    });
+    const [status, setStatus] = useState("idle"); // idle | loading | success | error
+    const [errorMsg, setErrorMsg] = useState("");
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        const { fullName, email, subject, message } = form;
+
+        if (!fullName || !email || !subject || !message) {
+            setErrorMsg("Please fill in all fields.");
+            setStatus("error");
+            return;
+        }
+
+        setStatus("loading");
+        setErrorMsg("");
+
+        try {
+            const response = await axiosInstance.post("/mail/send", { fullName, email, subject, message });
+            const data = response.data;
+
+            if (data.success === true) {
+                setStatus("success");
+                setForm({ fullName: "", email: "", subject: "", message: "" });
+                setTimeout(() => setStatus("idle"), 5000);
+            } else {
+                setErrorMsg(data.error || "Something went wrong. Please try again.");
+                setStatus("error");
+            }
+        } catch (err) {
+            console.log("Error sending contact form:", err);
+            setErrorMsg("Unable to reach the server. Please try again later.");
+            setStatus("error");
+        }
+    };
+
+
     return (
         <div>
 
@@ -148,38 +196,56 @@ function Services() {
                     <h2>Free Consultation</h2>
                 </div>
 
-                <form className='quote-form'
-                // onSubmit={handleSubmit}
-                >
-                    <input
-                        type="text"
-                        name="name"
-                        placeholder="Full Name"
-                        // value={form.name}
-                        // onChange={handleChange}
-                        required
-                    />
+                 <form className="quote-form" onSubmit={handleSubmit} noValidate>
+                            <div className="cu-input-row">
+                                <input
+                                    type="text"
+                                    name="fullName"
+                                    placeholder="Full Name"
+                                    value={form.fullName}
+                                    onChange={handleChange}
+                                    disabled={status === "loading"}
+                                    required
+                                />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="Email Address"
+                                    value={form.email}
+                                    onChange={handleChange}
+                                    disabled={status === "loading"}
+                                    required
+                                />
+                            </div>
 
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder="Email Address"
-                        // value={form.email}
-                        // onChange={handleChange}
-                        required
-                    />
+                            <input
+                                type="text"
+                                name="message"
+                                placeholder="Subject"
+                                value={form.message}
+                                onChange={handleChange}
+                                disabled={status === "loading"}
+                                required
+                            />
 
-                    <input
-                        type="text"
-                        name="subject"
-                        placeholder="Subject"
-                        // value={form.subject}
-                        // onChange={handleChange}
-                        required
-                    />
+                            {/* <textarea
+                                name="message"
+                                placeholder="Message"
+                                rows="5"
+                                value={form.message}
+                                onChange={handleChange}
+                                disabled={status === "loading"}
+                                required
+                            ></textarea> */}
 
-                    <button type="submit" className='quote-form button'>FREE CONSULTING<ChevronsRight/></button>
-                </form>
+                            <button
+                                type="submit"
+                                className="cu-submit-btn"
+                                disabled={status === "loading"}
+                            >
+                                {status === "loading" ? "SENDING..." : "SUBMIT MESSAGE »"}
+                            </button>
+                        </form>
             </div>
             {/* bottom section            */}
             <section className="svc-bottom-section">
