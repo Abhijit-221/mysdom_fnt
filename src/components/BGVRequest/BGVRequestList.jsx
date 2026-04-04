@@ -3,7 +3,7 @@ import "./bgvRequestList.css";
 import axiosInstance from "../../api/axiosInstance";
 import Pagination from "../commn/Pagination";
 import SearchBox from "../commn/SearchBox";
-import { Search } from "lucide-react";
+import { DownloadIcon, Edit, Search, ViewIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 function BgvRequestList() {
@@ -92,9 +92,9 @@ function BgvRequestList() {
                             </a>
                         )}
 
-                        <a className="batch-download-link" href="/batch/upload">
+                        {/* <a className="batch-download-link" href="/batch/upload">
                             ⬇️ Report download
-                        </a>
+                        </a> */}
                     </div>
                 </div>
             </div>
@@ -106,6 +106,7 @@ function BgvRequestList() {
                         <tr>
                             <th>Sl no</th>
                             <th>Candidate Name</th>
+                            <th>Request No</th>
                             <th>Company</th>
                             <th>Email</th>
                             <th>Phone</th>
@@ -127,6 +128,7 @@ function BgvRequestList() {
                                 <tr key={req.id}>
                                     <td>{index + 1}</td>
                                     <td>{req.candidate_name}</td>
+                                    <td>{req.req_code}</td>
                                     <td>{req.client.companyName}</td>
                                     <td>{req.candidate_email}</td>
                                     <td>{req.candidate_phone}</td>
@@ -152,7 +154,7 @@ function BgvRequestList() {
                                                 })
                                             }
                                         >
-                                            View
+                                            <ViewIcon size={16} />
                                         </button>
                                         {
                                             user.role === 'user' ? <button
@@ -163,16 +165,26 @@ function BgvRequestList() {
                                                     })
                                                 }
                                             >
-                                                Edit
+                                                <Edit size={16} />
                                             </button> : <button
                                                 className="edit-btn"
                                                 onClick={() =>
                                                     navigate(`/bgv-update/${req.id}`)
                                                 }
                                             >
-                                                Edit
+                                                <Edit size={16} />
                                             </button>
                                         }
+                                        <button
+                                            className="download-btn"
+                                            onClick={() =>
+                                                navigate("/bgv-report", {
+                                                    state: { data: req, mode: "report" }
+                                                })
+                                            }
+                                        >
+                                            <DownloadIcon size={16} />
+                                        </button>
 
                                     </td>
                                 </tr>

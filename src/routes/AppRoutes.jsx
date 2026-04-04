@@ -28,6 +28,8 @@ import Product from "../components/Product/Product";
 import ServiceDetailPage from "../components/serviceComponent/ServiceDetailPage";
 import UpdateService from "../components/serviceComponent/UpdateService";
 import CreateService from "../components/serviceComponent/CreateService";
+import ForgotPassword from "../pages/ForgotPassword";
+import BGVReportPage from "../components/BGVRequest/BGVReport";
 
 
 
@@ -131,12 +133,20 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
         />
+        <Route path="/bgv-report" element={
+          <ProtectedRoute>
+            <BGVReportPage />
+          </ProtectedRoute>
+        }
+        />
       </Route>
 
       {/* Auth Pages */}
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+
       </Route>
 
 

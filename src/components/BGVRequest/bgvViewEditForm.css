@@ -1,0 +1,579 @@
+/* ═══════════════════════════════════════════════════
+   BGV View / Edit Request Form — Stylesheet
+   Dark glassmorphism design
+═══════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+/* ── Root ── */
+/* .bgv-root {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px 80px;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+} */
+.bgv-root {
+  position: fixed;
+  inset: 0;
+  background: rgba(13, 34, 56, 0.65);
+  backdrop-filter: blur(4px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 1000;
+  padding: 16px;
+
+  overflow-y: auto; /* ✅ allow scrolling */
+}
+
+/* ── Card ── */
+.bgv-card {
+  width: 100%;
+  max-width: 780px;
+  max-height: 90vh;
+  background: #ffffff;
+  overflow-y: auto;
+  border: 1px solid rgba(105, 101, 101, 0.088);
+  border-radius: 14px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 40px 44px;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Header ── */
+.bgv-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.bgv-header-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.bgv-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a3c5e;
+  letter-spacing: -0.5px;
+}
+
+.bgv-header p {
+  margin: 0;
+  font-size: 13px;
+  color: #1c2531;
+}
+
+/* ══════════════════════════
+   STEPPER
+══════════════════════════ */
+.bgv-stepper {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 32px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.bgv-stepper::-webkit-scrollbar { display: none; }
+
+.bgv-step-item {
+  flex: 1;
+  min-width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: default;
+  opacity: 0.38;
+  transition: opacity 0.2s;
+}
+.bgv-step-item.active,
+.bgv-step-item.done { opacity: 1; }
+
+.bgv-step-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(63, 50, 50, 0.549);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #25292d;
+  font-weight: 700;
+  transition: all 0.25s;
+}
+.bgv-step-item.active .bgv-step-dot {
+  background: rgba(242, 109, 162, 0.685);
+  /* border-color: rgb(240, 132, 176);; */
+  color: #0d2238;
+}
+.bgv-step-item.done .bgv-step-dot {
+  background: rgb(240, 132, 176);
+  border: none;
+  color: #fff;
+}
+
+.bgv-step-label {
+  font-size: 10px;
+  color: #1d2127;
+  font-weight: 400;
+  text-align: center;
+  white-space: nowrap;
+}
+.bgv-step-item.active .bgv-step-label {
+  color: #16171d;
+  font-weight: 600;
+}
+
+/* ══════════════════════════
+   SECTION TITLE
+══════════════════════════ */
+.bgv-section-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #424a55;
+  margin: 0 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bgv-section-badge {
+  width: 4px;
+  height: 18px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #6366f1, #8b5cf6);
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════
+   GRID LAYOUTS
+══════════════════════════ */
+.bgv-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.bgv-address-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* ══════════════════════════
+   ADDRESS SECTION BOX
+══════════════════════════ */
+.bgv-section-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(172, 165, 165, 0.5);
+  border-radius: 12px;
+  padding: 20px 20px 12px;
+  margin-bottom: 16px;
+}
+
+.bgv-section-box-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin: 0 0 14px;
+}
+
+/* ══════════════════════════
+   FORM FIELDS
+══════════════════════════ */
+.bgv-field {
+  margin-bottom: 18px;
+}
+
+.bgv-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.bgv-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(72, 68, 68, 0.719);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #282d31;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.bgv-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+}
+
+.bgv-input.error {
+  border-color: #ef4444;
+}
+
+.bgv-input.error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18);
+}
+
+.bgv-input[type="file"] {
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.bgv-input[type="file"]::file-selector-button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1.5px solid rgba(99, 102, 241, 0.5);
+  background: rgba(99, 102, 241, 0.1);
+  color: #818cf8;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: all 0.2s;
+}
+
+.bgv-input[type="file"]::file-selector-button:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.bgv-error-text {
+  font-size: 12px;
+  color: #f87171;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ══════════════════════════
+   EMPLOYMENT BOX
+══════════════════════════ */
+.bgv-emp-box {
+  background: rgba(99, 102, 241, 0.06);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  border-radius: 14px;
+  padding: 24px 24px 16px;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.bgv-emp-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #a5b4fc;
+  margin: 0 0 14px;
+}
+
+/* ── Checkbox row ── */
+.bgv-check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.bgv-check-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #424346d5;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.bgv-check-row label {
+  font-size: 13px;
+  color: #3b424b;
+  cursor: pointer;
+}
+
+.bgv-emp-remove-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ── Add employment button ── */
+.bgv-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1.5px dashed rgba(99, 102, 241, 0.5);
+  color: #818cf8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.bgv-add-btn:hover {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+}
+
+/* ── Remove button ── */
+.bgv-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 14px;
+  border-radius: 7px;
+  border: none;
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 10px;
+  font-family: inherit;
+}
+
+.bgv-remove-btn:hover {
+  background: rgba(239, 68, 68, 0.22);
+}
+
+/* ══════════════════════════
+   SERVICES GRID
+══════════════════════════ */
+.bgv-services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.bgv-service-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.18s;
+  user-select: none;
+}
+
+.bgv-service-chip:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  background: rgba(99, 102, 241, 0.06);
+}
+
+.bgv-service-chip.selected {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.14);
+  color: #a5b4fc;
+  font-weight: 600;
+}
+
+/* ══════════════════════════
+   FILE LINK / CHIP
+══════════════════════════ */
+.bgv-file-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 7px 12px;
+  border-radius: 7px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: #818cf8;
+  font-size: 12px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.bgv-file-link:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.bgv-file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 7px 12px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+/* ══════════════════════════
+   REVIEW CARDS
+══════════════════════════ */
+.bgv-review-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 20px 22px;
+  margin-bottom: 14px;
+}
+
+.bgv-review-title {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #818cf8;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.bgv-review-row {
+  display: flex;
+  gap: 6px;
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 7px;
+  line-height: 1.5;
+}
+
+.bgv-review-key {
+  font-weight: 600;
+  color: #e2e8f0;
+  min-width: 140px;
+  flex-shrink: 0;
+}
+
+.bgv-review-empty {
+  color: #475569;
+  font-style: italic;
+}
+
+.bgv-review-divider {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin: 16px 0;
+}
+
+.bgv-service-tick {
+  color: #10b981;
+  margin-right: 6px;
+}
+
+.bgv-service-no-selection {
+  color: #475569;
+  font-style: italic;
+  font-size: 13px;
+}
+
+/* ══════════════════════════
+   NAVIGATION BUTTONS
+══════════════════════════ */
+.bgv-btn-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.bgv-right-btns {
+  display: flex;
+  gap: 10px;
+}
+
+.bgv-btn {
+  padding: 10px 20px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: filter 0.2s, opacity 0.2s;
+}
+
+.bgv-btn:hover:not(:disabled) { filter: brightness(1.12); }
+.bgv-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.bgv-btn-back {
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  color: #64748b;
+}
+
+.bgv-btn-prev {
+  border: 1.5px solid rgba(99, 102, 241, 0.4);
+  background: transparent;
+  color: #818cf8;
+}
+
+.bgv-btn-next {
+  border: none;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+}
+
+.bgv-btn-update {
+  border: none;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+}
+
+/* ══════════════════════════
+   RESPONSIVE
+══════════════════════════ */
+@media (max-width: 600px) {
+  .bgv-card {
+    padding: 24px 20px;
+  }
+
+  .bgv-two-col,
+  .bgv-address-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bgv-review-key {
+    min-width: 110px;
+  }
+}

@@ -1,29 +1,83 @@
-/* update status section */
-/* 🔹 Container */
+/* ─────────────────────────────────────────
+   BGVStatusUpdate.css
+   Deep navy + rose/pink accent  |  Prefix: bsu-
+───────────────────────────────────────── */
+
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap");
+
+:root {
+  --bsu-primary:      #1a3c5e;
+  --bsu-primary-dark: #0d2238;
+  --bsu-accent:       #f6608d;
+  --bsu-accent2:       #e893ad;
+  --bsu-accent-hover: rgba(255, 135, 171, 0.932);
+  --bsu-accent-light: #f0dbbf;
+  --bsu-accent-pale:  #fdf6ed;
+  --bsu-bg:           #f4f2ee;
+  --bsu-surface:      #ffffff;
+  --bsu-surface-2:    #faf8f5;
+  --bsu-text:         #1e1e1e;
+  --bsu-muted:        #6b7280;
+  --bsu-border:       #e2ddd5;
+  --bsu-error:        #dc2626;
+  --bsu-success:      #166534;
+  --font-display:      "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --font-body:         "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --bsu-radius-sm:    5px;
+  --bsu-radius:       8px;
+  --bsu-radius-lg:    14px;
+  --bsu-shadow:       0 4px 20px rgba(26, 60, 94, 0.08);
+  --bsu-shadow-lg:    0 16px 60px rgba(26, 60, 94, 0.14);
+  --bsu-transition:   0.22s ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ══════════════════════════════════════
+   ADMIN SECTION  (main wrapper)
+══════════════════════════════════════ */
 .admin-section {
-  background: #ffffff;
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  background: var(--bsu-surface);
+  padding: 28px;
+  border-radius: var(--bsu-radius-lg);
+  box-shadow: var(--bsu-shadow);
   margin-top: 20px;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-body);
+  animation: bsuFadeUp 0.3s ease;
+  
 }
 
-/* 🔹 Headings */
+/* ══════════════════════════════════════
+   HEADINGS
+══════════════════════════════════════ */
 .admin-section h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--bsu-primary);
   margin-bottom: 16px;
-  color: #2c3e50;
-  font-weight: 600;
 }
 
-/* 🔹 Request Header */
+/* ══════════════════════════════════════
+   REQUEST HEADER
+══════════════════════════════════════ */
 .request-header {
-  margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 28px;
+  padding: 20px;
+  background: var(--bsu-accent2);
+  /* border-bottom: 1px solid var(--bsu-border); */
+  border-radius: var(--bsu-radius);
+  
 }
 
-/* 🔹 Request Info Grid */
+.request-header h3 {
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--bsu-accent-light);
+  display: inline-block;
+}
+
+/* ── Info grid ── */
 .request-info {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -32,103 +86,303 @@
 
 .request-info p {
   margin: 0;
-  font-size: 14px;
-  color: #555;
-  background: #f8f9fb;
-  padding: 10px 12px;
-  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--bsu-text);
+  /* background: var(--bsu-accent-pale); */
+  /* border: 1px solid var(--bsu-accent-light); */
+  padding: 10px 14px;
+  border-radius: var(--bsu-radius);
+  line-height: 1.5;
+  
 }
 
-/* 🔹 Table */
+.request-info p b {
+  color: var(--bsu-primary);
+  font-weight: 600;
+  display: block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 2px;
+}
+
+/* ── Overall status badge inside info ── */
+.bsu-status-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.badge-new      { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.badge-progress { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+.badge-hold     { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
+.badge-done     { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.badge-rejected { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+/* ══════════════════════════════════════
+   TABLE
+══════════════════════════════════════ */
+.table-section {
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 20px;
+  background: var(--bsu-surface-2);
+    border-radius: var(--bsu-radius);
+
+}
 .service-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
+  font-size: 0.87rem;
 }
 
-/* 🔹 Table Header */
+/* ── Header ── */
 .service-table thead {
-  background: #f4f6f9;
+  background: var(--bsu-surface-2);
+  border-bottom: 2px solid var(--bsu-border);
 }
 
 .service-table th {
   text-align: left;
-  padding: 12px;
-  font-size: 14px;
-  color: #333;
-  font-weight: 600;
-  border-bottom: 2px solid #e5e7eb;
+  padding: 12px 14px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--bsu-primary);
+  white-space: nowrap;
 }
 
-/* 🔹 Table Body */
+/* ── Body ── */
 .service-table td {
-  padding: 12px;
-  border-bottom: 1px solid #eee;
-  font-size: 14px;
-  color: #444;
+  padding: 14px;
+  border-bottom: 1px solid var(--bsu-border);
+  color: var(--bsu-text);
+  vertical-align: top;
 }
 
-/* 🔹 Row Hover */
-.service-table tbody tr:hover {
-  background-color: #fafafa;
-  transition: 0.2s ease;
+.service-table tbody tr:last-child td { border-bottom: none; }
+
+.service-table tbody tr {
+  transition: background var(--bsu-transition);
 }
 
-/* 🔹 Inputs & Select */
+.service-table tbody tr:hover { background: var(--bsu-surface-2); }
+
+/* dirty row = has unsaved changes */
+.service-table tbody tr.row-dirty {
+  background: #fffdf8;
+  border-left: 3px solid var(--bsu-accent);
+}
+
+/* service name */
+.service-name {
+  font-weight: 600;
+  color: var(--bsu-primary);
+}
+
+/* ══════════════════════════════════════
+   INPUTS & SELECT
+══════════════════════════════════════ */
 .service-table select,
-.service-table input {
+.service-table input[type="text"] {
+  font-family: var(--font-body);
   width: 100%;
-  padding: 7px 10px;
-  font-size: 13px;
-  border-radius: 6px;
-  border: 1px solid #dcdfe6;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  color: var(--bsu-text);
+  background: var(--bsu-surface-2);
+  border: 1.5px solid var(--bsu-border);
+  border-radius: var(--bsu-radius-sm);
   outline: none;
-  transition: all 0.2s ease;
+  transition: border-color var(--bsu-transition), box-shadow var(--bsu-transition), background var(--bsu-transition);
+  appearance: none;
+  -webkit-appearance: none;
 }
 
-/* Focus effect */
 .service-table select:focus,
-.service-table input:focus {
-  border-color: #409eff;
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.15);
+.service-table input[type="text"]:focus {
+  border-color: var(--bsu-accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(246, 96, 141, 0.12);
 }
 
-/* 🔹 Button */
-.update-btn {
-  padding: 6px 14px;
-  font-size: 13px;
-  background: linear-gradient(135deg, #409eff, #66b1ff);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.25s ease;
+.service-table input[type="text"]::placeholder { color: #b0a99e; }
+
+/* ── Status select font weight ── */
+.service-table td:nth-child(2) select { font-weight: 600; }
+
+/* ══════════════════════════════════════
+   DOC CELL
+══════════════════════════════════════ */
+.doc-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
 }
 
-/* Hover */
-.update-btn:hover {
-  background: linear-gradient(135deg, #337ecc, #409eff);
-  transform: translateY(-1px);
-}
-
-/* Active */
-.update-btn:active {
-  transform: scale(0.97);
-}
-
-/* 🔹 Status Highlight (Optional Bonus) */
-.service-table td:nth-child(2) select {
+/* existing saved file link */
+.file-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.73rem;
   font-weight: 500;
+  color: var(--bsu-success);
+  text-decoration: none;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  white-space: nowrap;
+  max-width: 155px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background var(--bsu-transition);
 }
 
-/* 🔹 Responsive */
+.file-pill:hover { background: #dcfce7; }
+
+.no-file {
+  font-size: 0.73rem;
+  color: var(--bsu-muted);
+  font-style: italic;
+}
+
+/* custom file picker */
+.file-pick-label { display: inline-block; cursor: pointer; }
+
+.file-pick-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--bsu-primary);
+  padding: 4px 11px;
+  border-radius: var(--bsu-radius-sm);
+  border: 1.5px dashed var(--bsu-accent-light);
+  background: var(--bsu-accent-pale);
+  transition: border-color var(--bsu-transition), background var(--bsu-transition);
+  white-space: nowrap;
+  max-width: 155px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-pick-label:hover .file-pick-btn {
+  border-color: var(--bsu-accent);
+  background: #fef0f5;
+}
+
+/* hide native file input */
+.file-pick-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* "new file ready" badge */
+.new-file-badge {
+  display: inline-block;
+  font-size: 0.63rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+
+/* ══════════════════════════════════════
+   UPDATE BUTTON
+══════════════════════════════════════ */
+.update-btn {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 7px 18px;
+  border-radius: var(--bsu-radius-sm);
+  border: 1.5px solid var(--bsu-border);
+  background: transparent;
+  color: var(--bsu-muted);
+  cursor: not-allowed;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 100px;
+  transition: background var(--bsu-transition), border-color var(--bsu-transition),
+              color var(--bsu-transition), transform var(--bsu-transition),
+              box-shadow var(--bsu-transition);
+}
+
+.update-btn.btn-active {
+  background: var(--bsu-accent);
+  border-color: var(--bsu-accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.update-btn.btn-active:hover:not(:disabled) {
+  background: var(--bsu-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(246, 96, 141, 0.30);
+}
+
+.update-btn:active { transform: scale(0.97); }
+
+.update-btn:disabled { opacity: 0.65; }
+
+/* ── Spinner ── */
+.bsu-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  animation: bsuSpin 0.7s linear infinite;
+}
+
+/* ══════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════ */
+@keyframes bsuFadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bsuSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ══════════════════════════════════════
+   SCROLLBAR
+══════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: #d4c9bb; border-radius: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ══════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════ */
 @media (max-width: 768px) {
-  .request-info {
-    grid-template-columns: 1fr;
-  }
+  .admin-section { padding: 18px; }
+  .request-info  { grid-template-columns: 1fr; }
 
   .service-table th,
-  .service-table td {
-    padding: 10px;
-  }
+  .service-table td { padding: 10px; }
 }

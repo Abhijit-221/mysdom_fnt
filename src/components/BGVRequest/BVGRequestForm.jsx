@@ -433,10 +433,11 @@ function BgvRequestForm() {
 
       formData.append("clientId", clientId);
       formData.append("assignedTo", assignedTo);
-
-      selectedServices.forEach((serviceId) => {
-        formData.append("service", serviceId);
+      console.log("Selected services on submit:", selectedServices);
+      selectedServices.forEach((id) => {
+        formData.append("service[]", id);
       });
+      console.log('formData:',formData);
 
       await axiosInstance.post("/bgvrequest/apply", formData, {
         headers: { "Content-Type": "multipart/form-data" },

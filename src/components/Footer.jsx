@@ -3,8 +3,10 @@ import "./footer.css";
 import { PiLinkedinLogo } from "react-icons/pi";
 import { BsTwitter } from "react-icons/bs";
 import axiosInstance from "../api/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 const Footer = () => {
+  const navigate = useNavigate();
 
   const [services,setServices] = React.useState([]);
   useEffect(()=>{
@@ -59,7 +61,7 @@ const Footer = () => {
           <ul>
             {
               services.map((service) => (
-                <li key={service.id}>{service.name}</li>
+                <li key={service.id} onClick={()=>navigate(`/service/detail/${service.id}`)}>{service.name}</li>
               ))
             }
             {/* <li>Regular Employee Verification</li>

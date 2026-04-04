@@ -78,7 +78,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 22px 28px 18px;
-  background: var(--bgv-primary);
+  background: var(--bgv-accent-pale);
   border-radius: var(--bgv-radius-lg) var(--bgv-radius-lg) 0 0;
   position: sticky;
   top: 0;
@@ -89,18 +89,18 @@
   font-family: var(--font-display);
   font-size: 1.25rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--bgv-text);
 }
 
 .bgv-header-sub {
   font-size: 0.72rem;
-  color: rgba(255,255,255,0.55);
+  color: rgba(24, 23, 23, 0.55);
   margin-top: 2px;
   letter-spacing: 0.05em;
 }
 
 .bgv-close-btn {
-  background: rgba(255,255,255,0.1);
+  background: rgba(25, 22, 22, 0.595);
   border: none;
   color: #fff;
   width: 32px;
@@ -115,7 +115,7 @@
   flex-shrink: 0;
 }
 
-.bgv-close-btn:hover { background: rgba(255,255,255,0.22); }
+.bgv-close-btn:hover { background: rgb(255, 0, 0); }
 
 /* ══════════════════════════════════════════
    STEP BAR  — clickable tabs
@@ -123,10 +123,11 @@
 .bgv-steps {
   display: flex;
   align-items: stretch;
-  background: var(--bgv-primary-dark);
+  background: transparent;
   overflow-x: auto;
   scrollbar-width: none;
   border-bottom: 2px solid rgba(255,255,255,0.06);
+  color: var(--bgv-primary);
 }
 
 .bgv-steps::-webkit-scrollbar { display: none; }
@@ -155,7 +156,7 @@
   transition: background var(--bgv-transition);
 }
 
-.bgv-step-btn:hover { background: rgba(255,255,255,0.06); }
+.bgv-step-btn:hover { background: rgba(255, 255, 255, 0); }
 
 .bgv-step-btn.active::after  { background: var(--bgv-accent); }
 .bgv-step-btn.done::after    { background: rgba(238, 60, 116, 0.966); }
@@ -164,8 +165,8 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.45);
+  background: rgba(123, 117, 117, 0.12);
+  color: rgba(80, 75, 75, 0.855);
   font-size: 0.7rem;
   font-weight: 700;
   display: flex;
@@ -176,7 +177,7 @@
 
 .bgv-step-btn.active .bgv-step-circle {
   background: var(--bgv-accent);
-  color: #fff;
+  color: #0d2238;
 }
 
 .bgv-step-btn.done .bgv-step-circle {
@@ -187,7 +188,7 @@
 .bgv-step-label {
   font-size: 0.65rem;
   font-weight: 500;
-  color: rgba(255,255,255,0.4);
+  color: var(--bgv-primary);
   letter-spacing: 0.04em;
   white-space: nowrap;
   transition: color var(--bgv-transition);
@@ -628,15 +629,15 @@
 }
 
 .btn-next {
-  background: var(--bgv-primary);
+  background: var(--bgv-accent);
   color: #fff;
   margin-left: auto;
 }
 
 .btn-next:hover {
-  background: var(--bgv-primary-dark);
+  background: rgba(255, 93, 141, 0.871);
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(26,60,94,0.22);
+  box-shadow: 0 4px 14px rgba(255, 93, 141, 0.871);
 }
 
 .btn-submit {
