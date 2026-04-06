@@ -37,8 +37,8 @@ const validateStep = (step, formData, selectedServices) => {
   }
 
   if (step === 2) {
-    if (!formData.id_type?.trim())   errs.id_type   = "ID type is required";
-    if (!formData.id_number?.trim()) errs.id_number = "ID number is required";
+    // if (!formData.id_type?.trim())   errs.id_type   = "ID type is required";
+    // if (!formData.id_number?.trim()) errs.id_number = "ID number is required";
   }
 
   if (step === 4) {

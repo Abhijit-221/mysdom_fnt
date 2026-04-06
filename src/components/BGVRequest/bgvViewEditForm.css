@@ -52,13 +52,15 @@
   align-items: center;
   gap: 14px;
   margin-bottom: 32px;
+  background:  linear-gradient(90deg, #0f7c5b, #d81b60);
+  position: inherit;
 }
 
 .bgv-header-icon {
   width: 42px;
   height: 42px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #f163c9, #8b5cf6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -70,14 +72,14 @@
   margin: 0;
   font-size: 22px;
   font-weight: 700;
-  color: #1a3c5e;
+  color: #fafafa;
   letter-spacing: -0.5px;
 }
 
 .bgv-header p {
   margin: 0;
   font-size: 13px;
-  color: #1c2531;
+  color: #d9e6f7;
 }
 
 /* ══════════════════════════
@@ -461,7 +463,7 @@
   margin: 0 0 12px;
   font-size: 14px;
   font-weight: 700;
-  color: #818cf8;
+  color: #2d2e2f;
   text-transform: uppercase;
   letter-spacing: 0.6px;
 }
@@ -470,14 +472,14 @@
   display: flex;
   gap: 6px;
   font-size: 13px;
-  color: #94a3b8;
+  color: #282a2d;
   margin-bottom: 7px;
   line-height: 1.5;
 }
 
 .bgv-review-key {
   font-weight: 600;
-  color: #e2e8f0;
+  color: #2b2c2e;
   min-width: 140px;
   flex-shrink: 0;
 }

@@ -64,10 +64,10 @@
 .request-header {
   margin-bottom: 28px;
   padding: 20px;
-  background: var(--bsu-accent2);
+  background:  linear-gradient(90deg, #0f7c5b, #d81b60);
   /* border-bottom: 1px solid var(--bsu-border); */
   border-radius: var(--bsu-radius);
-  
+  color: var(--bsu-surface);
 }
 
 .request-header h3 {
@@ -75,6 +75,7 @@
   padding-bottom: 10px;
   border-bottom: 2px solid var(--bsu-accent-light);
   display: inline-block;
+  color: var(--bsu-surface);
 }
 
 /* ── Info grid ── */
@@ -87,7 +88,7 @@
 .request-info p {
   margin: 0;
   font-size: 0.85rem;
-  color: var(--bsu-text);
+  color: #b0a99e;
   /* background: var(--bsu-accent-pale); */
   /* border: 1px solid var(--bsu-accent-light); */
   padding: 10px 14px;
@@ -97,7 +98,7 @@
 }
 
 .request-info p b {
-  color: var(--bsu-primary);
+  color: #d4c9bb;
   font-weight: 600;
   display: block;
   font-size: 0.68rem;
