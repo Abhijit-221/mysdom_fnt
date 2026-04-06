@@ -1,31 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../api/axiosInstance';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import './BGVStatusUpdate.css';
+import { ArrowLeft } from 'lucide-react';
 
 const STATUS_OPTIONS = [
-  { value: 'NEW',         label: 'New'         },
-  { value: 'IN_PROGRESS', label: 'In Progress'  },
-  { value: 'ON_HOLD',     label: 'On Hold'      },
-  { value: 'COMPLETED',   label: 'Completed'    },
-  { value: 'REJECTED',    label: 'Rejected'     },
+  { value: 'NEW', label: 'New' },
+  { value: 'IN_PROGRESS', label: 'In Progress' },
+  { value: 'ON_HOLD', label: 'On Hold' },
+  { value: 'COMPLETED', label: 'Completed' },
+  { value: 'REJECTED', label: 'Rejected' },
 ];
 
 const STATUS_CLASS = {
-  NEW:         'badge-new',
+  NEW: 'badge-new',
   IN_PROGRESS: 'badge-progress',
-  ON_HOLD:     'badge-hold',
-  COMPLETED:   'badge-done',
-  REJECTED:    'badge-rejected',
+  ON_HOLD: 'badge-hold',
+  COMPLETED: 'badge-done',
+  REJECTED: 'badge-rejected',
 };
 
 function BGVStatusUpdate() {
   const { req_id } = useParams();
-
-  const [requestData, setRequestData]     = useState({});
+  const navigate = useNavigate();
+  const [requestData, setRequestData] = useState({});
   const [updateService, setUpdateService] = useState({});
-  const [submitting, setSubmitting]       = useState({});
+  const [submitting, setSubmitting] = useState({});
 
   const base_url = import.meta.env.VITE_BASE_URL;
 
@@ -94,10 +95,10 @@ function BGVStatusUpdate() {
         const fd = new FormData();
         fd.append('request_id', payload.request_id);
         fd.append('service_id', payload.service_id);
-        if (payload.status !== undefined)  fd.append('status', payload.status);
-        if (payload.remark !== undefined)  fd.append('remark', payload.remark);
-        if (payload.doc_1 instanceof File) fd.append('doc_1',  payload.doc_1);
-        if (payload.doc_2 instanceof File) fd.append('doc_2',  payload.doc_2);
+        if (payload.status !== undefined) fd.append('status', payload.status);
+        if (payload.remark !== undefined) fd.append('remark', payload.remark);
+        if (payload.doc_1 instanceof File) fd.append('doc_1', payload.doc_1);
+        if (payload.doc_2 instanceof File) fd.append('doc_2', payload.doc_2);
         await axiosInstance.put('/bgvrequest/status/update', fd, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
@@ -143,13 +144,12 @@ function BGVStatusUpdate() {
   /* ── doc cell: existing link + new-file picker ── */
   const DocCell = ({ service, docField, label }) => {
     const existingPath = service[docField];
-    const draft        = updateService[service.serviceId];
-    const newFile      = draft?.[docField];
+    const draft = updateService[service.serviceId];
+    const newFile = draft?.[docField];
 
     return (
       <div className="doc-cell">
         <ExistingFile path={existingPath} label={label} />
-
         <label className="file-pick-label">
           <span className="file-pick-btn">
             {newFile ? `✓ ${newFile.name}` : '↑ Upload new'}
@@ -174,7 +174,14 @@ function BGVStatusUpdate() {
   return (
     <div>
       <div className="admin-section">
-
+        <div className='back-btn-section'>
+          <button
+            onClick={() => navigate('/bgv/list')}
+          >
+            <ArrowLeft size={16} />
+            Back
+          </button>
+        </div>
         {/* ── Request Details Header ── */}
         <div className="request-header">
           <h3>BGV Request Details</h3>
@@ -203,90 +210,90 @@ function BGVStatusUpdate() {
         {/* ── Services Table ── */}
         <div className='table-section'>
 
-            <h3>Update Service Status</h3>
+          <h3>Update Service Status</h3>
 
-            <div style={{ overflowX: 'auto' }}>
+          <div style={{ overflowX: 'auto' }}>
             <table className="service-table">
-                <thead>
+              <thead>
                 <tr>
-                    <th>Service Name</th>
-                    <th>Status</th>
-                    <th>Remarks</th>
-                    <th>Document 1</th>
-                    <th>Document 2</th>
-                    <th>Action</th>
+                  <th>Service Name</th>
+                  <th>Status</th>
+                  <th>Remarks</th>
+                  <th>Document 1</th>
+                  <th>Document 2</th>
+                  <th>Action</th>
                 </tr>
-                </thead>
+              </thead>
 
-                <tbody>
+              <tbody>
                 {requestData?.bgvReqestService?.map((service) => {
-                    const dirty   = isDirty(service);
-                    const loading = submitting[service.serviceId];
-                    const draft   = updateService[service.serviceId];
+                  const dirty = isDirty(service);
+                  const loading = submitting[service.serviceId];
+                  const draft = updateService[service.serviceId];
 
-                    return (
+                  return (
                     <tr key={service.serviceId} className={dirty ? 'row-dirty' : ''}>
 
-                        {/* Service name */}
-                        <td>
+                      {/* Service name */}
+                      <td>
                         <span className="service-name">{service.services.name}</span>
-                        </td>
+                      </td>
 
-                        {/* Status */}
-                        <td>
+                      {/* Status */}
+                      <td>
                         <select
-                            value={draft?.status ?? service.status}
-                            onChange={(e) =>
+                          value={draft?.status ?? service.status}
+                          onChange={(e) =>
                             handleStatusChange(service.requestId, service.serviceId, e)
-                            }
+                          }
                         >
-                            {STATUS_OPTIONS.map(opt => (
+                          {STATUS_OPTIONS.map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
-                            ))}
+                          ))}
                         </select>
-                        </td>
+                      </td>
 
-                        {/* Remarks */}
-                        <td>
+                      {/* Remarks */}
+                      <td>
                         <input
-                            type="text"
-                            value={draft?.remark ?? (service.remark || '')}
-                            placeholder="Enter remarks…"
-                            onChange={(e) =>
+                          type="text"
+                          value={draft?.remark ?? (service.remark || '')}
+                          placeholder="Enter remarks…"
+                          onChange={(e) =>
                             handleRemarkChange(service.requestId, service.serviceId, e)
-                            }
+                          }
                         />
-                        </td>
+                      </td>
 
-                        {/* Doc 1 */}
-                        <td>
+                      {/* Doc 1 */}
+                      <td>
                         <DocCell service={service} docField="doc_1" label="Doc 1" />
-                        </td>
+                      </td>
 
-                        {/* Doc 2 */}
-                        <td>
+                      {/* Doc 2 */}
+                      <td>
                         <DocCell service={service} docField="doc_2" label="Doc 2" />
-                        </td>
+                      </td>
 
-                        {/* Action */}
-                        <td>
+                      {/* Action */}
+                      <td>
                         <button
-                            className={`update-btn${dirty ? ' btn-active' : ''}`}
-                            disabled={!dirty || loading}
-                            onClick={() => handleStatusSubmit(service.serviceId)}
+                          className={`update-btn${dirty ? ' btn-active' : ''}`}
+                          disabled={!dirty || loading}
+                          onClick={() => handleStatusSubmit(service.serviceId)}
                         >
-                            {loading
+                          {loading
                             ? <span className="bsu-spinner" />
                             : dirty ? 'Update' : 'No Changes'}
                         </button>
-                        </td>
+                      </td>
 
                     </tr>
-                    );
+                  );
                 })}
-                </tbody>
+              </tbody>
             </table>
-            </div>
+          </div>
         </div>
 
       </div>

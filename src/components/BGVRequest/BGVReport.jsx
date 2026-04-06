@@ -1,5 +1,6 @@
+import { ArrowBigLeft, ArrowLeft } from "lucide-react";
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 /* ─────────────────────────────────────────────
    COLORS  (RGB tuples for jsPDF)
@@ -430,17 +431,99 @@ const ClearedBox = ({ label }) => (
 );
 
 /* file attachment pill — shown in UI when a path exists */
+// const FilePill = ({ path, base_url, label }) => {
+//   if (!path) return <em style={{ fontSize: 12, color: "#aaa" }}>No file</em>;
+//   const name = path.split(/[\\/]/).pop();
+//   const url = base_url ? `${base_url}/${path.replace(/\\/g, "/")}` : "#";
+//   return (
+//     <a href={url} target="_blank" rel="noopener noreferrer"
+//       style={{
+//         display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12,
+//         color: "#166534", background: "#f0fdf4", border: "1px solid #bbf7d0",
+//         borderRadius: 20, padding: "3px 12px", textDecoration: "none", fontWeight: 500
+//       }}>
+//       📎 {label || name}
+//     </a>
+//   );
+// };
+
 const FilePill = ({ path, base_url, label }) => {
-  if (!path) return <em style={{ fontSize: 12, color: "#aaa" }}>No file</em>;
-  const name = path.split(/[\\/]/).pop();
-  const url = base_url ? `${base_url}/${path.replace(/\\/g, "/")}` : "#";
+  if (!path) {
+    return <em style={{ fontSize: 12, color: "#aaa" }}>No file</em>;
+  }
+
+  const cleanPath = path.replace(/\\/g, "/");
+  const url = base_url ? `${base_url}/${cleanPath}` : "#";
+  const ext = cleanPath.split('.').pop().toLowerCase();
+  const name = cleanPath.split('/').pop();
+
+  // 🖼️ Image Preview
+  if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
+        <img
+          src={url}
+          alt={label}
+          style={{
+
+            // width: "80%",
+            width: 500,
+            // height: "auto",
+            height: 500,
+            borderRadius: 8,
+            border: "1px solid #ddd"
+          }}
+        />
+        {/* <a href={url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12 }}>
+          🔍 View Full
+        </a> */}
+      </div>
+    );
+  }
+
+  // 📄 PDF Preview
+  if (ext === "pdf") {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
+        <iframe
+          src={url}
+          title={label}
+          style={{
+            // width: "100%",
+            // height: 200,
+            width: 500,
+            height: 500,
+            border: "1px solid #ddd",
+            borderRadius: 6
+          }}
+        />
+        {/* <a href={url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12 }}>
+          📥 Open PDF
+        </a> */}
+      </div>
+    );
+  }
+
+  // 🔗 Default (other files)
   return (
-    <a href={url} target="_blank" rel="noopener noreferrer"
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
       style={{
-        display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12,
-        color: "#166534", background: "#f0fdf4", border: "1px solid #bbf7d0",
-        borderRadius: 20, padding: "3px 12px", textDecoration: "none", fontWeight: 500
-      }}>
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 5,
+        fontSize: 12,
+        color: "#166534",
+        background: "#f0fdf4",
+        border: "1px solid #bbf7d0",
+        borderRadius: 20,
+        padding: "3px 12px",
+        textDecoration: "none",
+        fontWeight: 500
+      }}
+    >
       📎 {label || name}
     </a>
   );
@@ -469,6 +552,7 @@ const DownloadButton = ({ onClick, loading, size = "md" }) => (
 const BGVReportPage = () => {
   const location = useLocation();
   // data comes from navigate(..., { state: { data: req } })
+  const navigate = useNavigate();
   const data = location.state?.data || {};
   const base_url = import.meta.env.VITE_BASE_URL;
 
@@ -492,6 +576,9 @@ const BGVReportPage = () => {
   const emps = data.employments || [];
   const reqDate = data.createdAt
     ? new Date(data.createdAt).toLocaleDateString("en-IN")
+    : "—";
+  const updateDate = data.updatedAt
+    ? new Date(data.updatedAt).toLocaleDateString("en-IN")
     : "—";
   console.log('bgv services:', services);
   return (
@@ -518,7 +605,21 @@ const BGVReportPage = () => {
         fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
       }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-
+          <div style={{paddingBottom:"10px", }}>
+            <button 
+              style={{display:"flex",flexDirection:'row',
+                      alignItems:"center", gap:'2px',
+                      textAlign:"center",
+                      padding:"6px",
+                      background:'#3d6ca9',
+                      color:'white',
+                      borderRadius:"5px"
+                     }}
+              onClick={()=>(navigate('/bgv/list'))}
+            >
+              <ArrowLeft size={18}/>Back
+            </button>
+          </div>
           {/* ── Top Bar ── */}
           <div className="no-print" style={{
             display: "flex", alignItems: "flex-start",
@@ -599,8 +700,8 @@ const BGVReportPage = () => {
                         </p>
                       </div>
                       <div style={{ textAlign: "right" }}>
-                        <p style={{ margin: 0, fontSize: 10, color: "#9ca3af" }}>Date</p>
-                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#f5a623" }}>{reqDate}</p>
+                        <p style={{ margin: 0, fontSize: 10, color: "#9ca3af" }}>Completion Date</p>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#f5a623" }}>{['COMPLETED', 'REJECTED', 'CLOSED'].includes(data.status) ? updateDate : "_ _ _"}</p>
                       </div>
                     </div>
                   </div>
@@ -714,10 +815,19 @@ const BGVReportPage = () => {
                   <CardHeader icon="🎓" title={`${s.services.name}`}
                     right={<Badge label={`${s.status}`} color={{ bg: "#d1fae5", txt: "#065f46" }} />}
                   />
-                  <div style={{ padding: "12px 20px 4px" }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" }}>
-                      {`${s.services.name}`} — <span style={{ color: "#27ae60" }}>{`${s.status}`}</span>
-                    </span>
+                  <div style={{ padding: "4px", display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
+
+                    <div style={{ padding: "12px 20px 4px" }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" }}>
+                        {`${s.services.name}`} — <span style={{ color: "#27ae60" }}>{`${s.status}`}</span>
+                      </span>
+                    </div>
+                    <div style={{ padding: "12px 20px 4px" }}>
+                      <p style={{ margin: 0, fontSize: 10, color: "#757677" }}>Completion Date</p>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#f5a623" }}>{['COMPLETED', 'REJECTED', 'CLOSED'].includes(s.status) ? (s.updatedAt
+                        ? new Date(data.updatedAt).toLocaleDateString("en-IN")
+                        : ""):"_ _ _"}</p>
+                    </div>
                   </div>
                   {/* <VerifyTable rows={[
                     ["University", data.university, data.university],
@@ -727,15 +837,16 @@ const BGVReportPage = () => {
                     ["Passing Year", data.passing_year, data.passing_year],
                     ["Mode", "Online", ""],
                   ]} /> */}
-                  <ClearedBox label="Final Disposition" />
+                  {/* <ClearedBox label="Final Disposition" /> */}
                   {/* Education doc */}
-                  {s.doc_1 && (
+                  {(s.doc_1 || s.doc_2) && (
                     <div style={{ padding: "0 20px 16px" }}>
                       <p style={{
                         margin: "0 0 6px", fontSize: 11, fontWeight: 700, color: "#6b7280",
                         textTransform: "uppercase", letterSpacing: "0.06em"
-                      }}>Education Certificate</p>
-                      <FilePill path={s.doc_1} base_url={base_url} label="Education Certificate" />
+                      }}>{s.services.name} Documents</p>
+                      {s.doc_1 && <FilePill path={s?.doc_1} base_url={base_url} label="Education Certificate" />}
+                      {s.doc_2 && <FilePill path={s?.doc_2} base_url={base_url} label="Education Certificate" />}
                     </div>
                   )}
                 </Card>
@@ -807,7 +918,7 @@ const BGVReportPage = () => {
                           </p>
                           <Badge label={sv.status?.replace(/_/g, " ") || "—"} color={sc} />
                           {/* service docs */}
-                          {(sv.doc_1 || sv.doc_2) && (
+                          {/* {(sv.doc_1 || sv.doc_2) && (
                             <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
                               {sv.doc_1 && <FilePill path={sv.doc_1} base_url={base_url} label="Document 1" />}
                               {sv.doc_2 && <FilePill path={sv.doc_2} base_url={base_url} label="Document 2" />}
@@ -815,7 +926,7 @@ const BGVReportPage = () => {
                           )}
                           {docCount === 0 && (
                             <p style={{ margin: "8px 0 0", fontSize: 11, color: "#9ca3af" }}>No documents attached</p>
-                          )}
+                          )} */}
                         </div>
                       );
                     })}

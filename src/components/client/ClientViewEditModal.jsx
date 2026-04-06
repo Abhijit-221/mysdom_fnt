@@ -123,7 +123,7 @@ const ClientViewEditModal = ({ clientData, onClose, onUpdate}) => {
             </button>
           )}
 
-          <button className="cancel-btn" onClick={onClose}>
+          <button className="close-btn" onClick={onClose}>
             Close
           </button>
         </div>

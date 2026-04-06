@@ -3,6 +3,7 @@ import axiosInstance from "../../api/axiosInstance";
 import "./addClientService.css";
 import toast from "react-hot-toast";
 import { useParams } from "react-router-dom";
+import { Trash } from "lucide-react";
 
 function AddClientService() {
 
@@ -64,6 +65,7 @@ function AddClientService() {
     const [showModal, setShowModal] = useState(false);
     const [tatDays, setTatDays] = useState("");
     const [selectedServiceId, setSelectedServiceId] = useState(null);
+    const [deleteServiceid,setDeleteServiceid] = useState();
     const submitService = async () => {
 
         if (!tatDays) {
@@ -123,7 +125,7 @@ function AddClientService() {
                             <th>Service Name</th>
                             <th>Description</th>
                             <th>Total Days</th>
-                            {/* <th>Status</th> */}
+                            <th>Action</th>
                         </tr>
                     </thead>
 
@@ -141,6 +143,17 @@ function AddClientService() {
                                 <td>{service.name}</td>
                                 <td>{service.description}</td>
                                 <td>{service.tatDays}</td>
+                                <td>
+                                    <button
+                                        className="delete-btn"
+                                        // onClick={() => {
+                                        //     setSelectedServiceId(service.id);
+                                        //     // setShowModal(true);
+                                        // }}
+                                    >
+                                        <Trash size={16}/>
+                                    </button>
+                                </td>
                             </tr>
                         ))}
 
@@ -249,14 +262,14 @@ function AddClientService() {
                         <div className="modal-actions">
 
                             <button
-                                className="cancel-btn"
+                                className="canceled-btn"
                                 onClick={() => setShowModal(false)}
                             >
                                 Cancel
                             </button>
 
                             <button
-                                className="submit-btn"
+                                className="addsubmit-btn"
                                 onClick={submitService}
                             >
                                 Add Service

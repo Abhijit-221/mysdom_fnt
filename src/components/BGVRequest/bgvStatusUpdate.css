@@ -46,7 +46,24 @@
   animation: bsuFadeUp 0.3s ease;
   
 }
-
+.back-btn-section{
+  padding: 4px;
+}
+.back-btn-section button{
+   display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: #3d6ca9;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(75, 71, 71, 0.15)
+}
 /* ══════════════════════════════════════
    HEADINGS
 ══════════════════════════════════════ */
