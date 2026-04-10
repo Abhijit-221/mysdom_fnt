@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../api/axiosInstance';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import './BGVStatusUpdate.css';
+import './bgvStatusUpdate.css';
 import { ArrowLeft } from 'lucide-react';
 
 const STATUS_OPTIONS = [

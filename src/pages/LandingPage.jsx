@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./LandingPage.css";
 import WebinarCarousel from "../components/WebinarCarousel";
 import ServiceCard from "../components/ServiceCard";
@@ -8,9 +8,19 @@ import Reviews from "../components/Reviews";
 import { useNavigate } from "react-router-dom";
 import ContactSection from "../components/commn/ConsultationForm";
 
+const words1 = [["Smart", "Screening", "Solutions"],["Verify", "Trust", "Succeed"]];
+const words2 = ["Verify", "Trust", "Succeed"];
 export default function LandingPage() {
   const navigate = useNavigate();
+  const [index, setIndex] = useState(0);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % words1.length);
+    }, 5000); // change every 2 sec
+
+    return () => clearInterval(interval);
+  }, []);
   return (
     <div className="lp-wrapper">
 
@@ -25,9 +35,21 @@ export default function LandingPage() {
               Welcome to Mysdom
             </span>
 
-            <h1 className="lp-title">
+            {/* <h1 className="lp-title">
               Smart Screening Solutions <br />
               Verify <span>Trust</span> Succeed
+            </h1> */}
+             <h1 className="lp-title">
+              <span className="line1">
+                {words1[index][0]}
+              </span>
+              <br />
+              <span className="line2">
+                {words1[index][1]}
+              </span><br />
+              <span className="line3">
+                {words1[index][2]}
+              </span>
             </h1>
 
             <div className="lp-buttons">

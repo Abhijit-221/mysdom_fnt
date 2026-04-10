@@ -97,6 +97,18 @@
   color: rgba(255,255,255,0.9);
 } */
 
+.svc-card-footer{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.svc-delete-btn{
+  color: #fb0000;
+}
+.svc-delete-btn :hover{
+  color: #ff610c;
+  transition:ease-in-out;
+}
 /* ===== LINK ===== */
 .svcgrid-link {
   display: inline-flex;

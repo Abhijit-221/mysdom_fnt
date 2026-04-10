@@ -87,9 +87,9 @@ const Login = () => {
 
                         <button type="submit">Login</button>
 
-                        <p className="switch-text">
+                        {/* <p className="switch-text">
                             Don’t have an account? <Link to="/signup">Register</Link>
-                        </p>
+                        </p> */}
                          <p className="switch-text">
                             Forgot your password? <Link to="/forgot-password">Reset Password</Link>
                         </p>

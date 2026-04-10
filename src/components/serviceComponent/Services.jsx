@@ -110,6 +110,24 @@ function Services() {
         }
     };
 
+    const deleteServiceHandler = async(id)=>{
+        try{
+            console.log("id:",id);
+            const response = await axiosInstance.post(`/service/delete`,
+                {
+                    id
+                }
+            );
+            console.log(response);
+            fetchServices();
+        }
+        catch(error){
+            console.log("Error sending contact form:", error.response);
+            setErrorMsg("Unable to reach the server. Please try again later.");
+            setStatus("error");
+        }
+    }
+
 
     return (
         <div>
@@ -175,7 +193,7 @@ function Services() {
 
                     {/* GRID */}
 
-                    <ServiceGrid services={services} user={user} />
+                    <ServiceGrid services={services} user={user} deleteService = {deleteServiceHandler} />
 
                     {/* PAGINATION */}
                     <div className="svc-pagination">

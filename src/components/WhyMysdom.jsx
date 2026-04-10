@@ -29,16 +29,16 @@ export default function WhyMysdom() {
 
               <div className="why-stat-card stat-1">
                 <CheckCircle size={20} />
-                <div>
-                  <h3>99.8%</h3>
+                <div className="small-stat-card1">
+                  <h3>100%</h3>
                   <p>Accuracy</p>
                 </div>
               </div>
 
               <div className="why-stat-card stat-2 pink">
                 <Globe size={20} />
-                <div>
-                  <h3>500+</h3>
+                <div className="small-stat-card2">
+                  <h3>10+</h3>
                   <p>Cities</p>
                 </div>
               </div>
@@ -60,7 +60,7 @@ export default function WhyMysdom() {
             <div className="feature-list">
               <Feature
                 icon={<Target size={18} />}
-                title="99.8% Accuracy Rate"
+                title="100% Accuracy Rate"
                 text="Comprehensive Verification"
               />
               <Feature

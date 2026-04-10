@@ -105,17 +105,32 @@
 
 /* Navbar */
 .navbar {
-  background: #f4f4f4;
-  padding: 8px 40px;
+  background: rgba(255, 255, 255, 0.75); /* glass effect */
+  backdrop-filter: blur(10px); /* smooth blur */
+  -webkit-backdrop-filter: blur(10px);
+
+  padding: 10px 40px;
   position: sticky;
   top: 0;
   z-index: 100;
+
+  /* soft shadow for elevation */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+  /* subtle border for premium look */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .navbar-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  max-width: 1200px;
+  margin: 0 auto; /* center content */
+
+  /* better spacing */
+  gap: 20px;
 }
 
 /* Logo FIX */
@@ -123,12 +138,37 @@
   display: flex;
   align-items: center;
   cursor: pointer;
+  perspective: 700px; /* adds depth for 3D effect */
+  position: relative;
 }
 
 .logo img {
-  height: 80px;   /* control logo size */
+  height: 90px;
   width: auto;
   object-fit: contain;
+  font-weight: 900;
+  /* Smooth rendering */
+  image-rendering: -webkit-optimize-contrast;
+
+  /* 3D effect */
+  transform: rotateX(5deg) rotateY(-5deg);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+
+  /* Depth shadow */
+  text-shadow: 
+    0 10px 20px rgba(0, 0, 0, 0.25),
+    0 6px 6px rgba(0, 0, 0, 0.15);
+  
+  
+}
+
+/* Hover animation for interactive feel */
+.logo img:hover {
+  transform: rotateX(0deg) rotateY(0deg) scale(1.08);
+  
+  text-shadow: 
+    0 20px 35px rgba(0, 0, 0, 0.35),
+    0 10px 15px rgba(0, 0, 0, 0.2);
 }
 
 /* Menu */

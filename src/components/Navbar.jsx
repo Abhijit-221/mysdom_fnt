@@ -87,7 +87,7 @@ const Navbar = () => {
 
           {/* Buttons */}
           <div className="nav-buttons">
-            <button className="btn-outline">Get Pricing</button>
+            {/* <button className="btn-outline">Get Pricing</button> */}
             <button className="nav-btn-primary" onClick={()=>navigate('/contact')} >Talk to sales</button>
           </div>
         </div>

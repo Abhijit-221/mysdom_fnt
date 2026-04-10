@@ -5,11 +5,13 @@ import {
   FingerprintPattern,
   Gavel,
   GlobeLock,
-  GraduationCap
+  GraduationCap,
+  Trash2Icon
 } from "lucide-react";
 import './serviceGrid.css'
-function ServiceGrid({ services,user }) {
+function ServiceGrid({ services,user ,deleteService}) {
   console.log("services---", services);
+  
   return (
 
     <div className="svcgrid-wrapper">
@@ -31,9 +33,15 @@ function ServiceGrid({ services,user }) {
             // <a href={`/service/getby/${service.id}`} className="svcgrid-link">
             //   Learn More <ArrowRight size={16} />
             // </a>
-            <p className="svcgrid-link" onClick={()=>window.location.href=`/service/detail/${service.id}`}>
-              Learn More <ArrowRight size={16} />
-            </p>
+            <div className='svc-card-footer'>
+              <p className="svcgrid-link" onClick={()=>window.location.href=`/service/detail/${service.id}`}>
+                Learn More <ArrowRight size={16} />
+              </p>
+              <button className="svc-delete-btn" onClick={()=>(deleteService(service.id))}>
+                <Trash2Icon size={20}/>
+              </button>
+            </div>
+            
             }
           </div>
         ))}

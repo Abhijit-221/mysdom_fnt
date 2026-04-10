@@ -44,8 +44,11 @@
   font-weight: 700;
 }
 
-.lp-title span {
-  color: #ff6ea1;
+.lp-title .line1 {
+  color: #d81b60;
+}
+.lp-title .line3 {
+  color: #0f7c5b;
 }
 
 .lp-badge {
