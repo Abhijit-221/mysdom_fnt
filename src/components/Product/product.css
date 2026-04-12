@@ -85,6 +85,87 @@
 }
 
 
+/* BVG section*/
+/* ══════════════════════════════════════════
+   BGV SECTION
+══════════════════════════════════════════ */
+.BGV-section {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 20px 0;
+}
+
+.bgv-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 32px;
+  background: linear-gradient(135deg, #0aa66e, #088a5b);
+  color: #fff;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 16px;
+  box-shadow:
+    0 4px 15px rgba(10, 166, 110, 0.35),
+    0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shine sweep on hover */
+.bgv-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.25),
+    transparent
+  );
+  transform: skewX(-20deg);
+  transition: left 0.5s ease;
+}
+
+.bgv-btn:hover::before {
+  left: 140%;
+}
+
+.bgv-btn:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow:
+    0 8px 25px rgba(10, 166, 110, 0.45),
+    0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.bgv-btn:active {
+  transform: translateY(0px) scale(0.98);
+  box-shadow:
+    0 2px 8px rgba(10, 166, 110, 0.3),
+    0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bgv-btn p {
+  margin: 0;
+  letter-spacing: 0.4px;
+}
+
+/* Arrow icon — slides right on hover */
+.bgv-btn svg {
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+
+.bgv-btn:hover svg {
+  transform: translateX(5px);
+}
 /* PRODUCTS SECTION */
 .prd-section {
   padding: 100px 100px;

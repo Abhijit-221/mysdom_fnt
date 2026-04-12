@@ -1,4 +1,6 @@
-/* WRAPPER */
+/* ══════════════════════════════════════════
+   TOP BAR
+══════════════════════════════════════════ */
 .tb-wrapper {
   width: 100%;
   background: #111;
@@ -6,43 +8,42 @@
   font-size: 14px;
 }
 
-/* CONTAINER */
 .tb-container {
-  /* max-width: 1200px; */
   margin: auto;
   padding: 8px 45px;
   display: flex;
   align-items: center;
   gap: 10px;
-  /* KEY LINE */
   justify-content: flex-end;
 }
 
-/* LEFT */
 .tb-left {
   display: flex;
-  align-items: end;
+  align-items: center;
+  cursor: pointer;
 }
 
-.tb-help-link {
+.tb-left p {
+  margin: 0;
   color: #fff;
-  text-decoration: none;
-  transition: 0.3s;
+  transition: color 0.3s;
 }
 
-.tb-help-link:hover {
+.tb-left p:hover {
   color: #ff4d7e;
 }
 
+.tb-devide {
+  color: #555;
+  user-select: none;
+}
 
-/* RIGHT */
 .tb-right {
   display: flex;
   align-items: center;
   gap: 15px;
 }
 
-/* PROFILE */
 .tb-profile {
   display: flex;
   align-items: center;
@@ -51,13 +52,14 @@
 
 .tb-user-icon {
   font-size: 22px;
+  color: #fff;
 }
 
 .tb-username {
   font-weight: 500;
+  color: #fff;
 }
 
-/* BUTTONS */
 .tb-login-btn,
 .tb-logout-btn {
   border: none;
@@ -66,10 +68,8 @@
   cursor: pointer;
   font-size: 13px;
   transition: 0.3s;
-
 }
 
-/* LOGIN */
 .tb-login-btn {
   background: #ff4d7e;
   color: #fff;
@@ -79,10 +79,8 @@
   background: #e63b6b;
 }
 
-/* LOGOUT */
 .tb-logout-btn {
   background: rgb(215, 74, 74);
-  /* border: 1px solid #fff; */
   color: #fff;
 }
 
@@ -91,88 +89,87 @@
   color: #111;
 }
 
-/* RESPONSIVE */
 @media (max-width: 768px) {
   .tb-container {
     flex-direction: column;
     gap: 8px;
+    padding: 8px 20px;
   }
 
-  .tb-divider {
+  .tb-devide {
     display: none;
   }
 }
 
-/* Navbar */
+/* ══════════════════════════════════════════
+   NAVBAR
+══════════════════════════════════════════ */
 .navbar {
-  background: rgba(255, 255, 255, 0.75); /* glass effect */
-  backdrop-filter: blur(10px); /* smooth blur */
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-
-  padding: 10px 40px;
+  padding: 0 40px;
   position: sticky;
   top: 0;
   z-index: 100;
-
-  /* soft shadow for elevation */
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-
-  /* subtle border for premium look */
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
+/* ── 3-column grid: logo | links | buttons ── */
 .navbar-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-
   max-width: 1200px;
-  margin: 0 auto; /* center content */
-
-  /* better spacing */
+  margin: 0 auto;
   gap: 20px;
 }
 
-/* Logo FIX */
+/* ══════════════════════════════════════════
+   LOGO
+══════════════════════════════════════════ */
 .logo {
+  justify-self: start;
   display: flex;
   align-items: center;
   cursor: pointer;
-  perspective: 700px; /* adds depth for 3D effect */
+  perspective: 100px;
   position: relative;
 }
 
 .logo img {
-  height: 90px;
+  height: 110px;
   width: auto;
   object-fit: contain;
-  font-weight: 900;
-  /* Smooth rendering */
   image-rendering: -webkit-optimize-contrast;
 
-  /* 3D effect */
-  transform: rotateX(5deg) rotateY(-5deg);
-  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  /* Weight / bold feel via drop-shadow stacking */
+  /* filter:
+    drop-shadow(0px 4px 0px rgb(218, 137, 186))
+    drop-shadow(0px 8px 16px rgba(209, 116, 116, 0.608))
+    drop-shadow(0px 2px 4px rgba(10, 166, 110, 0.25)); */
 
-  /* Depth shadow */
-  text-shadow: 
-    0 10px 20px rgba(0, 0, 0, 0.25),
-    0 6px 6px rgba(0, 0, 0, 0.15);
-  
-  
+  /* Subtle 3D tilt */
+  transform: rotateX(4deg) rotateY(-6deg) scale(1.02);
+  transform-origin: left center;
+  transition:
+    transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+    filter 0.4s ease;
 }
 
-/* Hover animation for interactive feel */
 .logo img:hover {
-  transform: rotateX(0deg) rotateY(0deg) scale(1.08);
-  
-  text-shadow: 
-    0 20px 35px rgba(0, 0, 0, 0.35),
-    0 10px 15px rgba(0, 0, 0, 0.2);
+  transform: rotateX(0deg) rotateY(0deg) scale(1.1);
+  filter:
+    drop-shadow(0px 6px 2px rgba(0, 0, 0, 0.2))
+    drop-shadow(0px 12px 24px rgba(0, 0, 0, 0.2))
+    drop-shadow(0px 4px 12px rgba(172, 174, 173, 0.4));
 }
-
-/* Menu */
+/* ══════════════════════════════════════════
+   NAV LINKS — always pinned CENTER
+══════════════════════════════════════════ */
 .nav-links {
+  justify-self: center;
   display: flex;
   align-items: center;
   list-style: none;
@@ -181,25 +178,42 @@
   color: #333;
   margin: 0;
   padding: 0;
+  white-space: nowrap;
 }
 
 .nav-links li {
   cursor: pointer;
-  transition: 0.2s;
+  transition: color 0.2s;
+  font-size: 15px;
 }
 
 .nav-links li:hover {
   color: #0aa66e;
 }
 
-/* Buttons */
+.nav-links li a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.2s;
+}
+
+.nav-links li a:hover {
+  color: #0aa66e;
+}
+
+/* ══════════════════════════════════════════
+   NAV BUTTONS — always pinned RIGHT
+   Even when empty, the 1fr column holds
+   space so links never drift off-center
+══════════════════════════════════════════ */
 .nav-buttons {
+  justify-self: end;
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
-/* Base button style */
 .nav-buttons button {
   padding: 8px 18px;
   font-size: 14px;
@@ -207,18 +221,93 @@
   border-radius: 6px;
   cursor: pointer;
   white-space: nowrap;
+  transition: 0.3s;
 }
 
-/* Outline */
 .btn-outline {
   border: 1px solid #0aa66e;
   background: transparent;
   color: #0aa66e;
 }
 
-/* Filled */
+.btn-outline:hover {
+  background: #0aa66e;
+  color: #fff;
+}
+
 .nav-btn-primary {
   border: 1px solid #0aa66e;
   background: #0aa66e;
-  color: white;
+  color: #fff;
+}
+
+.nav-btn-primary:hover {
+  background: #088a5b;
+  border-color: #088a5b;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .navbar {
+    padding: 10px 20px;
+  }
+
+  .nav-links {
+    gap: 18px;
+  }
+
+  .nav-links li {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-container {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  .logo {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .nav-buttons {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .nav-links {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-links {
+    gap: 10px;
+  }
+
+  .nav-links li {
+    font-size: 13px;
+  }
+
+  .logo img {
+    height: 60px;
+  }
+
+  .nav-btn-primary {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
 }

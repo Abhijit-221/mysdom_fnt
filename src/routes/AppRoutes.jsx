@@ -30,6 +30,7 @@ import UpdateService from "../components/serviceComponent/UpdateService";
 import CreateService from "../components/serviceComponent/CreateService";
 import ForgotPassword from "../pages/ForgotPassword";
 import BGVReportPage from "../components/BGVRequest/BGVReport";
+import BGVEmailSubmitForm from "../components/BGVRequest/BGVEmailSubmitForm";
 
 
 
@@ -146,7 +147,7 @@ const AppRoutes = () => {
         <Route path="/login" element={<Login />} />
         {/* <Route path="/signup" element={<Signup />} /> */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
-
+        <Route path="/bgv/form/:token" element={<BGVEmailSubmitForm/>} />
       </Route>
 
 

@@ -768,16 +768,16 @@ const BGVViewEditRequestForm = () => {
               </div>
             )}
             <div className="bgv-services-grid">
-              {services.map((service) => {
-                const sel = selectedServices.includes(service.id);
+              {services?.map((service) => {
+                const sel = selectedServices.includes(service?.id);
                 return (
                   <div
-                    key={service.id}
+                    key={service?.id}
                     className={`bgv-service-chip ${sel ? "selected" : ""}`}
-                    onClick={() => handleServiceChange(service.id)}
+                    onClick={() => handleServiceChange(service?.id)}
                   >
                     <span>{sel ? "✓" : "○"}</span>
-                    {service.name}
+                    {service?.name}
                   </div>
                 );
               })}
@@ -854,9 +854,7 @@ const BGVViewEditRequestForm = () => {
 
             <div className="bgv-review-card">
               <p className="bgv-review-title">⚙️ Selected Services</p>
-              {services
-                .filter((s) => selectedServices.includes(s.id))
-                .map((s) => (
+              {services?.filter((s) => selectedServices.includes(s?.id))?.map((s) => (
                   <div key={s.id} className="bgv-review-row">
                     <span className="bgv-service-tick">✔</span>
                     <span>{s.name}</span>

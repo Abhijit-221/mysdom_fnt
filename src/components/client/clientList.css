@@ -99,13 +99,14 @@
 }
 
 .client-table th {
-    text-align: left;
+    text-align: center;
     padding: 12px;
     color: #94a3b8;
     font-size: 13px;
 }
 
 .client-table td {
+    text-align: center;
     padding: 12px;
     border-top: 1px solid #1e293b;
     color: #4b4848;
@@ -113,7 +114,7 @@
 }
 
 .client-table tbody tr:hover {
-    background: #94a3b8; 
+    background: #dee6f2; 
 }
 
 /* Status */
@@ -139,20 +140,47 @@
     gap:10px;
 }
 /* Edit Button */
-.edit-btn {
-    background: #38bdf8;
-    border: none;
-    padding: 6px;
+.clt-edit-btn {
+    /* background: #f6608d; */
+    border: 1px solid #eaad44;
+    box-shadow: #eaad44;
+    padding: 6px 10px;
     border-radius: 6px;
     cursor: pointer;
-    color: #0f172a;
+    color: #777a81;
     transition: 0.3s;
 }
 
-.edit-btn:hover {
-    background: #0ea5e9;
+.clt-edit-btn:hover {
+    background: #eaad44;
+    color: #f1f6ff;
 }
-
+.clt-add-btn{
+    border: 1px solid #4580ce;
+    box-shadow: #4580ce;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #777a81;
+    transition: 0.3s;
+}
+.clt-add-btn:hover {
+    background: #4580ce;
+    color: #f1f6ff;
+}
+.clt-dlt-btn{
+    border: 1px solid #ea2020;
+    box-shadow: #ea2020;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #777a81;
+    transition: 0.3s;
+}
+.clt-dlt-btn:hover {
+    background: #ea2020;
+    color: #f1f6ff;
+}
 /* Pagination */
 .pagination {
     margin-top: 20px;

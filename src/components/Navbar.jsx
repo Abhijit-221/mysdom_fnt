@@ -41,7 +41,7 @@ const Navbar = () => {
           <div className="tb-right">
             {user ? (
               <>
-                <div className="tb-profile">
+                <div className="tb-profile" onClick={() => navigate(`/users/${user.id}`)}>
                   <FaUserCircle className="tb-user-icon" />
                   <span className="tb-username">{user.username}</span>
                 </div>
@@ -86,10 +86,13 @@ const Navbar = () => {
           </ul>
 
           {/* Buttons */}
-          <div className="nav-buttons">
-            {/* <button className="btn-outline">Get Pricing</button> */}
-            <button className="nav-btn-primary" onClick={()=>navigate('/contact')} >Talk to sales</button>
-          </div>
+          {
+            user?.role === "user" &&
+            <div className="nav-buttons">
+              {/* <button className="btn-outline">Get Pricing</button> */}
+              <button className="nav-btn-primary" onClick={()=>navigate('/contact')} >Talk to sales</button>
+            </div>
+          }
         </div>
       </nav>
     </>

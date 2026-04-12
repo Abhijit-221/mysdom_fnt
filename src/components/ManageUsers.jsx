@@ -166,9 +166,9 @@ function ManageUsers() {
                                     <FaEdit />
                                 </button>
 
-                                <button className="icon-btn delete">
+                                {/* <button className="icon-btn delete">
                                     <FaTrash />
-                                </button>
+                                </button> */}
                             </span>
                         </div>
                     ))

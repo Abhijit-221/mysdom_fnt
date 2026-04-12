@@ -4,7 +4,7 @@ import axiosInstance from '../../api/axiosInstance';
 import './product.css'
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { ArrowBigDownIcon, ChevronsRight, ClipboardList, ScreenShare, ShieldCheck, Users } from 'lucide-react';
+import { ArrowBigDownIcon, ArrowBigRight, ChevronsRight, ClipboardList, ScreenShare, ShieldCheck, Users } from 'lucide-react';
 
 function Product() {
     let products = [
@@ -88,6 +88,12 @@ function Product() {
                 </div>
             </section>
             <section className="prd-section">
+            <section className='BGV-section'>
+                <div className='bgv-btn' onClick={handleProductClick}>
+                    <p>Go to BGV</p>
+                    <ArrowBigRight/>
+                </div>
+            </section>
                 <div className="prd-grid-wrapper">
                     <div className="prd-grid-grid">
                         {products.map((product, index) => (
@@ -95,7 +101,7 @@ function Product() {
 
                                 <img src={product.image} alt={product.name} />
 
-                                <div className="prd-overlay" onClick={handleProductClick}>
+                                <div className="prd-overlay">
                                     <h3 className="prd-grid-title">{product.name}</h3>
                                     <div className="prd-line"></div>
                                     <p className="prd-grid-desc">Mysdom</p>

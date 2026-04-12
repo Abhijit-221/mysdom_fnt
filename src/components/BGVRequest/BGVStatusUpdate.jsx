@@ -23,6 +23,7 @@ const STATUS_CLASS = {
 
 function BGVStatusUpdate() {
   const { req_id } = useParams();
+  console.log("req_id:",req_id);
   const navigate = useNavigate();
   const [requestData, setRequestData] = useState({});
   const [updateService, setUpdateService] = useState({});
@@ -34,6 +35,7 @@ function BGVStatusUpdate() {
   const fetchSingleService = async () => {
     try {
       const response = await axiosInstance.get(`/bgvrequest/getby/${req_id}`);
+      console.log(response.data.data);
       setRequestData(response.data.data);
     } catch (error) {
       toast.error(

@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import { Search, Edit3 } from "lucide-react";
+import { Search, Edit3, TrashIcon } from "lucide-react";
 import "./clientList.css";
 import { AuthContext } from "../../context/AuthContext";
 import Pagination from "../commn/Pagination";
@@ -8,6 +8,7 @@ import { IoAddSharp } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import ClientViewEditModal from "./ClientViewEditModal";
 import AddClientService from "./AddClientService";
+import toast from "react-hot-toast";
 export default function ClientList() {
   const { user } = useContext(AuthContext);
   const [search, setSearch] = useState("");
@@ -37,7 +38,7 @@ export default function ClientList() {
 
       const clientData = res?.data?.data || [];
       const totalCount = res?.data?.count || 0;
-      console.log("clients:", clients,totalCount);
+      console.log("clients:", clients, totalCount);
 
       setClients(clientData);
 
@@ -57,6 +58,19 @@ export default function ClientList() {
 
   console.log("clients:", clients);
   const [selectedClient, setSelectedClient] = useState(null);
+
+  const deleteClntHandler = async(id)=>{
+    try{
+      const response = await axiosInstance.post(`/client/delete`,{id:id});
+      toast.success(response?.data?.message);
+      fetchedClients();
+    }
+    catch(err){
+       toast.error(
+        err.response?.data?.message || "Failed to delete Clients"
+      );
+    }
+  }
   return (
     <div className="client-wrapper">
       <div className="client-card">
@@ -113,8 +127,8 @@ export default function ClientList() {
                     <td>
                       <span
                         className={`status-badge ${client.isActive
-                            ? "active"
-                            : "inactive"
+                          ? "active"
+                          : "inactive"
                           }`}
                       >
                         {client.isActive ? "Active" : "Inactive"}
@@ -124,14 +138,17 @@ export default function ClientList() {
                     {canEdit && (
                       <td>
                         <div className="button-grp">
-                        <button className="edit-btn" onClick={() => setSelectedClient(client)}>
-                          <Edit3 size={16} />
-                        </button>
-                        <button className="edit-btn" onClick={() =>(navigate(`/client/service-add/${client.id}`))}>
-                          Add services
-                        </button>
+                          <button className="clt-edit-btn" onClick={() => setSelectedClient(client)}>
+                            <Edit3 size={16} />
+                          </button>
+                          <button className="clt-add-btn" onClick={() => (navigate(`/client/service-add/${client.id}`))}>
+                            Add Service
+                          </button>
+                          <button className="clt-dlt-btn" onClick={()=>(deleteClntHandler(client.id))}>
+                            <TrashIcon size={18} />
+                          </button>
                         </div>
-                        
+
                         {selectedClient && (
                           <ClientViewEditModal
                             clientData={selectedClient}

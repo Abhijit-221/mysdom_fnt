@@ -1,4 +1,4 @@
-import { ArrowBigLeft, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -17,12 +17,63 @@ const C = {
   lightGray: [229, 231, 235],
   bodyText: [31, 41, 55],
   labelText: [107, 114, 128],
+  successBg: [240, 253, 244],
+  successBorder: [187, 247, 208],
+  successText: [22, 101, 52],
 };
 
 /* ─────────────────────────────────────────────
-   PDF BUILDER
+   IMAGE PRE-FETCHER
+   Fetches all service document images to base64
+   BEFORE PDF generation. jsPDF cannot fetch URLs
+   at draw-time; supplying pre-loaded base64 data
+   ensures every image renders reliably.
 ───────────────────────────────────────────── */
-function buildPDF(jsPDF, data, base_url) {
+async function fetchImageAsBase64(url) {
+  try {
+    const res = await fetch(url, { mode: "cors" });
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result); // "data:image/...;base64,..."
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function preloadImages(services, base_url) {
+  if (!base_url) return {};
+  const IMAGE_EXTS = ["jpg", "jpeg", "png", "gif", "webp"];
+  const map = {};
+  const jobs = [];
+
+  services.forEach((sv) => {
+    ["doc_1", "doc_2"].forEach((field) => {
+      const path = sv[field];
+      if (!path) return;
+      const ext = path.split(".").pop().toLowerCase();
+      if (!IMAGE_EXTS.includes(ext)) return;
+      if (path in map) return; // already queued
+      map[path] = null;        // placeholder
+      const url = `${base_url}/${path.replace(/\\/g, "/")}`;
+      jobs.push(
+        fetchImageAsBase64(url).then((b64) => { map[path] = b64; })
+      );
+    });
+  });
+
+  await Promise.all(jobs);
+  return map;
+}
+
+/* ─────────────────────────────────────────────
+   PDF BUILDER — mirrors the UI view exactly
+───────────────────────────────────────────── */
+function buildPDF(jsPDF, data, base_url, imageCache = {}) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const PW = 210;
   const ML = 20;
@@ -30,19 +81,40 @@ function buildPDF(jsPDF, data, base_url) {
   const CW = PW - ML - MR;
   let y = 0;
 
-  const reqDate = data.createdAt ? data.createdAt.slice(0, 10) : "N/A";
   const services = data.bgvReqestService || [];
-  const emps = data.employments || [];
+  const reqDate = data.createdAt ? data.createdAt.slice(0, 10) : "N/A";
+  const updateDate = data.updatedAt ? data.updatedAt.slice(0, 10) : "N/A";
+  const isCompleted = ["COMPLETED", "REJECTED", "CLOSED"].includes(data.status);
 
-  console.log('services:', services)
+  /* ── helpers ── */
   const fill = (rgb) => doc.setFillColor(...rgb);
   const stroke = (rgb) => doc.setDrawColor(...rgb);
+
+  /**
+   * txt() — safe text renderer, strips any non-latin characters (emoji etc.)
+   * that jsPDF's built-in helvetica cannot encode, preventing garbage glyphs.
+   */
+  const sanitize = (str) =>
+    String(str ?? "—").replace(/[^\x00-\xFF]/g, "").trim() || "—";
 
   const txt = (str, x, yy, { size = 9, bold = false, color = C.bodyText, align = "left", maxWidth } = {}) => {
     doc.setFontSize(size);
     doc.setFont("helvetica", bold ? "bold" : "normal");
     doc.setTextColor(...color);
-    doc.text(String(str ?? "—"), x, yy, { align, ...(maxWidth ? { maxWidth } : {}) });
+    doc.text(sanitize(str), x, yy, { align, ...(maxWidth ? { maxWidth } : {}) });
+  };
+
+  /**
+   * measuredWidth() — returns the actual mm width of a string at the
+   * CURRENT font size / style.  Must be called AFTER setFontSize + setFont.
+   */
+  const measuredWidth = (str) => {
+    const dim = doc.getTextDimensions(sanitize(str));
+    return dim.w; // already in mm for "mm" unit docs
+  };
+
+  const checkPage = (needed = 20) => {
+    if (y + needed > 282) { doc.addPage(); y = 0; drawHeader(); y += 6; }
   };
 
   const drawHeader = () => {
@@ -52,126 +124,179 @@ function buildPDF(jsPDF, data, base_url) {
     const bars = [[0, 5], [3, 9], [6, 7], [9, 12], [12, 8]];
     fill(C.green);
     bars.forEach(([bx, bh]) => doc.rect(88 + bx, 13 - bh, 2.2, bh, "F"));
-    txt("Report No", PW - MR - 28, 8, { size: 7, color: C.gray, align: "right" });
-    txt(`#-${data.req_code || "N/A"}`, PW - MR - 28, 13, { size: 8, bold: true, color: C.green, align: "right" });
+    txt("BGV Report", PW - MR - 32, 8, { size: 7, color: C.gray, align: "right" });
+    txt(`#-${data.req_code || "N/A"}`, PW - MR - 32, 13, { size: 8, bold: true, color: C.green, align: "right" });
     txt("Date", PW - MR, 8, { size: 7, color: C.gray, align: "right" });
     txt(reqDate, PW - MR, 13, { size: 8, bold: true, color: C.orange, align: "right" });
     stroke(C.lightGray); doc.setLineWidth(0.3);
-    doc.line(PW - MR - 30, 3, PW - MR - 30, 17);
+    doc.line(PW - MR - 34, 3, PW - MR - 34, 17);
     stroke(C.green); doc.setLineWidth(1.2);
     doc.line(0, 20, PW, 20);
-    y = 24;
-  };
-
-  const checkPage = (needed = 20) => {
-    if (y + needed > 282) { doc.addPage(); y = 0; drawHeader(); y += 6; }
+    y = 26;
   };
 
   const sectionTitle = (title) => {
     checkPage(16);
     const cx = PW / 2;
-    doc.setLineWidth(0.8); stroke(C.navy);
+    doc.setLineWidth(0.6); stroke(C.lightGray);
     doc.line(ML, y + 4, cx - 28, y + 4);
     doc.line(cx + 28, y + 4, ML + CW, y + 4);
-    txt(title, cx, y + 7, { bold: true, size: 14, color: C.navy, align: "center" });
+    txt(title.toUpperCase(), cx, y + 7, { bold: true, size: 10, color: C.navy, align: "center" });
     y += 14;
   };
 
-  const verifyTable = (rows) => {
-    checkPage(12 + rows.length * 8);
-    const colW = [CW * 0.34, CW * 0.33, CW * 0.33];
-    fill(C.tableHead); doc.rect(ML, y, CW, 8, "F");
-    let cx = ML;
-    ["Details", "Stated", "Verified"].forEach((h, i) => {
-      txt(h, cx + 3, y + 5.5, { bold: true, size: 8, color: C.white });
-      cx += colW[i];
-    });
-    y += 8;
-    rows.forEach((row, ri) => {
-      checkPage(9);
-      if (ri % 2 === 1) { fill(C.rowAlt); doc.rect(ML, y, CW, 8, "F"); }
-      stroke(C.lightGray); doc.setLineWidth(0.2);
-      doc.rect(ML, y, CW, 8, "S");
-      cx = ML;
-      row.forEach((cell, ci) => {
-        txt(cell ?? "—", cx + 3, y + 5.5, { size: 8, color: C.bodyText, maxWidth: colW[ci] - 6 });
-        cx += colW[ci];
-      });
-      y += 8;
-    });
-    y += 4;
+  /* Card header bar — NO emoji, plain text only */
+  const cardHeader = (title) => {
+    checkPage(12);
+    fill(C.navy); doc.rect(ML, y, CW, 10, "F");
+    txt(title, ML + 5, y + 6.5, { bold: true, size: 9, color: C.white });
+    y += 10;
   };
 
-  const commentRows = (rows) => {
-    checkPage(rows.length * 9 + 4);
-    const colW = [CW * 0.35, CW * 0.65];
-    rows.forEach((row, ri) => {
-      checkPage(9);
-      if (ri % 2 === 1) { fill(C.rowAlt); doc.rect(ML, y, CW, 9, "F"); }
-      stroke(C.lightGray); doc.setLineWidth(0.2);
-      doc.rect(ML, y, CW, 9, "S");
-      txt(row[0], ML + 3, y + 6, { bold: true, size: 8, color: C.navy, maxWidth: colW[0] - 6 });
-      txt(row[1] ?? "—", ML + colW[0] + 3, y + 6, { size: 8, color: C.bodyText, maxWidth: colW[1] - 6 });
-      y += 9;
-    });
-    y += 5;
+  /**
+   * statusBadge() — draws a rounded pill badge.
+   * Correctly measures text width using getTextDimensions() before drawing.
+   */
+  const statusBadge = (label, x, yy) => {
+    const safeLabel = sanitize(label);
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "bold");
+    const tw = measuredWidth(safeLabel);
+    const padH = 3;
+    const padV = 2;
+    const bw = tw + padH * 2;
+    const bh = 5.5;
+
+    // pick colour by status
+    const up = safeLabel.toUpperCase();
+    let bg = C.successBg, border = C.successBorder, textColor = C.cleared;
+    if (["IN PROGRESS", "NEW"].includes(up)) {
+      bg = [254, 249, 195]; border = [253, 224, 71]; textColor = [133, 77, 14];
+    } else if (["FAILED", "DISCREPANCY", "REJECTED"].includes(up)) {
+      bg = [254, 226, 226]; border = [252, 165, 165]; textColor = [153, 27, 27];
+    }
+
+    fill(bg); stroke(border); doc.setLineWidth(0.25);
+    doc.roundedRect(x, yy - bh + padV, bw, bh, 1, 1, "FD");
+    doc.setTextColor(...textColor);
+    doc.text(safeLabel, x + padH, yy - 0.5);
+    return bw;
   };
 
-  const statusBadge = (label) => {
-    txt(`${label}— `, ML, y + 4, { bold: true, size: 8, color: C.navy });
-    const lw = doc.getTextWidth(`${label}— `) * 0.8;
-    txt("Completed", ML + lw, y + 4, { bold: true, size: 8, color: C.cleared });
-    y += 9;
+  /* Service overview card (grid) */
+  const serviceStatusCard = (sv, x, cardY, cardW) => {
+    const statusLabel = (sv.status || "N/A").replace(/_/g, " ");
+    fill(C.rowAlt); stroke(C.lightGray);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(x, cardY, cardW, 22, 2, 2, "FD");
+    // left accent bar
+    fill(C.green); doc.rect(x, cardY, 3, 22, "F");
+    txt(sv.services?.name || "—", x + 7, cardY + 8, { bold: true, size: 9, color: C.navy, maxWidth: cardW - 14 });
+    statusBadge(statusLabel, x + 7, cardY + 17);
   };
 
-  const dateRow = (req, comp) => {
-    txt("Request Date", ML, y, { bold: true, size: 8, color: C.labelText });
-    txt("Completion Date", ML + CW / 2, y, { bold: true, size: 8, color: C.labelText });
-    y += 5;
-    txt(req, ML, y, { size: 8, color: C.bodyText });
-    txt(comp, ML + CW / 2, y, { size: 8, color: C.bodyText });
-    y += 9;
-  };
-
-  // ── helper: embed an image from a server path ──
+  /* Try embed image — uses pre-fetched base64 from imageCache */
   const tryEmbedImage = (path, xPos, yPos, w, h) => {
-    if (!path || !base_url) return false;
+    if (!path) return false;
+    const b64 = imageCache[path];
+    if (!b64) return false;
     try {
-      const url = `${base_url}/${path.replace(/\\/g, "/")}`;
-      const ext = path.split(".").pop().toUpperCase();
-      const fmt = ["JPG", "JPEG"].includes(ext) ? "JPEG" : ext === "PNG" ? "PNG" : null;
-      if (!fmt) return false;
-      doc.addImage(url, fmt, xPos, yPos, w, h);
+      // b64 is a data URL like "data:image/png;base64,..."
+      doc.addImage(b64, xPos, yPos, w, h);
       return true;
-    } catch { return false; }
+    } catch (e) {
+      console.warn("addImage failed for", path, e);
+      return false;
+    }
   };
 
-  /* ── PAGE 1 ── */
+  /* File fallback pill (no emoji) */
+  const filePill = (path, labelText) => {
+    checkPage(14);
+    txt(labelText + ":", ML, y + 5, { bold: true, size: 8, color: C.labelText });
+    y += 9;
+    const filename = path.split(/[\\/]/).pop();
+    const display = "[Attachment] " + filename;
+    doc.setFontSize(8); doc.setFont("helvetica", "normal");
+    const tw = measuredWidth(display);
+    const pillW = Math.min(tw + 8, CW);
+    fill(C.successBg); stroke(C.successBorder); doc.setLineWidth(0.25);
+    doc.roundedRect(ML, y, pillW, 7, 1.5, 1.5, "FD");
+    txt(display, ML + 4, y + 5, { size: 8, color: C.cleared, maxWidth: pillW - 6 });
+    y += 11;
+  };
+
+  /* ══════════════════════════════════════════
+     PAGE 1 — Cover + Executive Summary
+  ══════════════════════════════════════════ */
   drawHeader();
-  const bh = 58;
+
+  /* ── Cover card ── */
+  // Calculate dynamic height based on number of services
+  const bh = Math.max(66, 46 + services.length * 5);
   fill(C.rowAlt); doc.roundedRect(ML, y, CW, bh, 3, 3, "F");
+  stroke(C.lightGray); doc.setLineWidth(0.3);
+  doc.roundedRect(ML, y, CW, bh, 3, 3, "S");
+
+  const halfX = ML + CW * 0.52;
+
+  /* Left column */
   let ly = y + 8;
-  txt("Final Report", ML + 6, ly, { bold: true, size: 8, color: C.green }); ly += 6;
-  txt(data.candidate_name || "—", ML + 6, ly, { bold: true, size: 9, color: C.navy }); ly += 5;
-  txt(`Requested #-${data.req_code || "N/A"}`, ML + 6, ly, { size: 8, color: C.labelText }); ly += 9;
-  txt("Package Opted-", ML + 6, ly, { bold: true, size: 8, color: C.navy }); ly += 5;
-  services.forEach(s => { txt(`• ${s.services?.name || "—"}`, ML + 6, ly, { size: 8, color: C.bodyText }); ly += 5; });
-  ly += 2;
-  txt("Date of Request", ML + 6, ly, { bold: true, size: 8, color: C.navy }); ly += 5;
-  txt(reqDate, ML + 6, ly, { size: 8, color: C.bodyText });
+  txt("FINAL REPORT", ML + 6, ly, { bold: true, size: 7, color: C.green }); ly += 6;
+  txt(data.candidate_name || "—", ML + 6, ly, { bold: true, size: 11, color: C.navy }); ly += 7;
+  txt(data.req_code ? `Requested #${data.req_code}` : "", ML + 6, ly, { size: 8, color: C.labelText }); ly += 9;
+  txt("PACKAGE OPTED", ML + 6, ly, { bold: true, size: 7, color: C.navy }); ly += 5;
+  services.forEach(s => {
+    txt(`- ${s.services?.name || "—"}`, ML + 8, ly, { size: 8, color: C.bodyText, maxWidth: halfX - ML - 10 });
+    ly += 5;
+  });
+  ly += 3;
+  txt("DATE OF REQUEST", ML + 6, ly, { bold: true, size: 7, color: C.navy }); ly += 5;
+  txt(reqDate, ML + 6, ly, { size: 8, color: C.bodyText }); ly += 5;
+  if (data.client?.companyName) {
+    txt(data.client.companyName, ML + 6, ly, { size: 8, color: C.labelText, maxWidth: halfX - ML - 10 });
+  }
+
+  /* Vertical divider */
+  stroke(C.lightGray); doc.setLineWidth(0.3);
+  doc.line(halfX, y + 6, halfX, y + bh - 6);
+
+  /* Right column */
   const rx = ML + CW - 6;
   let ry = y + 8;
-  txt("Prepared By", rx, ry, { bold: true, size: 8, color: C.navy, align: "right" }); ry += 6;
+  txt("PREPARED BY", rx, ry, { bold: true, size: 7, color: C.navy, align: "right" }); ry += 6;
   ["Mysdom", "Bhubaneswar", "www.mysdom.com", "contactus@mysdom.com"].forEach(v => {
     txt(v, rx, ry, { size: 8, color: C.labelText, align: "right" }); ry += 5;
   });
-  stroke(C.lightGray); doc.setLineWidth(0.3);
-  doc.line(ML + CW * 0.56, y + 6, ML + CW * 0.56, y + bh - 6);
-  y += bh + 8;
+  ry += 8;
 
-  sectionTitle("EXECUTIVE SUMMARY");
-  const execCols = ["MYS#", "Applicant", "Organisation", "Package", "Address", "Education", "Employment"];
-  const execColW = [CW * 0.12, CW * 0.14, CW * 0.17, CW * 0.19, CW * 0.13, CW * 0.12, CW * 0.13];
+  // Report No label + value (left of two-col footer)
+  const midRx = halfX + (rx - halfX) / 2 - 4;
+  txt("Report No", midRx, ry, { size: 7, color: C.gray, align: "right" });
+  txt("Completion Date", rx, ry, { size: 7, color: C.gray, align: "right" }); ry += 5;
+  txt(data.req_code ? `#${data.req_code}` : "—", midRx, ry, { bold: true, size: 8, color: C.green, align: "right", maxWidth: midRx - halfX - 4 });
+  txt(isCompleted ? updateDate : "_ _ _", rx, ry, { bold: true, size: 9, color: C.orange, align: "right" });
+
+  y += bh + 10;
+
+  /* ── Executive Summary ── */
+  sectionTitle("Executive Summary");
+  cardHeader("EXECUTIVE SUMMARY");
+
+  /* Dynamic column widths: fixed cols + one per service */
+  const serviceNames = services.map(s => s.services?.name || "—");
+  const nSvc = serviceNames.length;
+  // fixed cols: MYS# | Applicant | Organisation | Package
+  const col0 = CW * 0.12;
+  const col1 = CW * 0.17;
+  const col2 = CW * 0.18;
+  const col3 = CW * 0.20;
+  const svcColW = nSvc > 0 ? (CW - col0 - col1 - col2 - col3) / nSvc : 0;
+  const execColW = [col0, col1, col2, col3, ...serviceNames.map(() => svcColW)];
+  const execCols = ["MYS#", "Applicant", "Organisation", "Package", ...serviceNames];
+
+  // Header row
+  checkPage(22);
   fill(C.tableHead); doc.rect(ML, y, CW, 9, "F");
   let cx = ML;
   execCols.forEach((h, i) => {
@@ -179,134 +304,145 @@ function buildPDF(jsPDF, data, base_url) {
     cx += execColW[i];
   });
   y += 9;
-  fill(C.rowAlt); doc.rect(ML, y, CW, 10, "F");
-  stroke(C.lightGray); doc.setLineWidth(0.2); doc.rect(ML, y, CW, 10, "S");
+
+  // Data row
+  fill(C.rowAlt); doc.rect(ML, y, CW, 11, "F");
+  stroke(C.lightGray); doc.setLineWidth(0.2); doc.rect(ML, y, CW, 11, "S");
   cx = ML;
-  const pkgText = services.map(s => s.services?.name).join(", ");
-  [data.req_code, data.candidate_name, data.client?.companyName, pkgText, "Cleared", "Cleared", "Cleared"].forEach((v, i) => {
-    const isStatus = i >= 4;
-    txt(v ?? "—", cx + execColW[i] / 2, y + 6.5,
-      { size: 7, color: isStatus ? C.cleared : C.bodyText, bold: isStatus, align: "center", maxWidth: execColW[i] - 2 });
+  const pkgText = services.map(s => s.services?.name).join(", ") || "—";
+  [data.req_code, data.candidate_name, data.client?.companyName, pkgText].forEach((v, i) => {
+    txt(v ?? "—", cx + execColW[i] / 2, y + 7, { size: 7, color: C.bodyText, align: "center", maxWidth: execColW[i] - 2 });
     cx += execColW[i];
   });
-  y += 14;
-  doc.addPage();
-
-  /* ── PAGE 2: Education ── */
-  y = 0; drawHeader(); y += 4;
-  sectionTitle("EDUCATION CHECK");
-  dateRow("N/A", "N/A");
-  statusBadge("Education Verification");
-  verifyTable([
-    ["University", data.university || "N/A", data.university || "N/A"],
-    ["Roll No / Reg. No.", data.roll_number || "N/A", data.roll_number || "N/A"],
-    ["Course / Qualification", data.qualification || "N/A", data.qualification || "N/A"],
-    ["Year of Passing", data.passing_year || "N/A", data.passing_year || "N/A"],
-    ["Specialization", data.specialization || "N/A", data.specialization || "N/A"],
-    ["Mode of Verification", "Online", ""],
-  ]);
-  commentRows([
-    ["Verifier's Comments:", "Verification done via institute records."],
-    ["Final Disposition", "Provided details have been verified and found to be correct"],
-    ["Check Status", "Clear"],
-  ]);
-
-  // education doc
-  if (data.edu_doc) {
-    checkPage(50);
-    txt("Education Certificate:", ML, y + 4, { bold: true, size: 8, color: C.navy });
-    y += 7;
-    const embedded = tryEmbedImage(data.edu_doc, ML, y, 80, 50);
-    if (!embedded) txt(data.edu_doc.split(/[\\/]/).pop(), ML + 4, y + 5, { size: 8, color: C.labelText });
-    y += embedded ? 54 : 10;
-  }
-  doc.addPage();
-
-  /* ── PAGE 3+: Employment ── */
-  emps.forEach((emp, idx) => {
-    y = 0; drawHeader(); y += 4;
-    sectionTitle("EMPLOYMENT CHECK");
-    dateRow("N/A", "N/A");
-    statusBadge("Employment Verification");
-    verifyTable([
-      ["Employer", emp.company_name || "N/A", emp.company_name || "N/A"],
-      ["Employee Code", emp.employee_id || "N/A", emp.employee_id || "N/A"],
-      ["Start Date", emp.employment_start || "N/A", emp.employment_start || "N/A"],
-      ["End Date", emp.isCurrent ? "Currently Working" : (emp.employment_end || "N/A"),
-        emp.isCurrent ? "Currently Working" : (emp.employment_end || "N/A")],
-      ["Designation", emp.job_title || "N/A", emp.job_title || "N/A"],
-      ["Mode of Response", "Email Verification", ""],
-    ]);
-    commentRows([
-      ["Verifier's Comments:", emp.leaving_reason || "Verified via email confirmation."],
-      ["Final Disposition", "Clear"],
-      ["Check Status", "Complete"],
-    ]);
-
-    // employment doc
-    if (emp.job_doc) {
-      checkPage(50);
-      txt("Supporting Document:", ML, y + 4, { bold: true, size: 8, color: C.navy });
-      y += 7;
-      const embedded = tryEmbedImage(emp.job_doc, ML, y, 80, 50);
-      if (!embedded) txt(emp.job_doc.split(/[\\/]/).pop(), ML + 4, y + 5, { size: 8, color: C.labelText });
-      y += embedded ? 54 : 10;
-    }
-
-    if (idx < emps.length - 1) doc.addPage();
+  services.forEach((sv, i) => {
+    const sl = (sv.status || "N/A").replace(/_/g, " ");
+    txt(sl, cx + execColW[4 + i] / 2, y + 7, { size: 7, color: C.cleared, bold: true, align: "center", maxWidth: execColW[4 + i] - 2 });
+    cx += execColW[4 + i];
   });
-  doc.addPage();
+  y += 15;
 
-  /* ── Address ── */
-  y = 0; drawHeader(); y += 4;
-  sectionTitle("ADDRESS CHECK");
-  dateRow("N/A", "N/A");
-  statusBadge("Address Verification");
-  verifyTable([
-    ["Current Address", data.current_address || "N/A", data.current_address || "N/A"],
-    ["Current Landmark", data.current_landmark || "N/A", data.current_landmark || "N/A"],
-    ["Residency Status", data.current_residency || "N/A", data.current_residency || "N/A"],
-    ["Permanent Address", data.permanent_address || "N/A", data.permanent_address || "N/A"],
-    ["Perm. Landmark", data.permanent_landmark || "N/A", data.permanent_landmark || "N/A"],
-    ["Ownership Status", data.permanent_residency || "N/A", ""],
-  ]);
-  commentRows([
-    ["Verifier's relation with Subject", "Field verification agent"],
-    ["Check Status", "Clear"],
-  ]);
-
-  // ID doc
-  if (data.id_doc) {
-    checkPage(50);
-    txt("Identity Document:", ML, y + 4, { bold: true, size: 8, color: C.navy });
-    y += 7;
-    const embedded = tryEmbedImage(data.id_doc, ML, y, 80, 50);
-    if (!embedded) txt(data.id_doc.split(/[\\/]/).pop(), ML + 4, y + 5, { size: 8, color: C.labelText });
-    y += embedded ? 54 : 10;
-  }
-
-  // Service docs
-  const servicesWithDocs = services.filter(s => s.doc_1 || s.doc_2);
-  if (servicesWithDocs.length > 0) {
+  /* ══════════════════════════════════════════
+     SERVICE PAGES — one per service
+  ══════════════════════════════════════════ */
+  services.forEach((sv) => {
     doc.addPage();
-    y = 0; drawHeader(); y += 4;
-    sectionTitle("SERVICE DOCUMENTS");
-    servicesWithDocs.forEach(sv => {
-      checkPage(60);
-      txt(sv.services?.name || "Service", ML, y + 5, { bold: true, size: 10, color: C.navy });
-      y += 9;
+    y = 0; drawHeader();
+
+    const svcName = sv.services?.name || "Service";
+    const svcStatus = (sv.status || "N/A").replace(/_/g, " ");
+    const isSvcCompleted = ["COMPLETED", "REJECTED", "CLOSED"].includes(sv.status);
+    const svcCompletionDate = isSvcCompleted
+      ? (sv.updatedAt ? sv.updatedAt.slice(0, 10) : (data.updatedAt ? data.updatedAt.slice(0, 10) : "—"))
+      : "_ _ _";
+
+    sectionTitle(svcName);
+
+    /* Card header — no emoji, plain text */
+    checkPage(12);
+    fill(C.navy); doc.rect(ML, y, CW, 10, "F");
+    txt(svcName.toUpperCase(), ML + 5, y + 6.5, { bold: true, size: 9, color: C.white });
+    // Badge on the right side of the header bar
+    const badgeX = ML + CW - 42;
+    statusBadge(svcStatus, badgeX, y + 7);
+    y += 10;
+
+    /* Status + completion date sub-row */
+    checkPage(16);
+    fill([249, 250, 251]); doc.rect(ML, y, CW, 13, "F");
+    stroke(C.lightGray); doc.setLineWidth(0.2); doc.rect(ML, y, CW, 13, "S");
+
+    // Left: "SERVICE NAME - STATUS" — each part on its own x position
+    txt(svcName.toUpperCase() + "  -", ML + 5, y + 8, { bold: true, size: 8, color: C.labelText });
+    doc.setFontSize(8); doc.setFont("helvetica", "bold");
+    const labelPartW = measuredWidth(svcName.toUpperCase() + "  -");
+    txt(svcStatus, ML + 5 + labelPartW + 2, y + 8, { bold: true, size: 8, color: C.cleared });
+
+    // Right: "Completion Date" label on top, value below — two separate lines
+    const compLabelX = ML + CW * 0.62;
+    txt("Completion Date:", compLabelX, y + 5, { size: 7, color: C.gray });
+    txt(svcCompletionDate, compLabelX, y + 10.5, { bold: true, size: 8, color: C.orange });
+    y += 17;
+
+    /* Documents */
+    const hasDocs = sv.doc_1 || sv.doc_2;
+    if (hasDocs) {
+      checkPage(14);
+      txt(svcName + " Documents", ML, y + 5, { bold: true, size: 9, color: C.navy });
+      y += 12;
+
       [["doc_1", "Document 1"], ["doc_2", "Document 2"]].forEach(([field, label]) => {
         if (!sv[field]) return;
-        checkPage(55);
-        txt(label + ":", ML, y + 4, { bold: true, size: 8, color: C.labelText });
-        y += 7;
-        const embedded = tryEmbedImage(sv[field], ML, y, 80, 50);
-        if (!embedded) txt(sv[field].split(/[\\/]/).pop(), ML + 4, y + 5, { size: 8, color: C.labelText });
-        y += embedded ? 54 : 10;
+        const path = sv[field];
+        const ext = path.split(".").pop().toLowerCase();
+        const isImage = ["jpg", "jpeg", "png", "gif", "webp"].includes(ext);
+
+        if (isImage) {
+          checkPage(80);
+          txt(label + ":", ML, y + 5, { bold: true, size: 8, color: C.labelText });
+          y += 9;
+          const imgH = 65;
+          const imgW = 100;
+          const embedded = tryEmbedImage(path, ML, y, imgW, imgH);
+          if (!embedded) {
+            filePill(path, label);
+          } else {
+            // thin border around image
+            stroke(C.lightGray); doc.setLineWidth(0.3);
+            doc.rect(ML, y, imgW, imgH, "S");
+            y += imgH + 5;
+          }
+        } else {
+          filePill(path, label);
+        }
       });
-      y += 4;
+    } else {
+      checkPage(12);
+      txt("No documents attached for this service.", ML, y + 6, { size: 8, color: C.labelText });
+      y += 12;
+    }
+  });
+
+  /* ══════════════════════════════════════════
+     SERVICES OVERVIEW PAGE
+  ══════════════════════════════════════════ */
+  doc.addPage();
+  y = 0; drawHeader();
+
+  sectionTitle("Services Overview");
+  cardHeader("SERVICES STATUS");
+  y += 6;
+
+  if (services.length > 0) {
+    const cols = 2;
+    const gap = 8;
+    const cardW = (CW - gap * (cols - 1)) / cols;
+    const cardH = 24;
+
+    services.forEach((sv, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      if (col === 0) checkPage(cardH + 4);
+      const xPos = ML + col * (cardW + gap);
+      const yPos = y + row * (cardH + 4);
+      serviceStatusCard(sv, xPos, yPos, cardW);
     });
+
+    const rows = Math.ceil(services.length / cols);
+    y += rows * (cardH + 4) + 4;
+  } else {
+    txt("No services found.", ML, y + 6, { size: 9, color: C.labelText });
+    y += 14;
   }
+
+  /* ── Footer ── */
+  checkPage(18);
+  y += 8;
+  stroke(C.green); doc.setLineWidth(0.8);
+  doc.line(ML, y, ML + CW, y);
+  y += 7;
+  txt("MYSDOM Background Verification", PW / 2, y, { bold: true, size: 8, color: C.navy, align: "center" });
+  y += 5;
+  txt("www.mysdom.com  |  contactus@mysdom.com  |  Bhubaneswar", PW / 2, y, { size: 7, color: C.labelText, align: "center" });
 
   return doc;
 }
@@ -366,16 +502,6 @@ const CardHeader = ({ icon, title, right }) => (
   </div>
 );
 
-const Row = ({ label, value }) => (
-  <div style={{
-    display: "grid", gridTemplateColumns: "160px 1fr",
-    padding: "8px 20px", borderBottom: "1px solid #f3f4f6", fontSize: 13
-  }}>
-    <span style={{ color: "#6b7280", fontWeight: 600 }}>{label}</span>
-    <span style={{ color: "#111827" }}>{value || <em style={{ color: "#aaa" }}>—</em>}</span>
-  </div>
-);
-
 const SectionDivider = ({ title }) => (
   <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "28px 0 16px" }}>
     <div style={{ flex: 1, height: 1, background: "#e5e7eb" }} />
@@ -387,145 +513,33 @@ const SectionDivider = ({ title }) => (
   </div>
 );
 
-const VerifyTable = ({ rows }) => (
-  <div style={{ overflowX: "auto" }}>
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-      <thead>
-        <tr>{["Details", "Stated", "Verified"].map(h => (
-          <th key={h} style={{
-            background: "#1e2b4a", color: "#fff",
-            padding: "9px 14px", textAlign: "left",
-            fontWeight: 700, fontSize: 11, letterSpacing: "0.04em"
-          }}>{h}</th>
-        ))}</tr>
-      </thead>
-      <tbody>
-        {rows.map(([d, s, v], i) => (
-          <tr key={i} style={{ background: i % 2 === 0 ? "#fff" : "#f9fafb" }}>
-            {[d, s, v].map((cell, ci) => (
-              <td key={ci} style={{
-                padding: "9px 14px",
-                color: ci === 0 ? "#374151" : "#1f2937",
-                fontWeight: ci === 0 ? 600 : 400,
-                borderBottom: "1px solid #f3f4f6"
-              }}>{cell || "—"}</td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
-
-const ClearedBox = ({ label }) => (
-  <div style={{
-    margin: "12px 20px 16px", background: "#f0fdf4",
-    border: "1px solid #bbf7d0", borderRadius: 8, padding: "10px 14px"
-  }}>
-    <p style={{ margin: "0 0 4px", fontSize: 11, fontWeight: 700, color: "#166534" }}>{label}</p>
-    <p style={{ margin: "0 0 6px", fontSize: 12, color: "#14532d" }}>
-      Provided details have been verified and found to be correct.
-    </p>
-    <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: "#27ae60" }}>✓ Check Status: Clear</p>
-  </div>
-);
-
-/* file attachment pill — shown in UI when a path exists */
-// const FilePill = ({ path, base_url, label }) => {
-//   if (!path) return <em style={{ fontSize: 12, color: "#aaa" }}>No file</em>;
-//   const name = path.split(/[\\/]/).pop();
-//   const url = base_url ? `${base_url}/${path.replace(/\\/g, "/")}` : "#";
-//   return (
-//     <a href={url} target="_blank" rel="noopener noreferrer"
-//       style={{
-//         display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12,
-//         color: "#166534", background: "#f0fdf4", border: "1px solid #bbf7d0",
-//         borderRadius: 20, padding: "3px 12px", textDecoration: "none", fontWeight: 500
-//       }}>
-//       📎 {label || name}
-//     </a>
-//   );
-// };
-
 const FilePill = ({ path, base_url, label }) => {
-  if (!path) {
-    return <em style={{ fontSize: 12, color: "#aaa" }}>No file</em>;
-  }
-
+  if (!path) return <em style={{ fontSize: 12, color: "#aaa" }}>No file</em>;
   const cleanPath = path.replace(/\\/g, "/");
   const url = base_url ? `${base_url}/${cleanPath}` : "#";
   const ext = cleanPath.split('.').pop().toLowerCase();
   const name = cleanPath.split('/').pop();
 
-  // 🖼️ Image Preview
   if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
-        <img
-          src={url}
-          alt={label}
-          style={{
-
-            // width: "80%",
-            width: 500,
-            // height: "auto",
-            height: 500,
-            borderRadius: 8,
-            border: "1px solid #ddd"
-          }}
-        />
-        {/* <a href={url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12 }}>
-          🔍 View Full
-        </a> */}
+        <img src={url} alt={label} style={{ width: 500, height: 500, borderRadius: 8, border: "1px solid #ddd", objectFit: "contain" }} />
       </div>
     );
   }
-
-  // 📄 PDF Preview
   if (ext === "pdf") {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
-        <iframe
-          src={url}
-          title={label}
-          style={{
-            // width: "100%",
-            // height: 200,
-            width: 500,
-            height: 500,
-            border: "1px solid #ddd",
-            borderRadius: 6
-          }}
-        />
-        {/* <a href={url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12 }}>
-          📥 Open PDF
-        </a> */}
+        <iframe src={url} title={label} style={{ width: 500, height: 500, border: "1px solid #ddd", borderRadius: 6 }} />
       </div>
     );
   }
-
-  // 🔗 Default (other files)
   return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 5,
-        fontSize: 12,
-        color: "#166534",
-        background: "#f0fdf4",
-        border: "1px solid #bbf7d0",
-        borderRadius: 20,
-        padding: "3px 12px",
-        textDecoration: "none",
-        fontWeight: 500
-      }}
-    >
-      📎 {label || name}
-    </a>
+    <a href={url} target="_blank" rel="noopener noreferrer" style={{
+      display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12,
+      color: "#166534", background: "#f0fdf4", border: "1px solid #bbf7d0",
+      borderRadius: 20, padding: "3px 12px", textDecoration: "none", fontWeight: 500
+    }}>📎 {label || name}</a>
   );
 };
 
@@ -551,18 +565,19 @@ const DownloadButton = ({ onClick, loading, size = "md" }) => (
 ───────────────────────────────────────────── */
 const BGVReportPage = () => {
   const location = useLocation();
-  // data comes from navigate(..., { state: { data: req } })
   const navigate = useNavigate();
   const data = location.state?.data || {};
   const base_url = import.meta.env.VITE_BASE_URL;
-
   const [loading, setLoading] = useState(false);
 
   const handleDownload = async () => {
     setLoading(true);
     try {
       const jsPDF = await loadJsPDF();
-      const doc = buildPDF(jsPDF, data, base_url);
+      // Pre-fetch all service document images to base64 before building PDF
+      const services = data.bgvReqestService || [];
+      const imageCache = await preloadImages(services, base_url);
+      const doc = buildPDF(jsPDF, data, base_url, imageCache);
       doc.save(`BGV-Report-${data.req_code || "report"}.pdf`);
     } catch (err) {
       console.error("PDF generation failed:", err);
@@ -573,14 +588,10 @@ const BGVReportPage = () => {
   };
 
   const services = data.bgvReqestService || [];
-  const emps = data.employments || [];
-  const reqDate = data.createdAt
-    ? new Date(data.createdAt).toLocaleDateString("en-IN")
-    : "—";
-  const updateDate = data.updatedAt
-    ? new Date(data.updatedAt).toLocaleDateString("en-IN")
-    : "—";
-  console.log('bgv services:', services);
+  const reqDate = data.createdAt ? new Date(data.createdAt).toLocaleDateString("en-IN") : "—";
+  const updateDate = data.updatedAt ? new Date(data.updatedAt).toLocaleDateString("en-IN") : "—";
+  const isCompleted = ["COMPLETED", "REJECTED", "CLOSED"].includes(data.status);
+
   return (
     <>
       <style>{`
@@ -605,21 +616,21 @@ const BGVReportPage = () => {
         fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
       }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div style={{paddingBottom:"10px", }}>
-            <button 
-              style={{display:"flex",flexDirection:'row',
-                      alignItems:"center", gap:'2px',
-                      textAlign:"center",
-                      padding:"6px",
-                      background:'#3d6ca9',
-                      color:'white',
-                      borderRadius:"5px"
-                     }}
-              onClick={()=>(navigate('/bgv/list'))}
+
+          {/* Back button */}
+          <div style={{ paddingBottom: "10px" }}>
+            <button
+              style={{
+                display: "flex", flexDirection: "row", alignItems: "center", gap: "2px",
+                textAlign: "center", padding: "6px", background: "#3d6ca9",
+                color: "white", borderRadius: "5px", border: "none", cursor: "pointer"
+              }}
+              onClick={() => navigate('/bgv/list')}
             >
-              <ArrowLeft size={18}/>Back
+              <ArrowLeft size={18} />Back
             </button>
           </div>
+
           {/* ── Top Bar ── */}
           <div className="no-print" style={{
             display: "flex", alignItems: "flex-start",
@@ -655,39 +666,19 @@ const BGVReportPage = () => {
             <Card>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
                 <div style={{ padding: 20, borderRight: "1px solid #f3f4f6" }}>
-                  <p style={{
-                    margin: "0 0 4px", fontSize: 11, fontWeight: 700,
-                    color: "#7bc142", textTransform: "uppercase", letterSpacing: "0.08em"
-                  }}>Final Report</p>
-                  <p style={{ margin: "0 0 2px", fontSize: 13, color: "#1f2937", fontWeight: 600 }}>
-                    {data.candidate_name || "—"}
-                  </p>
-                  <p style={{ margin: "0 0 14px", fontSize: 12, color: "#6b7280" }}>
-                    {data.req_code ? `Requested #${data.req_code}` : ""}
-                  </p>
-                  <p style={{
-                    margin: "0 0 4px", fontSize: 11, fontWeight: 700, color: "#1e2b4a",
-                    textTransform: "uppercase", letterSpacing: "0.06em"
-                  }}>Package Opted</p>
+                  <p style={{ margin: "0 0 4px", fontSize: 11, fontWeight: 700, color: "#7bc142", textTransform: "uppercase", letterSpacing: "0.08em" }}>Final Report</p>
+                  <p style={{ margin: "0 0 2px", fontSize: 13, color: "#1f2937", fontWeight: 600 }}>{data.candidate_name || "—"}</p>
+                  <p style={{ margin: "0 0 14px", fontSize: 12, color: "#6b7280" }}>{data.req_code ? `Requested #${data.req_code}` : ""}</p>
+                  <p style={{ margin: "0 0 4px", fontSize: 11, fontWeight: 700, color: "#1e2b4a", textTransform: "uppercase", letterSpacing: "0.06em" }}>Package Opted</p>
                   {services.length > 0
-                    ? services.map(s => (
-                      <p key={s.id} style={{ margin: "0 0 2px", fontSize: 12, color: "#374151" }}>
-                        • {s.services?.name}
-                      </p>
-                    ))
+                    ? services.map(s => <p key={s.id} style={{ margin: "0 0 2px", fontSize: 12, color: "#374151" }}>• {s.services?.name}</p>)
                     : <p style={{ fontSize: 12, color: "#aaa" }}>—</p>}
-                  <p style={{
-                    margin: "14px 0 4px", fontSize: 11, fontWeight: 700, color: "#1e2b4a",
-                    textTransform: "uppercase", letterSpacing: "0.06em"
-                  }}>Date of Request</p>
+                  <p style={{ margin: "14px 0 4px", fontSize: 11, fontWeight: 700, color: "#1e2b4a", textTransform: "uppercase", letterSpacing: "0.06em" }}>Date of Request</p>
                   <p style={{ margin: "0 0 2px", fontSize: 12, color: "#374151" }}>{reqDate}</p>
                   <p style={{ margin: 0, fontSize: 12, color: "#374151" }}>{data.client?.companyName || ""}</p>
                 </div>
                 <div style={{ padding: 20, background: "#f9fafb" }}>
-                  <p style={{
-                    margin: "0 0 6px", fontSize: 11, fontWeight: 700, color: "#1e2b4a",
-                    textTransform: "uppercase", letterSpacing: "0.06em", textAlign: "right"
-                  }}>Prepared By</p>
+                  <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 700, color: "#1e2b4a", textTransform: "uppercase", letterSpacing: "0.06em", textAlign: "right" }}>Prepared By</p>
                   {["Mysdom", "Bhubaneswar", "www.mysdom.com", "contactus@mysdom.com"].map(v => (
                     <p key={v} style={{ margin: "0 0 2px", fontSize: 12, color: "#374151", textAlign: "right" }}>{v}</p>
                   ))}
@@ -695,13 +686,11 @@ const BGVReportPage = () => {
                     <div style={{ display: "flex", justifyContent: "flex-end", gap: 20 }}>
                       <div style={{ textAlign: "right" }}>
                         <p style={{ margin: 0, fontSize: 10, color: "#9ca3af" }}>Report No</p>
-                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#7bc142" }}>
-                          {data.req_code ? `#${data.req_code}` : "—"}
-                        </p>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#7bc142" }}>{data.req_code ? `#${data.req_code}` : "—"}</p>
                       </div>
                       <div style={{ textAlign: "right" }}>
                         <p style={{ margin: 0, fontSize: 10, color: "#9ca3af" }}>Completion Date</p>
-                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#f5a623" }}>{['COMPLETED', 'REJECTED', 'CLOSED'].includes(data.status) ? updateDate : "_ _ _"}</p>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#f5a623" }}>{isCompleted ? updateDate : "_ _ _"}</p>
                       </div>
                     </div>
                   </div>
@@ -719,29 +708,17 @@ const BGVReportPage = () => {
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                   <thead>
                     <tr>{["MYS#", "Applicant", "Organisation", "Package", ...services.map(s => s.services?.name)].map(h => (
-                      <th key={h} style={{
-                        background: "#1e2b4a", color: "#fff",
-                        padding: "9px 10px", textAlign: "center", fontWeight: 700, fontSize: 11
-                      }}>{h}</th>
+                      <th key={h} style={{ background: "#1e2b4a", color: "#fff", padding: "9px 10px", textAlign: "center", fontWeight: 700, fontSize: 11 }}>{h}</th>
                     ))}</tr>
                   </thead>
                   <tbody>
                     <tr style={{ background: "#f9fafb" }}>
-                      {[data.req_code, data.candidate_name, data.client?.companyName,
-                      services.map(s => s.services?.name).join(", ") || "—"].map((v, i) => (
-                        <td key={i} style={{
-                          padding: "9px 10px", textAlign: "center",
-                          fontSize: 12, color: "#1f2937", borderBottom: "1px solid #e5e7eb"
-                        }}>
-                          {v || "—"}
-                        </td>
+                      {[data.req_code, data.candidate_name, data.client?.companyName, services.map(s => s.services?.name).join(", ") || "—"].map((v, i) => (
+                        <td key={i} style={{ padding: "9px 10px", textAlign: "center", fontSize: 12, color: "#1f2937", borderBottom: "1px solid #e5e7eb" }}>{v || "—"}</td>
                       ))}
-                      {[...services.map(s => s.status)].map((v, i) => (
-                        <td key={i} style={{
-                          padding: "9px 10px", textAlign: "center",
-                          borderBottom: "1px solid #e5e7eb"
-                        }}>
-                          <Badge label={v} color={{ bg: "#d1fae5", txt: "#065f46" }} />
+                      {services.map((sv, i) => (
+                        <td key={i} style={{ padding: "9px 10px", textAlign: "center", borderBottom: "1px solid #e5e7eb" }}>
+                          <Badge label={sv.status?.replace(/_/g, " ")} color={{ bg: "#d1fae5", txt: "#065f46" }} />
                         </td>
                       ))}
                     </tr>
@@ -751,182 +728,63 @@ const BGVReportPage = () => {
             </Card>
           </div>
 
-          {/* ── Personal Details ── */}
-          {/* <div className="rs">
-            <SectionDivider title="Candidate Details" />
-            <Card>
-              <CardHeader icon="👤" title="PERSONAL DETAILS"
-                right={data.designation
-                  ? <Badge label={data.designation} color={{ bg:"rgba(255,255,255,.15)", txt:"#fff" }} />
-                  : null}
-              />
-              <div style={{ paddingBottom:6 }}>
-                <Row label="Full Name"     value={data.candidate_name} />
-                <Row label="Email"         value={data.candidate_email} />
-                <Row label="Phone"         value={data.candidate_phone} />
-                <Row label="Department"    value={data.department} />
-                <Row label="Date of Birth" value={data.dob} />
-                <Row label="Gender"        value={data.gender} />
-                <Row label="Father's Name" value={data.father_name} />
-                <Row label="Mother's Name" value={data.mother_name} />
-              </div>
-              {data.id_doc && (
-                <div style={{ padding:"10px 20px 16px", borderTop:"1px solid #f3f4f6" }}>
-                  <p style={{ margin:"0 0 6px", fontSize:11, fontWeight:700, color:"#6b7280",
-                    textTransform:"uppercase", letterSpacing:"0.06em" }}>
-                    Identity Document ({data.id_type})
-                  </p>
-                  <FilePill path={data.id_doc} base_url={base_url} label={`${data.id_type || "ID"} — ${data.id_number || ""}`} />
-                </div>
-              )}
-            </Card>
-          </div> */}
+          {/* ── Service Sections — one card per service, matching PDF layout ── */}
+          {services.map(sv => {
+            const svcName = sv.services?.name || "Service";
+            const svcStatus = sv.status || "—";
+            const isSvcCompleted = ["COMPLETED", "REJECTED", "CLOSED"].includes(sv.status);
+            const svcDate = isSvcCompleted
+              ? (sv.updatedAt ? new Date(sv.updatedAt).toLocaleDateString("en-IN") : updateDate)
+              : "_ _ _";
 
-          {/* ── Address Check ── */}
-          {/* <div className="rs">
-            <SectionDivider title="Address Check" />
-            <Card>
-              <CardHeader icon="🏠" title="ADDRESS CHECK"
-                right={<Badge label="Cleared" color={{ bg:"#d1fae5", txt:"#065f46" }} />}
-              />
-              <div style={{ padding:"12px 20px 4px" }}>
-                <span style={{ fontSize:11, fontWeight:700, color:"#6b7280", textTransform:"uppercase" }}>
-                  Address Verification — <span style={{ color:"#27ae60" }}>Completed</span>
-                </span>
-              </div>
-              <VerifyTable rows={[
-                ["Current Address",   data.current_address,    data.current_address],
-                ["Current Landmark",  data.current_landmark,   data.current_landmark],
-                ["Residency",         data.current_residency,  data.current_residency],
-                ["Duration",          data.current_duration ? `${data.current_duration} yrs` : null, null],
-                ["Permanent Address", data.permanent_address,  data.permanent_address],
-                ["Perm. Landmark",    data.permanent_landmark, data.permanent_landmark],
-              ]} />
-              <ClearedBox label="Final Disposition" />
-            </Card>
-          </div> */}
-
-          {/* ── Education Check ── */}
-          {
-            services?.map(s =>
-              <div className="rs">
-                <SectionDivider title={`${s.services.name}`} />
+            return (
+              <div className="rs" key={sv.id}>
+                <SectionDivider title={svcName} />
                 <Card>
-                  <CardHeader icon="🎓" title={`${s.services.name}`}
-                    right={<Badge label={`${s.status}`} color={{ bg: "#d1fae5", txt: "#065f46" }} />}
+                  <CardHeader
+                    icon="🎓"
+                    title={svcName.toUpperCase()}
+                    right={<Badge label={svcStatus.replace(/_/g, " ")} color={{ bg: "#d1fae5", txt: "#065f46" }} />}
                   />
                   <div style={{ padding: "4px", display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
-
                     <div style={{ padding: "12px 20px 4px" }}>
                       <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" }}>
-                        {`${s.services.name}`} — <span style={{ color: "#27ae60" }}>{`${s.status}`}</span>
+                        {svcName} — <span style={{ color: "#27ae60" }}>{svcStatus.replace(/_/g, " ")}</span>
                       </span>
                     </div>
                     <div style={{ padding: "12px 20px 4px" }}>
                       <p style={{ margin: 0, fontSize: 10, color: "#757677" }}>Completion Date</p>
-                      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#f5a623" }}>{['COMPLETED', 'REJECTED', 'CLOSED'].includes(s.status) ? (s.updatedAt
-                        ? new Date(data.updatedAt).toLocaleDateString("en-IN")
-                        : ""):"_ _ _"}</p>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#f5a623" }}>{svcDate}</p>
                     </div>
                   </div>
-                  {/* <VerifyTable rows={[
-                    ["University", data.university, data.university],
-                    ["Qualification", data.qualification, data.qualification],
-                    ["Specialization", data.specialization, data.specialization],
-                    ["Roll Number", data.roll_number, data.roll_number],
-                    ["Passing Year", data.passing_year, data.passing_year],
-                    ["Mode", "Online", ""],
-                  ]} /> */}
-                  {/* <ClearedBox label="Final Disposition" /> */}
-                  {/* Education doc */}
-                  {(s.doc_1 || s.doc_2) && (
+                  {(sv.doc_1 || sv.doc_2) && (
                     <div style={{ padding: "0 20px 16px" }}>
-                      <p style={{
-                        margin: "0 0 6px", fontSize: 11, fontWeight: 700, color: "#6b7280",
-                        textTransform: "uppercase", letterSpacing: "0.06em"
-                      }}>{s.services.name} Documents</p>
-                      {s.doc_1 && <FilePill path={s?.doc_1} base_url={base_url} label="Education Certificate" />}
-                      {s.doc_2 && <FilePill path={s?.doc_2} base_url={base_url} label="Education Certificate" />}
+                      <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                        {svcName} Documents
+                      </p>
+                      {sv.doc_1 && <FilePill path={sv.doc_1} base_url={base_url} label="Document 1" />}
+                      {sv.doc_2 && <FilePill path={sv.doc_2} base_url={base_url} label="Document 2" />}
                     </div>
                   )}
                 </Card>
               </div>
-            )
-          }
+            );
+          })}
 
-
-          {/* ── Employment Check ── */}
-          {/* <div className="rs">
-            <SectionDivider title="Employment Check" />
-            {emps.length > 0
-              ? emps.map((emp, i) => (
-                  <Card key={emp.id || i}>
-                    <CardHeader icon="💼"
-                      title={`EMPLOYMENT CHECK${emps.length > 1 ? ` #${i+1}` : ""}`}
-                      right={<Badge label="Cleared" color={{ bg:"#d1fae5", txt:"#065f46" }} />}
-                    />
-                    <div style={{ padding:"12px 20px 4px" }}>
-                      <span style={{ fontSize:11, fontWeight:700, color:"#6b7280", textTransform:"uppercase" }}>
-                        Employment Verification — <span style={{ color:"#27ae60" }}>Completed</span>
-                      </span>
-                    </div>
-                    <VerifyTable rows={[
-                      ["Employer",       emp.company_name,     emp.company_name],
-                      ["Employee Code",  emp.employee_id,      emp.employee_id],
-                      ["Start Date",     emp.employment_start, emp.employment_start],
-                      ["End Date",       emp.isCurrent ? "Currently Working" : emp.employment_end,
-                                         emp.isCurrent ? "Currently Working" : emp.employment_end],
-                      ["Designation",    emp.job_title,        emp.job_title],
-                      ["Mode",           "Email Verification", ""],
-                    ]} />
-                    <ClearedBox label="Final Disposition" />
-                    
-                    {emp.job_doc && (
-                      <div style={{ padding:"0 20px 16px" }}>
-                        <p style={{ margin:"0 0 6px", fontSize:11, fontWeight:700, color:"#6b7280",
-                          textTransform:"uppercase", letterSpacing:"0.06em" }}>Supporting Document</p>
-                        <FilePill path={emp.job_doc} base_url={base_url} label="Payslip / Relieving Letter" />
-                      </div>
-                    )}
-                  </Card>
-                ))
-              : <Card><div style={{ padding:24, color:"#aaa", fontSize:13 }}>No employment records.</div></Card>
-            }
-          </div> */}
-
-          {/* ── Services ── */}
+          {/* ── Services Overview ── */}
           <div className="rs">
             <SectionDivider title="Services Overview" />
             <Card>
               <CardHeader icon="⚙️" title="SERVICES STATUS" />
               {services.length > 0
                 ? (
-                  <div style={{
-                    padding: "16px 20px", display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 12
-                  }}>
+                  <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 12 }}>
                     {services.map(sv => {
                       const sc = statusColor(sv.status);
-                      const docCount = [sv.doc_1, sv.doc_2].filter(Boolean).length;
                       return (
-                        <div key={sv.id} style={{
-                          border: `1.5px solid ${sc.bg}`,
-                          borderRadius: 10, padding: "12px 14px", background: sc.bg + "55"
-                        }}>
-                          <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: 13, color: "#1e2b4a" }}>
-                            {sv.services?.name}
-                          </p>
+                        <div key={sv.id} style={{ border: `1.5px solid ${sc.bg}`, borderRadius: 10, padding: "12px 14px", background: sc.bg + "55" }}>
+                          <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: 13, color: "#1e2b4a" }}>{sv.services?.name}</p>
                           <Badge label={sv.status?.replace(/_/g, " ") || "—"} color={sc} />
-                          {/* service docs */}
-                          {/* {(sv.doc_1 || sv.doc_2) && (
-                            <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
-                              {sv.doc_1 && <FilePill path={sv.doc_1} base_url={base_url} label="Document 1" />}
-                              {sv.doc_2 && <FilePill path={sv.doc_2} base_url={base_url} label="Document 2" />}
-                            </div>
-                          )}
-                          {docCount === 0 && (
-                            <p style={{ margin: "8px 0 0", fontSize: 11, color: "#9ca3af" }}>No documents attached</p>
-                          )} */}
                         </div>
                       );
                     })}
@@ -943,9 +801,7 @@ const BGVReportPage = () => {
               background: "linear-gradient(135deg,#1e2b4a,#2d4070)",
               borderRadius: 16, padding: "24px 40px", textAlign: "center", color: "#fff", maxWidth: 480
             }}>
-              <p style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 700, color: "#7bc142" }}>
-                MYSDOM Background Verification
-              </p>
+              <p style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 700, color: "#7bc142" }}>MYSDOM Background Verification</p>
               <p style={{ margin: "0 0 16px", fontSize: 12, color: "rgba(255,255,255,.7)" }}>
                 Download the official PDF report
                 {data.candidate_name && <> for <strong style={{ color: "#fff" }}>{data.candidate_name}</strong></>}

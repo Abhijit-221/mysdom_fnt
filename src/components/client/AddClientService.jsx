@@ -47,6 +47,7 @@ function AddClientService() {
             const res = await axiosInstance.get(`/client-service/getby/${client_id}`);
             const services = res.data.data.map(item => ({
                 ...item.service,
+                clientServiceId:item.id,
                 tatDays: item.tatDays
             }));
             console.log('res:', services)
@@ -92,6 +93,24 @@ function AddClientService() {
         }
 
     };
+
+    //remove client service 
+    const handleDeleteClientService=async(id)=>{
+        console.log("clientServices:",clientServices);
+        console.log('client service id:',id);
+        try{
+            const response = await axiosInstance.post(`/client-service/delete`,{
+                clientserv_id:id
+            });
+            fetchAllServices();
+            fetchClientServices();
+            toast.success("Assigned service removed")
+            
+        }
+        catch(error){
+            console.log(error);
+        }
+    }
 
     return (
 
@@ -146,10 +165,7 @@ function AddClientService() {
                                 <td>
                                     <button
                                         className="delete-btn"
-                                        // onClick={() => {
-                                        //     setSelectedServiceId(service.id);
-                                        //     // setShowModal(true);
-                                        // }}
+                                        onClick={()=>handleDeleteClientService(service.clientServiceId)}
                                     >
                                         <Trash size={16}/>
                                     </button>
