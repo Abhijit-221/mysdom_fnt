@@ -47,7 +47,7 @@ function BgvRequestList() {
     const handleGenerate = async () => {
         console.log("button clicked")
         try {
-            const response = await axiosInstance.get("/bgvrequest/form-link/generate");
+            const response =  await axiosInstance.get("/bgvrequest/formlink");
             setLink(response?.data?.data?.link);
             setIsModalOpen(true)
         }
