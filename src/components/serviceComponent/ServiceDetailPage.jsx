@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./serviceDetailPage.css";
 import axiosInstance from "../../api/axiosInstance";
 import { useNavigate, useParams } from "react-router-dom";
+import toast from "react-hot-toast";
 
 // const services = [
 //   { label: "Regular Employee Verification", href: "#", active: true },
