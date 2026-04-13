@@ -98,6 +98,7 @@ export default function ServiceDetailPage() {
 
         }
         catch (err) {
+            console.log("err:",err);
             toast.error(err.response?.data?.message || "Failed to load Service Details");
         }
     };
