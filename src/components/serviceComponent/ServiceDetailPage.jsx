@@ -179,7 +179,7 @@ export default function ServiceDetailPage() {
 
               <h4 className="section-subheading">Key Benefits</h4>
               <ul className="benefits-list">
-                {service?.moredetails?.keybenifits.map((b) => (
+                {service?.moredetails?.keybenifits?.map((b) => (
                   <li key={b} className="benefit-item">
                     <span className="benefit-icon">{b.icon}</span>
                     <p>
