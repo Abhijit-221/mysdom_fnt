@@ -175,38 +175,52 @@
 
 .sidebar-list {
   list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
-.sidebar-list li a {
+.sidebar-list li p {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 11px 14px;
-  border-radius: var(--radius);
-  font-size: 0.88rem;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  user-select: none;
+}
+
+.sidebar-list li p:hover {
+  background: #f5f5f5;
+  color: #111;
+}
+
+.sidebar-list li.active p {
+  background: #E6F1FB;
+  color: #185FA5;
   font-weight: 500;
-  color: var(--clr-muted);
-  text-decoration: none;
-  transition: background var(--transition), color var(--transition);
 }
 
-.sidebar-list li a:hover,
-.sidebar-list li.active a {
-  background: var(--clr-primary);
-  color: #fff;
-}
-
-.sidebar-list li.active a {
-  font-weight: 600;
+.sidebar-list li.active .chevron {
+  color: #185FA5;
 }
 
 .chevron {
-  font-size: 0.7rem;
-  opacity: 0.65;
-  letter-spacing: -0.04em;
+  font-size: 11px;
+  color: #aaa;
+  flex-shrink: 0;
+  letter-spacing: -2px;
+  transition: color 0.15s;
+}
+
+.sidebar-list li p:hover .chevron {
+  color: #777;
 }
 
 /* Sidebar Help */

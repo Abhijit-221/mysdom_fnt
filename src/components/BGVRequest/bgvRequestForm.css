@@ -588,6 +588,60 @@
 }
 
 /* ══════════════════════════════════════════
+   TERMS ACKNOWLEDGEMENT
+══════════════════════════════════════════ */
+.bgv-terms-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--bgv-border);
+  border-radius: var(--bgv-radius);
+  background: var(--bgv-surface-2);
+  padding: 12px;
+}
+
+.bgv-terms-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.bgv-terms-link {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--bgv-accent);
+  text-decoration: none;
+}
+
+.bgv-terms-link:hover {
+  text-decoration: underline;
+}
+
+.bgv-terms-viewer {
+  width: 100%;
+  min-height: 380px;
+  border: 1px solid var(--bgv-border);
+  border-radius: var(--bgv-radius-sm);
+  background: #fff;
+}
+
+.bgv-ack-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: var(--bgv-text);
+  font-weight: 500;
+}
+
+.bgv-ack-check input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--bgv-accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════
    FOOTER (nav buttons)
 ══════════════════════════════════════════ */
 .form-footer {

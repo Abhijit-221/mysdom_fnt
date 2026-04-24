@@ -19,12 +19,14 @@ import ServiceAdd from "../components/serviceComponent/ServiceAdd";
 import BgvRequestList from "../components/BGVRequest/BGVRequestList";
 import BgvRequestForm from "../components/BGVRequest/BVGRequestForm";
 import AddClientService from "../components/client/AddClientService";
-import BGVViewEditRequestForm from "../components/BGVRequest/BGVviewEditForm";
+import BGVViewForm from "../components/BGVRequest/BGVViewForm";
 import BGVStatusUpdate from "../components/BGVRequest/BGVStatusUpdate";
 import UploadCandidate from "../components/UploadCandidate";
 import About from "../components/About";
 import ContactUs from "../components/ContactUs";
 import Product from "../components/Product/Product";
+import AddProduct from "../components/Product/AddProduct";
+import ViewOrEditProduct from "../components/Product/ViewOrEditProduct";
 import ServiceDetailPage from "../components/serviceComponent/ServiceDetailPage";
 import UpdateService from "../components/serviceComponent/UpdateService";
 import CreateService from "../components/serviceComponent/CreateService";
@@ -44,6 +46,22 @@ const AppRoutes = () => {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/product" element={<Product />} />
+        <Route
+          path="/product/add"
+          element={
+            <ProtectedRoute>
+              <AddProduct />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/product/view/:id"
+          element={
+            <ProtectedRoute>
+              <ViewOrEditProduct />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/service/detail/:id" element={<ServiceDetailPage />} />
 
 
@@ -120,7 +138,7 @@ const AppRoutes = () => {
         {/* <Route path="" element={<BGVViewEditRequestForm />} /> */}
         <Route path="/bgv-view" element={
           <ProtectedRoute>
-            <BGVViewEditRequestForm />
+            <BGVViewForm />
           </ProtectedRoute>
         }/>
         <Route path="/bgv-update/:req_id" element={

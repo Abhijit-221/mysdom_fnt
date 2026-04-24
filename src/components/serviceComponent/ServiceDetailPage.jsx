@@ -4,58 +4,6 @@ import axiosInstance from "../../api/axiosInstance";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
-// const services = [
-//   { label: "Regular Employee Verification", href: "#", active: true },
-//   { label: "Contractual Verification", href: "#" },
-//   { label: "Third-Party Verification", href: "#" },
-//   { label: "Tenant Verification", href: "#" },
-//   { label: "Individual Verification", href: "#" },
-// ];
-
-// const keyBenefits = [
-//   {
-//     icon: "✔",
-//     title: "Thorough Background Checks:",
-//     desc: "Ensuring credibility and reliability in every hire.",
-//   },
-//   {
-//     icon: "✔",
-//     title: "Long-Term Focus:",
-//     desc: "Prioritizing candidates who align with your long-term success.",
-//   },
-//   {
-//     icon: "✔",
-//     title: "Confidentiality:",
-//     desc: "We maintain high levels of data security during the process.",
-//   },
-// ];
-
-// const processCol1 = [
-//   "Targeted sourcing",
-//   "Detailed screening",
-//   "Background verification",
-// ];
-// const processCol2 = [
-//   "Skill assessment",
-//   "Interview coordination",
-//   "Post-hire support",
-// ];
-
-// const faqs = [
-//   {
-//     q: "How do you ensure the quality of candidates?",
-//     a: "We conduct in-depth background checks and assessments to guarantee the qualifications and credibility of every hire.",
-//   },
-//   {
-//     q: "How long does the hiring process take?",
-//     a: "Our efficient process typically takes between 2–4 weeks, depending on the role and candidate availability.",
-//   },
-//   {
-//     q: "What happens if a candidate doesn't work out?",
-//     a: "We offer post-hire support and provide replacement candidates if necessary within a pre-defined period.",
-//   },
-// ];
-
 export default function ServiceDetailPage() {
     const {id} = useParams();
     const user = JSON.parse(localStorage.getItem('user'));
@@ -81,8 +29,8 @@ export default function ServiceDetailPage() {
             console.log("service details data:", serviceData);
             setService(serviceData);
 
-            const servicesRespones = await axiosInstance.get(`/service/list`);
-            const multiResp = servicesRespones?.data?.data?.services || [];
+            const servicesRespones = await axiosInstance.get(`/service/get`);
+            const multiResp = servicesRespones?.data?.data || [];
             console.log("services data:", multiResp);
             setMultiservice(multiResp);
             
@@ -117,7 +65,7 @@ export default function ServiceDetailPage() {
         <div className="banner-overlay" />
         <div className="banner-content">
           <p className="banner-eyebrow" onClick={()=>(navigate('/'))}>Home</p>
-          <h1 className="banner-title">Regular Employee Verification</h1>
+          <h1 className="banner-title">{service.name}</h1>
           <div className="banner-accent" />
         </div>
       </section>
@@ -146,7 +94,7 @@ export default function ServiceDetailPage() {
               <div className="sidebar-help-content">
                 <h4>We're Always Ready to Help You</h4>
                 {
-                    user.role==="admin" || user.role==="superadmin"? <p className="btn-primary" onClick={()=>navigate(`/service/update/${id}`)}>
+                    ['superadmin','admin'].includes(user?.role)? <p className="btn-primary" onClick={()=>navigate(`/service/update/${id}`)}>
                   Edit <span className="chevron">››</span>
                 </p> : <p className="btn-primary" onClick={()=>navigate('/contact')}>
                   Need Help <span className="chevron">››</span>

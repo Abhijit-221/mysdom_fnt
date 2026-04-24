@@ -44,11 +44,32 @@ function BgvRequestList() {
 
     const [link, setLink] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [products, setProducts] = useState([]);
     const handleGenerate = async () => {
         console.log("button clicked")
         try {
-            const response =  await axiosInstance.post("/bgvrequest/formlink");
-            setLink(response?.data?.data?.link);
+            if (selectProduct.length) {
+                const response = await axiosInstance.post("/bgvrequest/formlink", {
+                    products: selectProduct
+                });
+
+                setLink(response?.data?.data?.link);
+            }
+            else {
+                toast.error("Select any product")
+            }
+            // setIsModalOpen(true)
+        }
+        catch (err) {
+            console.log(err);
+            toast.error(err?.response?.data?.message, "Faild to generate link.")
+        }
+    };
+    const handleLink = async () => {
+        console.log("button clicked")
+        try {
+            const response = await axiosInstance.get("product/list");
+            setProducts(response?.data?.data);
             setIsModalOpen(true)
         }
         catch (err) {
@@ -63,24 +84,23 @@ function BgvRequestList() {
     const styles = {
         overlay: {
             position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            background: "rgba(0,0,0,0.5)",
+            inset: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
             zIndex: 1000,
+            padding: "20px"
         },
-
         modal: {
-            background: "#fff",
-            padding: "24px",
-            borderRadius: "16px",
-            width: "420px",
-            boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
-            animation: "fadeIn 0.3s ease",
+            width: "100%",
+            maxWidth: "600px",
+            maxHeight: "80vh",
+            overflowY: "auto",
+            backgroundColor: "#fff",
+            borderRadius: "12px",
+            padding: "20px",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.2)"
         },
 
         header: {
@@ -106,30 +126,65 @@ function BgvRequestList() {
             marginBottom: "15px",
         },
 
+        inputSection: {
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px"
+        },
         inputWrapper: {
             display: "flex",
-            alignItems: "center",
-            border: "1px solid #ddd",
-            borderRadius: "8px",
-            overflow: "hidden",
-            marginBottom: "20px",
+            gap: "10px"
         },
-
         input: {
             flex: 1,
-            border: "none",
             padding: "10px",
-            fontSize: "13px",
-            outline: "none",
+            border: "1px solid #ccc",
+            borderRadius: "8px"
         },
-
         copyBtn: {
-            background: "#2563eb",
+            padding: "10px 14px",
+            backgroundColor: "#7c3aed",
             color: "#fff",
             border: "none",
-            padding: "10px 14px",
+            borderRadius: "8px",
+            cursor: "pointer"
+        },
+        emailBox: {
+            border: "1px solid #ccc",
+            borderRadius: "8px",
+            padding: "8px",
+            minHeight: "48px"
+        },
+        tagContainer: {
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "8px",
+            alignItems: "center"
+        },
+        emailTag: {
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            backgroundColor: "#ede9fe",
+            color: "#5b21b6",
+            padding: "6px 10px",
+            borderRadius: "20px",
+            fontSize: "13px"
+        },
+        removeBtn: {
+            border: "none",
+            background: "transparent",
+            color: "#5b21b6",
             cursor: "pointer",
-            fontSize: "13px",
+            fontSize: "14px"
+        },
+        emailInput: {
+            border: "none",
+            outline: "none",
+            flex: 1,
+            minWidth: "220px",
+            padding: "8px",
+            fontSize: "14px"
         },
 
         footer: {
@@ -178,7 +233,73 @@ function BgvRequestList() {
         );
     }
 
+    const [selectProduct, setSelectProduct] = useState([]);
+    const handleCheckboxChange = (productId) => {
+        setSelectProduct((prev) =>
+            prev.includes(productId)
+                ? prev.filter((id) => id !== productId)
+                : [...prev, productId]
+        );
+    };
 
+    const handleClose = () => {
+        setIsModalOpen(false);
+        setProducts([]);
+        setSelectProduct([]);
+        setLink("")
+    }
+
+
+
+    //let sent link to user email
+    const [emailInput, setEmailInput] = useState("");
+    const [emails, setEmails] = useState([]);
+    const validateEmail = (email) => {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    };
+    const addEmails = (value) => {
+        const splitEmails = value
+            .split(",")
+            .map((item) => item.trim())
+            .filter((item) => item !== "");
+
+        const validEmails = splitEmails.filter(validateEmail);
+
+        setEmails((prev) => [...new Set([...prev, ...validEmails])]);
+    };
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter" || e.key === ",") {
+            e.preventDefault();
+            addEmails(emailInput);
+            setEmailInput("");
+        }
+    };
+     const removeEmail = (email) => {
+        setEmails((prev) => prev.filter((item) => item !== email));
+    };
+    const handleBlur = () => {
+        if (emailInput.trim()) {
+            addEmails(emailInput);
+            setEmailInput("");
+        }
+    };
+    const handelSendMail = async () => {
+        try {
+            const payload = {
+                formLink:link,
+                emails
+            };
+            let response=await axiosInstance.post(`/mail/send-formlink`,payload);
+
+            console.log("payload:", payload);
+            toast.success(response?.data.message);
+        }
+        catch (err) {
+            console.log(err);
+            toast.error(err?.response?.data?.message, "Faild to generate link.")
+
+        }
+    }
 
     return (
         <div className="bgv-container">
@@ -214,7 +335,7 @@ function BgvRequestList() {
                                     ⬆️ Batch Upload
                                 </a>
 
-                                <button className="link-btn" onClick={handleGenerate}>
+                                <button className="link-btn" onClick={handleLink}>
                                     Generate Link..
                                 </button>
 
@@ -222,11 +343,45 @@ function BgvRequestList() {
                                 {isModalOpen && (
                                     <div style={styles.overlay}>
                                         <div style={styles.modal}>
+                                            <div className="product-select-box">
+                                                <h2>Select Products</h2>
 
+                                                <div className="product-list">
+                                                    {products.map((product) => (
+                                                        <label key={product.id} className="product-item">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={selectProduct.includes(product.id)}
+                                                                onChange={() => handleCheckboxChange(product.id)}
+                                                            />
+                                                            <span>{product.title}</span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+
+                                                <div className="selected-output">
+                                                    <h3>Selected Products:</h3>
+                                                    {selectProduct.length > 0 ? (
+                                                        <ul>
+                                                            {products
+                                                                .filter((product) => selectProduct.includes(product.id))
+                                                                .map((product) => (
+                                                                    <li key={product.id}>{product.title}</li>
+                                                                ))}
+                                                        </ul>
+                                                    ) : (
+                                                        <p>No product selected</p>
+                                                    )}
+                                                </div>
+                                                <div className="link-btn-section">
+                                                    <button className="generate-link-btn" onClick={handleGenerate}>Create link..</button>
+                                                    <button className="clear-link-btn" onClick={() => setLink("")}>Clear</button>
+                                                </div>
+                                            </div>
                                             {/* Header */}
                                             <div style={styles.header}>
                                                 <div style={styles.icon}>🔗</div>
-                                                <h3 style={styles.title}>Form Link Generated</h3>
+                                                <h3 style={styles.title}>Form Link</h3>
                                             </div>
 
                                             {/* Description */}
@@ -234,34 +389,70 @@ function BgvRequestList() {
                                                 Share this link with the user to fill the form.
                                             </p>
 
-                                            {/* Input + Copy */}
-                                            <div style={styles.inputWrapper}>
-                                                <input
-                                                    value={link}
-                                                    readOnly
-                                                    style={styles.input}
-                                                />
-                                                <button style={styles.copyBtn} onClick={handleCopy}>
-                                                    Copy
-                                                </button>
+
+                                            <div>
+                                                {
+                                                    link &&
+                                                    <div style={styles.inputSection}>
+                                                        <div style={styles.inputWrapper}>
+                                                            <input value={link} readOnly style={styles.input} />
+                                                            <button style={styles.copyBtn} onClick={handleCopy}>
+                                                                Copy
+                                                            </button>
+                                                        </div>
+
+                                                        <div style={styles.emailBox}>
+                                                            <div style={styles.tagContainer}>
+                                                                {emails.map((email) => (
+                                                                    <div key={email} style={styles.emailTag}>
+                                                                        <span>{email}</span>
+                                                                        <button
+                                                                            type="button"
+                                                                            style={styles.removeBtn}
+                                                                            onClick={() => removeEmail(email)}
+                                                                        >
+                                                                            ×
+                                                                        </button>
+                                                                    </div>
+                                                                ))}
+
+                                                                <input
+                                                                    type="text"
+                                                                    value={emailInput}
+                                                                    onChange={(e) => setEmailInput(e.target.value)}
+                                                                    onKeyDown={handleKeyDown}
+                                                                    onBlur={handleBlur}
+                                                                    placeholder="Enter email and press comma or Enter"
+                                                                    style={styles.emailInput}
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        {/* <button onClick={handelSendMail}>Send</button> */}
+                                                    </div>
+                                                }
+
+                                                {/* Footer Buttons */}
+                                                <div style={styles.footer}>
+                                                    {link &&
+                                                        <button
+                                                            style={styles.openBtn}
+                                                            // type={!link || !payload.length?"hidden":"button"}
+                                                            // onClick={() => window.open(link, "_blank")}
+                                                            onClick={handelSendMail}
+                                                        >
+                                                            Send
+                                                        </button>}
+
+                                                    <button
+                                                        style={styles.closeBtn}
+                                                        onClick={handleClose}
+                                                    >
+                                                        Close
+                                                    </button>
+                                                </div>
                                             </div>
 
-                                            {/* Footer Buttons */}
-                                            <div style={styles.footer}>
-                                                <button
-                                                    style={styles.openBtn}
-                                                    onClick={() => window.open(link, "_blank")}
-                                                >
-                                                    Open
-                                                </button>
-
-                                                <button
-                                                    style={styles.closeBtn}
-                                                    onClick={() => setIsModalOpen(false)}
-                                                >
-                                                    Close
-                                                </button>
-                                            </div>
 
                                         </div>
                                     </div>
@@ -334,24 +525,24 @@ function BgvRequestList() {
                                         >
                                             <ViewIcon size={16} />
                                         </button>
-                                        {
-                                            user.role === 'user' ? <button
-                                                className="edit-btn"
-                                                onClick={() =>
-                                                    navigate(`/bgv-view`, {
-                                                        state: { data: req, mode: "edit", role: user.role }
-                                                    })
-                                                }
-                                            >
-                                                <Edit size={16} />
-                                            </button> : <button
-                                                className="edit-btn"
-                                                onClick={() =>
-                                                    navigate(`/bgv-update/${req.id}`)
-                                                }
-                                            >
-                                                <Edit size={16} />
-                                            </button>
+                                        {['admin', 'superadmin'].includes(user.role) && <button
+                                            className="edit-btn"
+                                            onClick={() =>
+                                                navigate(`/bgv-update/${req.id}`)
+                                            }
+                                        >
+                                            <Edit size={16} />
+                                        </button>
+                                            //  ? <button
+                                            //     className="edit-btn"
+                                            //     onClick={() =>
+                                            //         navigate(`/bgv-view`, {
+                                            //             state: { data: req, mode: "edit", role: user.role }
+                                            //         })
+                                            //     }
+                                            // >
+                                            //     <Edit size={16} />
+                                            // </button> : 
                                         }
                                         <button
                                             className="download-btn"

@@ -23,19 +23,16 @@ const STATUS_CLASS = {
 
 function BGVStatusUpdate() {
   const { req_id } = useParams();
-  console.log("req_id:",req_id);
   const navigate = useNavigate();
   const [requestData, setRequestData] = useState({});
-  const [updateService, setUpdateService] = useState({});
+  const [updateProduct, setUpdateProduct] = useState({});
   const [submitting, setSubmitting] = useState({});
 
-  const base_url = import.meta.env.VITE_BASE_URL;
+  const baseUrl = import.meta.env.VITE_BASE_URL;
 
-  /* ── fetch ── */
-  const fetchSingleService = async () => {
+  const fetchSingleRequest = async () => {
     try {
       const response = await axiosInstance.get(`/bgvrequest/getby/${req_id}`);
-      console.log(response.data.data);
       setRequestData(response.data.data);
     } catch (error) {
       toast.error(
@@ -45,108 +42,146 @@ function BGVStatusUpdate() {
     }
   };
 
-  useEffect(() => { fetchSingleService(); }, []);
+  useEffect(() => {
+    fetchSingleRequest();
+  }, []);
 
-  /* ── patch helper ── */
-  const patchService = (serviceId, requestId, patch) => {
-    setUpdateService(prev => ({
+  const getProductId = (product) => product?.productId || product?.id;
+  const getRequestId = (product) => product?.requestId || requestData?.id;
+  const getProductName = (product) =>
+    product?.Product?.title ||
+    product?.product?.title ||
+    // product?.Product?.name ||
+    // product?.product?.name ||
+    // product?.services?.name ||
+    // product?.service?.name ||
+    'Unnamed Product';
+
+  const patchProduct = (productId, requestId, patch) => {
+    setUpdateProduct((prev) => ({
       ...prev,
-      [serviceId]: {
+      [productId]: {
         request_id: requestId,
-        service_id: serviceId,
-        ...prev[serviceId],
+        product_id: productId,
+        ...prev[productId],
         ...patch,
       },
     }));
   };
 
-  const handleStatusChange = (requestId, serviceId, e) =>
-    patchService(serviceId, requestId, { status: e.target.value });
+  const handleStatusChange = (requestId, productId, e) =>
+    patchProduct(productId, requestId, { status: e.target.value });
 
-  const handleRemarkChange = (requestId, serviceId, e) =>
-    patchService(serviceId, requestId, { remark: e.target.value });
+  const handleRemarkChange = (requestId, productId, e) =>
+    patchProduct(productId, requestId, { remark: e.target.value });
 
-  const handleDocChange = (requestId, serviceId, e, docField) => {
+  const handleModeOfVerification = (requestId, productId, e) =>
+    patchProduct(productId, requestId, { mode_of_verification: e.target.value });
+
+  const handleVerifierComment = (requestId, productId, e) =>
+    patchProduct(productId, requestId, { verifier_comment: e.target.value });
+
+  const handleFinalDisposition = (requestId, productId, e) =>
+    patchProduct(productId, requestId, { final_desc: e.target.value });
+
+  const handleDocChange = (requestId, productId, e, docField) => {
     const file = e.target.files[0] || null;
-    patchService(serviceId, requestId, { [docField]: file });
+    patchProduct(productId, requestId, { [docField]: file });
   };
 
-  /* ── dirty check ── */
-  const isDirty = (service) => {
-    const draft = updateService[service.serviceId];
+  const isDirty = (product) => {
+    const productId = getProductId(product);
+    const draft = updateProduct[productId];
     if (!draft) return false;
+
     return (
-      (draft.status !== undefined && draft.status !== service.status) ||
-      (draft.remark !== undefined && draft.remark !== (service.remark || '')) ||
+      (draft.status !== undefined && draft.status !== product.status) ||
+      (draft.remark !== undefined && draft.remark !== (product.remark || '')) ||
+      (draft.mode_of_verification !== undefined && draft.mode_of_verification !== (product.mode_of_verification || '')) ||
+      (draft.verifier_comment !== undefined && draft.verifier_comment !== (product.verifier_comment || '')) ||
+      (draft.final_desc !== undefined && draft.final_desc !== (product.final_desc || '')) ||
       draft.doc_1 instanceof File ||
       draft.doc_2 instanceof File
     );
   };
 
-  /* ── submit ── */
-  const handleStatusSubmit = async (serviceId) => {
-    const payload = updateService[serviceId];
+  const handleStatusSubmit = async (productId) => {
+    const payload = updateProduct[productId];
     if (!payload) return;
 
     try {
-      setSubmitting(prev => ({ ...prev, [serviceId]: true }));
+      setSubmitting((prev) => ({ ...prev, [productId]: true }));
 
       const hasFile = payload.doc_1 instanceof File || payload.doc_2 instanceof File;
 
       if (hasFile) {
         const fd = new FormData();
         fd.append('request_id', payload.request_id);
-        fd.append('service_id', payload.service_id);
+        fd.append('product_id', payload.product_id);
         if (payload.status !== undefined) fd.append('status', payload.status);
         if (payload.remark !== undefined) fd.append('remark', payload.remark);
+
+        if (payload.mode_of_verification !== undefined) fd.append('mode_of_verification', payload.mode_of_verification);
+        if (payload.verifier_comment !== undefined) fd.append('verifier_comment', payload.verifier_comment);
+        if (payload.final_desc !== undefined) fd.append('final_desc', payload.final_desc);
+
         if (payload.doc_1 instanceof File) fd.append('doc_1', payload.doc_1);
         if (payload.doc_2 instanceof File) fd.append('doc_2', payload.doc_2);
+
         await axiosInstance.put('/bgvrequest/status/update', fd, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       } else {
         await axiosInstance.put('/bgvrequest/status/update', {
           request_id: payload.request_id,
-          service_id: payload.service_id,
+          product_id: payload.product_id,
           ...(payload.status !== undefined && { status: payload.status }),
           ...(payload.remark !== undefined && { remark: payload.remark }),
+          ...(payload.mode_of_verification !== undefined && { mode_of_verification: payload.mode_of_verification }),
+          ...(payload.verifier_comment !== undefined && { verifier_comment: payload.verifier_comment }),
+          ...(payload.final_desc !== undefined && { final_desc: payload.final_desc }),
         });
       }
 
       toast.success('Updated successfully');
-      fetchSingleService();
-      setUpdateService(prev => { const n = { ...prev }; delete n[serviceId]; return n; });
+      fetchSingleRequest();
+      setUpdateProduct((prev) => {
+        const next = { ...prev };
+        delete next[productId];
+        return next;
+      });
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
         (error.request ? 'Server not responding.' : error.message)
       );
     } finally {
-      setSubmitting(prev => ({ ...prev, [serviceId]: false }));
+      setSubmitting((prev) => ({ ...prev, [productId]: false }));
     }
   };
 
-  /* ── existing file link ── */
   const ExistingFile = ({ path, label }) => {
     if (!path) return <span className="no-file">No file</span>;
     const fileName = path.split(/[\\/]/).pop();
+
     return (
       <a
-        href={`${base_url}/${path.replace(/\\/g, '/')}`}
+        href={`${baseUrl}/${path.replace(/\\/g, '/')}`}
         target="_blank"
         rel="noopener noreferrer"
         className="file-pill"
         title={fileName}
       >
-        📎 {label}
+        {label}
       </a>
     );
   };
 
-  /* ── doc cell: existing link + new-file picker ── */
-  const DocCell = ({ service, docField, label }) => {
-    const existingPath = service[docField];
-    const draft = updateService[service.serviceId];
+  const DocCell = ({ product, docField, label }) => {
+    const productId = getProductId(product);
+    const requestId = getRequestId(product);
+    const existingPath = product[docField];
+    const draft = updateProduct[productId];
     const newFile = draft?.[docField];
 
     return (
@@ -154,37 +189,29 @@ function BGVStatusUpdate() {
         <ExistingFile path={existingPath} label={label} />
         <label className="file-pick-label">
           <span className="file-pick-btn">
-            {newFile ? `✓ ${newFile.name}` : '↑ Upload new'}
+            {newFile ? `Selected: ${newFile.name}` : 'Upload new'}
           </span>
           <input
             type="file"
             className="file-pick-input"
-            onChange={(e) =>
-              handleDocChange(service.requestId, service.serviceId, e, docField)
-            }
+            onChange={(e) => handleDocChange(requestId, productId, e, docField)}
           />
         </label>
-
         {newFile && <span className="new-file-badge">New file ready</span>}
       </div>
     );
   };
 
-  /* ════════════════════════════════════
-     RENDER
-  ════════════════════════════════════ */
   return (
     <div>
       <div className="admin-section">
-        <div className='back-btn-section'>
-          <button
-            onClick={() => navigate('/bgv/list')}
-          >
+        <div className="back-btn-section">
+          <button onClick={() => navigate('/bgv/list')}>
             <ArrowLeft size={16} />
             Back
           </button>
         </div>
-        {/* ── Request Details Header ── */}
+
         <div className="request-header">
           <h3>BGV Request Details</h3>
           <div className="request-info">
@@ -209,18 +236,19 @@ function BGVStatusUpdate() {
           </div>
         </div>
 
-        {/* ── Services Table ── */}
-        <div className='table-section'>
-
-          <h3>Update Service Status</h3>
+        <div className="table-section">
+          <h3>Update Product Status</h3>
 
           <div style={{ overflowX: 'auto' }}>
             <table className="service-table">
               <thead>
                 <tr>
-                  <th>Service Name</th>
+                  <th>Product Name</th>
                   <th>Status</th>
                   <th>Remarks</th>
+                  <th>Mode of Verification</th>
+                  <th>Verifier's Comment</th>
+                  <th>Final Disposition</th>
                   <th>Document 1</th>
                   <th>Document 2</th>
                   <th>Action</th>
@@ -228,68 +256,83 @@ function BGVStatusUpdate() {
               </thead>
 
               <tbody>
-                {requestData?.bgvReqestService?.map((service) => {
-                  const dirty = isDirty(service);
-                  const loading = submitting[service.serviceId];
-                  const draft = updateService[service.serviceId];
+                {requestData?.BGVRequestProducts?.map((product) => {
+                  const productId = getProductId(product);
+                  const requestId = getRequestId(product);
+                  const dirty = isDirty(product);
+                  const loading = submitting[productId];
+                  const draft = updateProduct[productId];
 
                   return (
-                    <tr key={service.serviceId} className={dirty ? 'row-dirty' : ''}>
-
-                      {/* Service name */}
+                    <tr key={productId} className={dirty ? 'row-dirty' : ''}>
                       <td>
-                        <span className="service-name">{service.services.name}</span>
+                        <span className="service-name">{getProductName(product)}</span>
                       </td>
 
-                      {/* Status */}
                       <td>
                         <select
-                          value={draft?.status ?? service.status}
-                          onChange={(e) =>
-                            handleStatusChange(service.requestId, service.serviceId, e)
-                          }
+                          value={draft?.status ?? product.status}
+                          onChange={(e) => handleStatusChange(requestId, productId, e)}
                         >
-                          {STATUS_OPTIONS.map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          {STATUS_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
                           ))}
                         </select>
                       </td>
 
-                      {/* Remarks */}
                       <td>
                         <input
                           type="text"
-                          value={draft?.remark ?? (service.remark || '')}
-                          placeholder="Enter remarks…"
-                          onChange={(e) =>
-                            handleRemarkChange(service.requestId, service.serviceId, e)
-                          }
+                          value={draft?.remark ?? (product.remark || '')}
+                          placeholder="Enter remarks..."
+                          onChange={(e) => handleRemarkChange(requestId, productId, e)}
                         />
                       </td>
-
-                      {/* Doc 1 */}
                       <td>
-                        <DocCell service={service} docField="doc_1" label="Doc 1" />
+                        <select
+                          value={draft?.mode_of_verification ?? product.mode_of_verification ?? ''}
+                          onChange={(e) => handleModeOfVerification(requestId, productId, e)}
+                        >
+                          <option value="">Select verification mode..</option>
+                          <option value="Online">Online</option>
+                          <option value="Offline">Offline</option>
+                        </select>
+                      </td>
+                      <td>
+                        <textarea
+                          type="text"
+                          value={draft?.verifier_comment ?? (product.verifier_comment || '')}
+                          placeholder=""
+                          onChange={(e) => handleVerifierComment(requestId, productId, e)}
+                        />
+                      </td>
+                      <td>
+                        <textarea
+                          type="text"
+                          value={draft?.final_desc ?? (product.final_desc || '')}
+                          placeholder=""
+                          onChange={(e) => handleFinalDisposition(requestId, productId, e)}
+                        />
+                      </td>
+                      <td>
+                        <DocCell product={product} docField="doc_1" label="Doc 1" />
                       </td>
 
-                      {/* Doc 2 */}
                       <td>
-                        <DocCell service={service} docField="doc_2" label="Doc 2" />
+                        <DocCell product={product} docField="doc_2" label="Doc 2" />
                       </td>
 
-                      {/* Action */}
                       <td>
                         <button
                           className={`update-btn${dirty ? ' btn-active' : ''}`}
                           disabled={!dirty || loading}
-                          onClick={() => handleStatusSubmit(service.serviceId)}
+                          onClick={() => handleStatusSubmit(productId)}
                         >
-                          {loading
-                            ? <span className="bsu-spinner" />
-                            : dirty ? 'Update' : 'No Changes'}
+                          {loading ? <span className="bsu-spinner" /> : dirty ? 'Update' : 'No Changes'}
                         </button>
                       </td>
-
                     </tr>
                   );
                 })}
@@ -297,7 +340,6 @@ function BGVStatusUpdate() {
             </table>
           </div>
         </div>
-
       </div>
     </div>
   );

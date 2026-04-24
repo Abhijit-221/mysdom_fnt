@@ -4,66 +4,96 @@ import axiosInstance from '../../api/axiosInstance';
 import './product.css'
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { ArrowBigDownIcon, ArrowBigRight, ChevronsRight, ClipboardList, ScreenShare, ShieldCheck, Users } from 'lucide-react';
+import { ArrowBigDownIcon, ArrowBigRight, ChevronsRight, ClipboardList, ScreenShare, ShieldCheck, Users, Plus } from 'lucide-react';
 
 function Product() {
-    let products = [
+    const user = JSON.parse(localStorage.getItem('user'));
+    const navigate = useNavigate();
+    
+    // Local products array with images
+    const productImages = [
         {
             id: 1,
             name: "Employment check",
-            description: "Comprehensive checks to ensure trust and reliability.",
             image: "/product/employeecheck.jpg"
         },
         {
             id: 2,
             name: "Education check",
-            description: "Thorough screening processes to ensure the right fit for your organization.",
             image: "/product/educationcheck.webp"
         },
         {
             id: 3,
             name: "Criminal check",
-            description: "Thorough screening processes to ensure the right fit for your organization.",
             image: "/product/criminalcheck.webp"
         },
         {
             id: 4,
             name: "ID verification",
-            description: "Detailed criminal record checks to ensure a safe and secure workplace.",
             image: "/product/idverificationcheck.png"
         },
         {
             id: 5,
             name: "Due diligence",
-            description: "Accurate verification of educational qualifications to ensure credibility.",
             image: "/product/deudeligance.jpg"
         },
         {
             id: 6,
             name: "Address verification",
-            description: "Comprehensive checks of employment history to ensure authenticity.",
             image: "/product/addressCheck.webp"
         },
         {
             id: 7,
             name: "Social media checks",
-            description: "Thorough reference checks to validate candidate's background and performance.",
             image: "/product/socialmediacheck.webp"
         },
         {
             id: 8,
             name: "Database checks",
-            description: "Thorough reference checks to validate candidate's background and performance.",
             image: "/product/databasecheck.avif"
         },
         {
             id: 9,
             name: "Credit checks",
-            description: "Thorough reference checks to validate candidate's background and performance.",
             image: "/product/creditcheck.webp"
         }
-    ]
-    const navigate = useNavigate();
+    ];
+
+    const [products, setProducts] = useState([]);
+
+    // Fetch products from API
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const response = await axiosInstance.get('/product/list');
+                const apiProducts = response.data?.data || [];
+
+                // Map API data with local images
+                const mergedProducts = apiProducts.map((apiProduct) => {
+                    const imageData = productImages.find(
+                        (img) => img.name.toLowerCase() === apiProduct.title.toLowerCase()
+                    );
+                    return {
+                        ...apiProduct,
+                        image: imageData?.image || '/product/socialmediacheck.webp' // Fallback image
+                    };
+                });
+
+                setProducts(mergedProducts);
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                toast.error('Failed to load products');
+                // Fallback to local products with images
+                const fallbackProducts = productImages.map((img) => ({
+                    ...img,
+                    description: 'Service description'
+                }));
+                setProducts(fallbackProducts);
+            }
+        };
+
+        fetchProducts();
+    }, []);
     function handleProductClick() {
         navigate('/bgv/list');
     }
@@ -76,9 +106,11 @@ function Product() {
                 <div className="prd-hero-content">
 
                     <div className="prd-hero-left">
-                        <p className="prd-breadcrumb">
-                            <span onClick={() => navigate('/')} >Home</span> <span>|</span> <span className="active">Our Products</span>
-                        </p>
+                        <div className="prd-hero-top">
+                          <p className="prd-breadcrumb">
+                              <span onClick={() => navigate('/')} >Home</span> <span>|</span> <span className="active">Our Products</span>
+                          </p>
+                        </div>
 
                         <h1 className="prd-hero-title">
                             Explore Our Range Of Products
@@ -89,20 +121,40 @@ function Product() {
             </section>
             <section className="prd-section">
             <section className='BGV-section'>
-                <div className='bgv-btn' onClick={handleProductClick}>
+                {['admin','superadmin'].includes(user?.role) && (
+                            <button
+                              className="prd-add-btn"
+                              type="button"
+                              onClick={() => navigate('/product/add')}
+                            >
+                              <Plus size={18} /> Create Product
+                            </button>
+                          )}
+                {['admin','superadmin','user'].includes(user?.role) && <div className='bgv-btn' onClick={handleProductClick}>
                     <p>Go to BGV</p>
-                    <ArrowBigRight/>
-                </div>
+                    <ArrowBigRight size={18}/>
+                </div>}
             </section>
                 <div className="prd-grid-wrapper">
                     <div className="prd-grid-grid">
                         {products.map((product, index) => (
-                            <div className="prd-grid-card" key={index} >
+                            <div
+                                className="prd-grid-card"
+                                key={index}
+                                onClick={() => {
+                                    if (['admin','superadmin'].includes(user?.role)) {
+                                        navigate(`/product/view/${product.id}`);
+                                    }
+                                }}
+                                style={{
+                                    cursor: ['admin','superadmin'].includes(user?.role) ? 'pointer' : 'default'
+                                }}
+                            >
 
                                 <img src={product.image} alt={product.name} />
 
                                 <div className="prd-overlay">
-                                    <h3 className="prd-grid-title">{product.name}</h3>
+                                    <h3 className="prd-grid-title">{product.title}</h3>
                                     <div className="prd-line"></div>
                                     <p className="prd-grid-desc">Mysdom</p>
                                     <span className="prd-arrow">→</span>

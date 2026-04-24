@@ -2,8 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import "./uploadCandidate.css";
 import axiosInstance from "../api/axiosInstance";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 const ALLOWED_TYPES = [
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -13,6 +15,7 @@ const ALLOWED_TYPES = [
 ];
 
 const UploadCandidate = () => {
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
   const [file, setFile] = useState(null);
@@ -35,7 +38,7 @@ const UploadCandidate = () => {
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      errorList.push(`${file.name} exceeds 10MB size limit.`);
+      errorList.push(`${file.name} exceeds 5MB size limit.`);
     }
 
     return {
@@ -84,17 +87,24 @@ const UploadCandidate = () => {
     setUploadProgress(0);
   };
 
-  const [service, setService] = useState(null);
+  const [product, setProduct] = useState(null);
   const [batchUploadError, setBatchUploadError] = useState(null);
   async function fetchBatchUploadService() {
     try {
 
-      let response = await axiosInstance.get('/bgvrequest/batchupload/service-get');
-      console.log(response?.data?.data.service_id);
-      setService(response?.data?.data.service_id);
+      let response = await axiosInstance.get(`/product/getby-title/${'Address verification'}`);
+      let productId = response?.data?.data.id;
+      // console.log("response:--",productId);
+      if(!productId){
+        setErrors([
+          "This service is unavailable"
+        ])
+      }else{
+        setProduct(response?.data?.data.id);
+      }
     }
     catch (error) {
-      if (error?.response?.data?.message === "Service not found") {
+      if (error?.response?.data?.message === "Product not found") {
         setBatchUploadError(
           "This service is unavailable"
         )
@@ -128,7 +138,7 @@ const UploadCandidate = () => {
 
     const formData = new FormData();
     formData.append("batch_upload", file);
-    formData.append('service_id', service);
+    formData.append('product_id', product);
 
 
     try {
@@ -167,6 +177,7 @@ const UploadCandidate = () => {
   return (
     <section className="upload-section">
       <div className="upload-container">
+        <button className="back-button" onClick={()=>navigate('/bgv/list')}><ArrowLeft size={15}/>Back to list</button>
         <div className="upload-header">
           <span className="tag">FOR CLIENTS</span>
           <h2>Upload Candidate List for Background Verification</h2>
@@ -214,7 +225,7 @@ const UploadCandidate = () => {
                   <small>
                     Supported: Excel (.xlsx, .xls), CSV (.csv)
                   </small>
-                  <div className="multi-note">✓ Max size: 10MB</div>
+                  <div className="multi-note">✓ Max size: 5MB</div>
                 </div>
 
                 {/* FILE DISPLAY */}

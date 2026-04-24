@@ -3,15 +3,44 @@ import "./bgvRequestForm.css";
 import axiosInstance from "../../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import PDFViewer from "../PDFViewer";
 
 /* ══════════════════════════════════════════
-   CONSTANTS
+   PRODUCT → STEP MAPPING
+   Maps product names (lowercase) to step keys
 ══════════════════════════════════════════ */
-const TOTAL_STEPS = 8;
-const STEP_LABELS = ["Personal", "Identity", "Address", "Criminal", "Employment", "Education", "Service", "Review"];
+const PRODUCT_STEP_MAP = {
+  "id verification": "identity",
+  "address verification": "address",
+  "criminal check": "criminal",
+  "employment check": "employment",
+  "education check": "education",
+  "credit checks": "credit",
+  "social media checks": "social",
+  "due diligence": null,       // no extra form step
+  "database checks": null,     // no extra form step
+};
+
+/* Given a list of selected product names, returns ordered step keys */
+const STEP_ORDER = ["personal", "products", "identity", "address", "criminal", "employment", "education", "credit", "social", "acknowledge", "review"];
+const TERMS_PDF_URL = "/MysdomConsent.pdf";
+
+const STEP_DISPLAY_NAMES = {
+  personal: "Personal",
+  products: "Products",
+  identity: "ID Verification",
+  address: "Address",
+  criminal: "Criminal",
+  employment: "Employment",
+  education: "Education",
+  credit: "Credit",
+  social: "Social Media",
+  acknowledge: "Acknowledge",
+  review: "Review",
+};
 
 const ALLOWED_FILE_TYPES = ["application/pdf", "image/jpeg", "image/jpg", "image/png"];
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 const EMPTY_EMPLOYMENT = {
   company_name: "",
@@ -21,18 +50,25 @@ const EMPTY_EMPLOYMENT = {
   job_title: "",
   leaving_reason: "",
   is_current: false,
+  employment_category: "",
+  employment_type: "",
   job_doc: null,
 };
 
 const INITIAL_FORM = {
+  // Personal
   candidate_name: "",
   candidate_phone: "",
   candidate_email: "",
   designation: "",
   department: "",
+  gender: "",
+  dob: "",
+  // Identity
   id_type: "",
   id_number: "",
   id_doc: null,
+  // Address
   current_address: "",
   current_landmark: "",
   current_residency: "",
@@ -41,10 +77,12 @@ const INITIAL_FORM = {
   permanent_landmark: "",
   permanent_residency: "",
   permanent_duration: "",
+  // Criminal
   father_name: "",
   mother_name: "",
-  gender: "",
-  dob: "",
+  address_detail: "",
+  city: "",
+  // Education
   institute_name: "",
   university: "",
   education_start: "",
@@ -53,52 +91,79 @@ const INITIAL_FORM = {
   qualification: "",
   specialization: "",
   passing_year: "",
+  degree_status: "",
   edu_doc: null,
+  // Credit
+  pan_card: "",
+  // Social Media
+  social_media_type: "",
+  social_media_id: "",
+  nick_name: "",
 };
 
 /* ══════════════════════════════════════════
    VALIDATION HELPERS
 ══════════════════════════════════════════ */
 const validators = {
-  /* Step 1 — Personal */
-  1: (form) => {
+  personal: (form) => {
     const errors = {};
-    if (!form.candidate_name.trim())
-      errors.candidate_name = "Candidate name is required";
-    else if (form.candidate_name.trim().length < 2)
-      errors.candidate_name = "Candidate name must be at least 2 characters";
-
-    if (!form.candidate_email.trim())
-      errors.candidate_email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.candidate_email))
-      errors.candidate_email = "Invalid email format";
-
-    if (!form.candidate_phone.trim())
-      errors.candidate_phone = "Phone number is required";
-    else if (!/^[6-9]\d{9}$/.test(form.candidate_phone))
-      errors.candidate_phone = "Invalid phone number";
-
+    if (!form.candidate_name.trim()) errors.candidate_name = "Candidate name is required";
+    else if (form.candidate_name.trim().length < 2) errors.candidate_name = "Name must be at least 2 characters";
+    if (!form.candidate_email.trim()) errors.candidate_email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.candidate_email)) errors.candidate_email = "Invalid email format";
+    if (!form.candidate_phone.trim()) errors.candidate_phone = "Phone number is required";
+    else if (!/^[6-9]\d{9}$/.test(form.candidate_phone)) errors.candidate_phone = "Invalid Indian phone number";
+    if (!form.gender) errors.gender = "Gender is required";
+    if (!form.dob) errors.dob = "Date of birth is required";
     return errors;
   },
 
-  /* Step 4 — Criminal */
-  4: (form) => {
+  products: (_, selectedProducts) => {
     const errors = {};
-    if (form.gender && !["MALE", "FEMALE", "OTHER"].includes(form.gender))
-      errors.gender = "Invalid gender";
-    if (form.dob && isNaN(Date.parse(form.dob)))
-      errors.dob = "Invalid date format";
+    if (!selectedProducts || selectedProducts.length === 0)
+      errors.selectedProducts = "Select at least one product";
     return errors;
   },
 
-  /* Step 6 — Education */
-  6: (form) => {
+  identity: (form) => {
     const errors = {};
-    if (form.passing_year) {
+    if (!form.id_type.trim()) errors.id_type = "ID Type is required";
+    if (!form.id_number.trim()) errors.id_number = "ID Number is required";
+    if (!form.id_doc) errors.id_doc = "ID Document is required";
+    return errors;
+  },
+
+  address: (form) => {
+    const errors = {};
+    if (!form.current_address.trim()) errors.current_address = "Current address is required";
+    if (!form.current_landmark.trim()) errors.current_landmark = "Current landmark is required";
+    if (!form.permanent_address.trim()) errors.permanent_address = "Permanent address is required";
+    if (!form.permanent_landmark.trim()) errors.permanent_landmark = "Permanent landmark is required";
+    return errors;
+  },
+
+  criminal: (form) => {
+    const errors = {};
+    if (!form.father_name.trim()) errors.father_name = "Father's name is required";
+    if (!form.mother_name.trim()) errors.mother_name = "Mother's name is required";
+    if (!form.address_detail.trim()) errors.address_detail = "Address detail is required";
+    if (!form.city.trim()) errors.city = "City is required";
+    return errors;
+  },
+
+  education: (form) => {
+    const errors = {};
+    if (!form.institute_name.trim()) errors.institute_name = "Institute name is required";
+    if (!form.university.trim()) errors.university = "University is required";
+    if (!form.education_start) errors.education_start = "Enrollment date is required";
+    if (!form.roll_number.trim()) errors.roll_number = "Roll/Enrollment number is required";
+    if (!form.passing_year) errors.passing_year = "Year of passing is required";
+    else {
       const yr = Number(form.passing_year);
       if (!Number.isInteger(yr) || yr < 1900 || yr > 2100)
         errors.passing_year = "Invalid passing year";
     }
+    if (!form.edu_doc) errors.edu_doc = "Education document is required";
     if (form.education_start && isNaN(Date.parse(form.education_start)))
       errors.education_start = "Invalid date format";
     if (form.education_end && isNaN(Date.parse(form.education_end)))
@@ -106,16 +171,42 @@ const validators = {
     return errors;
   },
 
-  /* Step 7 — Service */
-  7: (_, selectedServices) => {
+  credit: (form) => {
     const errors = {};
-    if (!selectedServices || selectedServices.length === 0)
-      errors.services = "Service must be a non-empty array";
+    if (!form.pan_card.trim()) errors.pan_card = "PAN card number is required";
+    else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(form.pan_card.toUpperCase()))
+      errors.pan_card = "Invalid PAN format (e.g. ABCDE1234F)";
+    return errors;
+  },
+
+  social: (form) => {
+    const errors = {};
+    if (!form.social_media_type.trim()) errors.social_media_type = "Social media type is required";
+    if (!form.social_media_id.trim()) errors.social_media_id = "Social media ID is required";
+    return errors;
+  },
+
+  acknowledge: (_, acknowledgeChecked) => {
+    const errors = {};
+    if (!acknowledgeChecked) {
+      errors.acknowledge = "Please acknowledge Terms & Conditions before continuing";
+    }
     return errors;
   },
 };
 
-/* ── File validator ── */
+/* Employment validators */
+function isEmploymentTouched(emp) {
+  return !!(
+    emp.company_name.trim() ||
+    emp.employee_id.trim() ||
+    emp.job_title.trim() ||
+    emp.employment_start ||
+    emp.leaving_reason.trim() ||
+    emp.job_doc
+  );
+}
+
 function validateFile(file) {
   if (!ALLOWED_FILE_TYPES.includes(file.type)) {
     toast.error("Only PDF, JPG, JPEG, PNG files are allowed");
@@ -129,52 +220,41 @@ function validateFile(file) {
 }
 
 /* ══════════════════════════════════════════
-   FIELD ERROR DISPLAY
+   SUB-COMPONENTS
 ══════════════════════════════════════════ */
 function FieldError({ message }) {
   if (!message) return null;
   return <p className="bgv-field-error">⚠ {message}</p>;
 }
 
-/* ══════════════════════════════════════════
-   STEP INDICATOR
-══════════════════════════════════════════ */
-function StepBar({ step, onStepClick }) {
+function StepBar({ activeSteps, currentStep, onStepClick }) {
   return (
     <div className="bgv-steps">
-      {STEP_LABELS.map((label, i) => (
+      {activeSteps.map((key, i) => (
         <button
-          key={label}
+          key={key}
           type="button"
-          className={`bgv-step-btn ${step > i + 1 ? "done" : ""} ${step === i + 1 ? "active" : ""}`}
-          onClick={() => onStepClick(i + 1)}
-          title={`Go to ${label}`}
+          className={`bgv-step-btn ${i < activeSteps.indexOf(currentStep) ? "done" : ""} ${currentStep === key ? "active" : ""}`}
+          onClick={() => onStepClick(key)}
+          title={`Go to ${STEP_DISPLAY_NAMES[key]}`}
         >
-          <span className="bgv-step-circle">{step > i + 1 ? "✓" : i + 1}</span>
-          <span className="bgv-step-label">{label}</span>
+          <span className="bgv-step-circle">
+            {i < activeSteps.indexOf(currentStep) ? "✓" : i + 1}
+          </span>
+          <span className="bgv-step-label">{STEP_DISPLAY_NAMES[key]}</span>
         </button>
       ))}
     </div>
   );
 }
 
-/* ══════════════════════════════════════════
-   HELPERS
-══════════════════════════════════════════ */
-
-/**
- * Returns true if an employment record is considered "started" —
- * i.e. the user has begun filling it in (any field is non-empty).
- * A completely blank record is ignored and not validated.
- */
-function isEmploymentTouched(emp) {
-  return !!(
-    emp.company_name.trim() ||
-    emp.employee_id.trim() ||
-    emp.job_title.trim() ||
-    emp.employment_start ||
-    emp.leaving_reason.trim() ||
-    emp.job_doc
+function ReviewRow({ label, value }) {
+  if (!value) return null;
+  return (
+    <div className="review-row">
+      <span className="review-label">{label}</span>
+      <span className="review-value">{value}</span>
+    </div>
   );
 }
 
@@ -184,47 +264,54 @@ function isEmploymentTouched(emp) {
 function BgvRequestForm() {
   const navigate = useNavigate();
 
-  /* ── core state ── */
-  const [step, setStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState("personal");
   const [form, setForm] = useState(INITIAL_FORM);
   const [stepErrors, setStepErrors] = useState({});
   const [employments, setEmployments] = useState([{ ...EMPTY_EMPLOYMENT }]);
   const [empErrors, setEmpErrors] = useState([{}]);
-  const [selectedServices, setSelectedServices] = useState([]);
-  const [services, setServices] = useState([]);
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [products, setProducts] = useState([]);
   const [assignedTo, setAssignedTo] = useState("");
   const [clientId, setClientId] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [acknowledgeChecked, setAcknowledgeChecked] = useState(false);
 
-  /* ══════════════════════════════════════════
-     DATA FETCHING
-  ══════════════════════════════════════════ */
-  const fetchServices = useCallback(async () => {
-    try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const userDetails = await axiosInstance.get(`/auth/user/get/${user.id}`);
-      const clientIdFromUser = userDetails?.data?.data?.client;
-      const res = await axiosInstance.get(`/client-service/getby/${clientIdFromUser}`);
-      setServices(res.data?.data || []);
-    } catch (error) {
-      console.error("Service fetch error:", error);
-      toast.error("Failed to load services");
-    }
-  }, []);
+  /* Compute active steps based on selected products */
+  const getActiveSteps = useCallback(() => {
+    const always = ["personal", "products"];
+    const productSteps = new Set();
 
+    selectedProducts.forEach((pid) => {
+      const product = products.find((p) => (p.id || p._id) === pid);
+      if (!product) return;
+      const name = (product.name || product.title || "").toLowerCase().trim();
+      const stepKey = PRODUCT_STEP_MAP[name];
+      if (stepKey) productSteps.add(stepKey);
+    });
+
+    const middle = STEP_ORDER.filter(
+      (s) => !["personal", "products", "review"].includes(s) && productSteps.has(s)
+    );
+
+    return [...always, ...middle, "acknowledge", "review"];
+  }, [selectedProducts, products]);
+
+  const activeSteps = getActiveSteps();
+  const currentIndex = activeSteps.indexOf(currentStep);
+  const totalSteps = activeSteps.length;
+
+  /* ── Data fetching ── */
   const fetchUser = useCallback(async () => {
     try {
       const user = JSON.parse(localStorage.getItem("user"));
       const res = await axiosInstance.get("/auth/users/get");
       const users = res.data.data || [];
-
       let superAdminId = "";
       let cId = "";
       users.forEach((u) => {
         if (u.role === "superadmin") superAdminId = u.id;
         if (u.id === user.id) cId = u.client;
       });
-
       setAssignedTo(superAdminId);
       setClientId(cId);
     } catch (error) {
@@ -233,45 +320,83 @@ function BgvRequestForm() {
     }
   }, []);
 
+  const fetchProducts = useCallback(async () => {
+    try {
+      const res = await axiosInstance.get("/product/list");
+      setProducts(res.data?.data || []);
+    } catch (error) {
+      console.error("Product fetch error:", error);
+      toast.error("Failed to load products");
+    }
+  }, []);
+
   useEffect(() => {
-    fetchServices();
     fetchUser();
-  }, [fetchServices, fetchUser]);
+    fetchProducts();
+  }, [fetchUser, fetchProducts]);
 
-  /* ══════════════════════════════════════════
-     NAVIGATION
-  ══════════════════════════════════════════ */
-  const goToStep = (target) => {
-    runValidation(step);
-    setStep(target);
-    document.querySelector(".bgv-modal")?.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const next = () => {
-    const errors = runValidation(step);
-    if (Object.keys(errors).length > 0) return;
-    setStep((p) => Math.min(p + 1, TOTAL_STEPS));
-    document.querySelector(".bgv-modal")?.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const back = () => {
-    setStep((p) => Math.max(p - 1, 1));
-    document.querySelector(".bgv-modal")?.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const runValidation = (s) => {
-    const validator = validators[s];
+  /* ── Navigation ── */
+  const runValidation = useCallback((stepKey) => {
+    if (stepKey === "products") {
+      const errors = validators.products(form, selectedProducts);
+      setStepErrors(errors);
+      return errors;
+    }
+    if (stepKey === "employment") {
+      // Employment has its own validation flow
+      return {};
+    }
+    if (stepKey === "acknowledge") {
+      const errors = validators.acknowledge(form, acknowledgeChecked);
+      setStepErrors(errors);
+      const first = Object.values(errors)[0];
+      if (first) toast.error(first);
+      return errors;
+    }
+    const validator = validators[stepKey];
     if (!validator) return {};
-    const errors = validator(form, selectedServices);
+    const errors = validator(form);
     setStepErrors(errors);
     const first = Object.values(errors)[0];
     if (first) toast.error(first);
     return errors;
+  }, [form, selectedProducts, acknowledgeChecked]);
+
+  const goToStep = (target) => {
+    runValidation(currentStep);
+    setCurrentStep(target);
+    document.querySelector(".bgv-modal")?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  /* ══════════════════════════════════════════
-     FIELD HANDLERS
-  ══════════════════════════════════════════ */
+  const next = () => {
+    let errors = {};
+
+    if (currentStep === "employment") {
+      const { valid } = validateEmployments();
+      if (!valid) {
+        toast.error("Please fix employment errors before proceeding");
+        return;
+      }
+    } else {
+      errors = runValidation(currentStep);
+      if (Object.keys(errors).length > 0) return;
+    }
+
+    const nextIndex = currentIndex + 1;
+    if (nextIndex < activeSteps.length) {
+      setCurrentStep(activeSteps[nextIndex]);
+      document.querySelector(".bgv-modal")?.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const back = () => {
+    if (currentIndex > 0) {
+      setCurrentStep(activeSteps[currentIndex - 1]);
+      document.querySelector(".bgv-modal")?.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  /* ── Field handlers ── */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -283,6 +408,7 @@ function BgvRequestForm() {
     if (!file) return;
     if (validateFile(file)) {
       setForm((prev) => ({ ...prev, [e.target.name]: file }));
+      if (stepErrors[e.target.name]) setStepErrors((prev) => ({ ...prev, [e.target.name]: undefined }));
     } else {
       e.target.value = "";
     }
@@ -328,7 +454,6 @@ function BgvRequestForm() {
 
   const removeEmployment = (index) => {
     if (employments.length === 1) {
-      // Instead of blocking removal, reset the single record to blank
       setEmployments([{ ...EMPTY_EMPLOYMENT }]);
       setEmpErrors([{}]);
       return;
@@ -342,27 +467,21 @@ function BgvRequestForm() {
     return !!(last.company_name && last.employee_id && last.employment_start && last.job_title);
   };
 
-  /**
-   * Validates only "touched" employment records.
-   * A blank/untouched record is silently skipped — employment is optional.
-   * Returns { valid: boolean, errors: array }
-   */
   const validateEmployments = () => {
     const allErrors = employments.map((emp) => {
-      // Skip completely blank records — they are optional
       if (!isEmploymentTouched(emp)) return {};
-
       const errs = {};
       if (!emp.company_name.trim()) errs.company_name = "Company name is required";
       if (!emp.employee_id.trim()) errs.employee_id = "Employee ID is required";
       if (!emp.job_title.trim()) errs.job_title = "Job title is required";
-      if (emp.employment_start && isNaN(Date.parse(emp.employment_start)))
-        errs.employment_start = "Invalid employment start date";
-      if (!emp.is_current && emp.employment_end && isNaN(Date.parse(emp.employment_end)))
-        errs.employment_end = "Invalid employment end date";
+      if (!emp.employment_start) errs.employment_start = "Start date is required";
+      else if (isNaN(Date.parse(emp.employment_start))) errs.employment_start = "Invalid start date";
+      if (!emp.is_current) {
+        if (!emp.employment_end) errs.employment_end = "End date is required (or check 'Currently working')";
+        else if (isNaN(Date.parse(emp.employment_end))) errs.employment_end = "Invalid end date";
+      }
       return errs;
     });
-
     setEmpErrors(allErrors);
     return {
       valid: allErrors.every((e) => Object.keys(e).length === 0),
@@ -370,42 +489,60 @@ function BgvRequestForm() {
     };
   };
 
-  /**
-   * Returns only the employment records that are actually filled in
-   * (touched + valid), ready for submission.
-   */
   const getFilledEmployments = () =>
     employments.filter((emp) => isEmploymentTouched(emp) && emp.company_name.trim());
 
-  /* ── Service toggle ── */
-  const handleServiceToggle = (serviceId) => {
-    setSelectedServices((prev) =>
-      prev.includes(serviceId)
-        ? prev.filter((id) => id !== serviceId)
-        : [...prev, serviceId]
+  /* ── Product toggle ── */
+  const handleProductToggle = (productId) => {
+    setSelectedProducts((prev) =>
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
     );
-    if (stepErrors.services) setStepErrors((prev) => ({ ...prev, services: undefined }));
+    if (stepErrors.selectedProducts)
+      setStepErrors((prev) => ({ ...prev, selectedProducts: undefined }));
   };
 
-  /* ══════════════════════════════════════════
-     SUBMIT
-  ══════════════════════════════════════════ */
+  /* ── Submit ── */
   const submitForm = async () => {
-    const step1Errors = validators[1](form, selectedServices);
-    const step7Errors = validators[7](form, selectedServices);
-    const { valid: empValid } = validateEmployments();
+    // Validate all active steps
+    const personalErrors = validators.personal(form);
+    if (Object.keys(personalErrors).length > 0) {
+      toast.error(Object.values(personalErrors)[0]);
+      setCurrentStep("personal"); setStepErrors(personalErrors); return;
+    }
+    const productErrors = validators.products(form, selectedProducts);
+    if (Object.keys(productErrors).length > 0) {
+      toast.error(Object.values(productErrors)[0]);
+      setCurrentStep("products"); setStepErrors(productErrors); return;
+    }
 
-    if (Object.keys(step1Errors).length > 0) {
-      toast.error(Object.values(step1Errors)[0]);
-      setStep(1); setStepErrors(step1Errors); return;
+    // Validate each active product step
+    for (const stepKey of activeSteps) {
+      if (["personal", "products", "review", "employment", "acknowledge"].includes(stepKey)) continue;
+      const validator = validators[stepKey];
+      if (!validator) continue;
+      const errors = validator(form);
+      if (Object.keys(errors).length > 0) {
+        toast.error(`${STEP_DISPLAY_NAMES[stepKey]}: ${Object.values(errors)[0]}`);
+        setCurrentStep(stepKey); setStepErrors(errors); return;
+      }
     }
-    if (Object.keys(step7Errors).length > 0) {
-      toast.error(Object.values(step7Errors)[0]);
-      setStep(7); setStepErrors(step7Errors); return;
+
+    if (activeSteps.includes("employment")) {
+      const { valid } = validateEmployments();
+      if (!valid) {
+        toast.error("Please fix employment errors before submitting");
+        setCurrentStep("employment"); return;
+      }
     }
-    if (!empValid) {
-      toast.error("Please fix employment errors before submitting");
-      setStep(5); return;
+
+    const acknowledgeErrors = validators.acknowledge(form, acknowledgeChecked);
+    if (Object.keys(acknowledgeErrors).length > 0) {
+      toast.error(Object.values(acknowledgeErrors)[0]);
+      setCurrentStep("acknowledge");
+      setStepErrors(acknowledgeErrors);
+      return;
     }
 
     setSubmitting(true);
@@ -417,7 +554,9 @@ function BgvRequestForm() {
         formData.append(key, value);
       });
 
-      /* Only send filled employment records */
+      // Pan card — uppercase
+      if (form.pan_card) formData.set("pan_card", form.pan_card.toUpperCase());
+
       const filledEmployments = getFilledEmployments();
       filledEmployments.forEach((emp, index) => {
         Object.entries(emp).forEach(([key, value]) => {
@@ -433,11 +572,9 @@ function BgvRequestForm() {
 
       formData.append("clientId", clientId);
       formData.append("assignedTo", assignedTo);
-      console.log("Selected services on submit:", selectedServices);
-      selectedServices.forEach((id) => {
-        formData.append("service[]", id);
-      });
-      console.log('formData:',formData);
+      // formData.append("acknowledgeChecked", String(acknowledgeChecked));
+      formData.append("acknowladge", acknowledgeChecked);
+      selectedProducts.forEach((id) => formData.append("products[]", id));
 
       await axiosInstance.post("/bgvrequest/apply", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -445,7 +582,6 @@ function BgvRequestForm() {
 
       toast.success("BGV request submitted successfully!");
       navigate("/bgv/list");
-
     } catch (error) {
       console.error("Submit error:", error);
       let message = "Failed to submit form";
@@ -467,13 +603,11 @@ function BgvRequestForm() {
     }
   };
 
-  /* ══════════════════════════════════════════
-     REVIEW HELPERS
-  ══════════════════════════════════════════ */
-  const getServiceNames = () =>
-    services
-      .filter((s) => selectedServices.includes(s.service.id))
-      .map((s) => s.service.name)
+  /* ── Review helpers ── */
+  const getProductNames = () =>
+    products
+      .filter((p) => selectedProducts.includes(p.id || p._id))
+      .map((p) => p.name || p.title)
       .join(", ") || "None";
 
   /* ══════════════════════════════════════════
@@ -487,16 +621,18 @@ function BgvRequestForm() {
         <div className="bgv-header">
           <div className="bgv-header-left">
             <h3>BGV Submission Form</h3>
-            <p className="bgv-header-sub">Step {step} of {TOTAL_STEPS}</p>
+            <p className="bgv-header-sub">
+              Step {currentIndex + 1} of {totalSteps} — {STEP_DISPLAY_NAMES[currentStep]}
+            </p>
           </div>
           <button className="bgv-close-btn" type="button" onClick={() => navigate("/bgv/list")}>✕</button>
         </div>
 
         {/* STEP BAR */}
-        <StepBar step={step} onStepClick={goToStep} />
+        <StepBar activeSteps={activeSteps} currentStep={currentStep} onStepClick={goToStep} />
 
-        {/* ══ STEP 1: PERSONAL ══ */}
-        {step === 1 && (
+        {/* ══ PERSONAL ══ */}
+        {currentStep === "personal" && (
           <div className="form-section">
             <h4>Personal Details</h4>
             <p className="form-section-hint">Fields marked <span className="req-star">*</span> are mandatory.</p>
@@ -544,6 +680,32 @@ function BgvRequestForm() {
                 <label>Department</label>
                 <input name="department" placeholder="e.g. Engineering" value={form.department} onChange={handleChange} />
               </div>
+              <div className="form-field">
+                <label>Gender <span className="req-star">*</span></label>
+                <select
+                  name="gender"
+                  value={form.gender}
+                  onChange={handleChange}
+                  className={stepErrors.gender ? "input-error" : ""}
+                >
+                  <option value="">Select Gender</option>
+                  <option value="MALE">Male</option>
+                  <option value="FEMALE">Female</option>
+                  <option value="OTHER">Other</option>
+                </select>
+                <FieldError message={stepErrors.gender} />
+              </div>
+              <div className="form-field">
+                <label>Date of Birth <span className="req-star">*</span></label>
+                <input
+                  type="date"
+                  name="dob"
+                  value={form.dob}
+                  onChange={handleChange}
+                  className={stepErrors.dob ? "input-error" : ""}
+                />
+                <FieldError message={stepErrors.dob} />
+              </div>
             </div>
             <div className="form-footer">
               <span />
@@ -552,23 +714,105 @@ function BgvRequestForm() {
           </div>
         )}
 
-        {/* ══ STEP 2: IDENTITY ══ */}
-        {step === 2 && (
+        {/* ══ PRODUCTS ══ */}
+        {currentStep === "products" && (
           <div className="form-section">
-            <h4>Identity Check</h4>
+            <h4>Select Products <span className="req-star">*</span></h4>
+            <p className="form-section-hint">
+              Choose one or more verification products. Each selected product will unlock its own form section.
+            </p>
+
+            {stepErrors.selectedProducts && (
+              <div className="bgv-error-banner">⚠ {stepErrors.selectedProducts}</div>
+            )}
+
+            {products.length === 0 ? (
+              <p className="no-services">Loading products…</p>
+            ) : (
+              <div className="service-list">
+                {products.map((product) => {
+                  const productId = product.id || product._id;
+                  const name = (product.name || product.title || "").toLowerCase().trim();
+                  const hasStep = PRODUCT_STEP_MAP[name] !== undefined;
+                  return (
+                    <label
+                      key={productId}
+                      className={`service-card ${selectedProducts.includes(productId) ? "selected" : ""}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedProducts.includes(productId)}
+                        onChange={() => handleProductToggle(productId)}
+                      />
+                      <span>{product.name || product.title || "Unnamed product"}</span>
+                      {hasStep && selectedProducts.includes(productId) && (
+                        <span className="product-step-badge">+ form section</span>
+                      )}
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="form-footer">
+              <button className="btn-back" type="button" onClick={back}>← Back</button>
+              <button
+                className="btn-next"
+                type="button"
+                onClick={() => {
+                  const errors = validators.products(form, selectedProducts);
+                  if (Object.keys(errors).length === 0) {
+                    next();
+                  } else {
+                    setStepErrors(errors);
+                    toast.error(errors.selectedProducts || "Please select at least one product");
+                  }
+                }}
+              >
+                Next →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ══ IDENTITY (ID Verification) ══ */}
+        {currentStep === "identity" && (
+          <div className="form-section">
+            <h4>ID Verification <span className="step-tag">Identity Check</span></h4>
+            <p className="form-section-hint">All fields are mandatory for ID verification.</p>
             <div className="form-grid">
               <div className="form-field">
-                <label>ID Type</label>
-                <input name="id_type" placeholder="e.g. Aadhaar, PAN, Passport" value={form.id_type} onChange={handleChange} />
+                <label>ID Type <span className="req-star">*</span></label>
+                <select
+                  name="id_type"
+                  value={form.id_type}
+                  onChange={handleChange}
+                  className={stepErrors.id_type ? "input-error" : ""}
+                >
+                  <option value="">Select ID Type</option>
+                  <option value="Aadhaar">Aadhaar</option>
+                  <option value="PAN">PAN</option>
+                  <option value="Passport">Passport</option>
+                  <option value="Others">Others</option>
+                </select>
+                <FieldError message={stepErrors.id_type} />
               </div>
               <div className="form-field">
-                <label>ID Number</label>
-                <input name="id_number" placeholder="Enter ID number" value={form.id_number} onChange={handleChange} />
+                <label>ID Number <span className="req-star">*</span></label>
+                <input
+                  name="id_number"
+                  placeholder="Enter ID number"
+                  value={form.id_number}
+                  onChange={handleChange}
+                  className={stepErrors.id_number ? "input-error" : ""}
+                />
+                <FieldError message={stepErrors.id_number} />
               </div>
               <div className="form-field file-field">
-                <label>ID Document <span className="file-hint">(PDF / JPG / PNG, max 5MB)</span></label>
+                <label>ID Document <span className="req-star">*</span> <span className="file-hint">(PDF / JPG / PNG, max 5MB)</span></label>
                 <input type="file" name="id_doc" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFile} />
                 {form.id_doc && <p className="file-chosen">✓ {form.id_doc.name}</p>}
+                <FieldError message={stepErrors.id_doc} />
               </div>
             </div>
             <div className="form-footer">
@@ -578,18 +822,35 @@ function BgvRequestForm() {
           </div>
         )}
 
-        {/* ══ STEP 3: ADDRESS ══ */}
-        {step === 3 && (
+        {/* ══ ADDRESS (Address Verification) ══ */}
+        {currentStep === "address" && (
           <div className="form-section">
-            <h4>Current Address</h4>
+            <h4>Address Verification</h4>
+            <p className="form-section-hint">Fields marked <span className="req-star">*</span> are mandatory.</p>
+
+            <h5 className="sub-section-title">Current Address</h5>
             <div className="form-grid">
               <div className="form-field">
-                <label>Address</label>
-                <input name="current_address" placeholder="Street, Area" value={form.current_address} onChange={handleChange} />
+                <label>Address <span className="req-star">*</span></label>
+                <input
+                  name="current_address"
+                  placeholder="Street, Area"
+                  value={form.current_address}
+                  onChange={handleChange}
+                  className={stepErrors.current_address ? "input-error" : ""}
+                />
+                <FieldError message={stepErrors.current_address} />
               </div>
               <div className="form-field">
-                <label>Landmark</label>
-                <input name="current_landmark" placeholder="Nearest landmark" value={form.current_landmark} onChange={handleChange} />
+                <label>Landmark <span className="req-star">*</span></label>
+                <input
+                  name="current_landmark"
+                  placeholder="Nearest landmark"
+                  value={form.current_landmark}
+                  onChange={handleChange}
+                  className={stepErrors.current_landmark ? "input-error" : ""}
+                />
+                <FieldError message={stepErrors.current_landmark} />
               </div>
               <div className="form-field">
                 <label>Residency Status</label>
@@ -601,15 +862,29 @@ function BgvRequestForm() {
               </div>
             </div>
 
-            <h4>Permanent Address</h4>
+            <h5 className="sub-section-title">Permanent Address</h5>
             <div className="form-grid">
               <div className="form-field">
-                <label>Address</label>
-                <input name="permanent_address" placeholder="Street, Area" value={form.permanent_address} onChange={handleChange} />
+                <label>Address <span className="req-star">*</span></label>
+                <input
+                  name="permanent_address"
+                  placeholder="Street, Area"
+                  value={form.permanent_address}
+                  onChange={handleChange}
+                  className={stepErrors.permanent_address ? "input-error" : ""}
+                />
+                <FieldError message={stepErrors.permanent_address} />
               </div>
               <div className="form-field">
-                <label>Landmark</label>
-                <input name="permanent_landmark" placeholder="Nearest landmark" value={form.permanent_landmark} onChange={handleChange} />
+                <label>Landmark <span className="req-star">*</span></label>
+                <input
+                  name="permanent_landmark"
+                  placeholder="Nearest landmark"
+                  value={form.permanent_landmark}
+                  onChange={handleChange}
+                  className={stepErrors.permanent_landmark ? "input-error" : ""}
+                />
+                <FieldError message={stepErrors.permanent_landmark} />
               </div>
               <div className="form-field">
                 <label>Residency Status</label>
@@ -628,44 +903,55 @@ function BgvRequestForm() {
           </div>
         )}
 
-        {/* ══ STEP 4: CRIMINAL ══ */}
-        {step === 4 && (
+        {/* ══ CRIMINAL ══ */}
+        {currentStep === "criminal" && (
           <div className="form-section">
             <h4>Criminal Check</h4>
+            <p className="form-section-hint">All fields are mandatory for criminal background verification.</p>
             <div className="form-grid">
               <div className="form-field">
-                <label>Father's Name</label>
-                <input name="father_name" placeholder="Father's full name" value={form.father_name} onChange={handleChange} />
-              </div>
-              <div className="form-field">
-                <label>Mother's Name</label>
-                <input name="mother_name" placeholder="Mother's full name" value={form.mother_name} onChange={handleChange} />
-              </div>
-              <div className="form-field">
-                <label>Gender</label>
-                <select
-                  name="gender"
-                  value={form.gender}
-                  onChange={handleChange}
-                  className={stepErrors.gender ? "input-error" : ""}
-                >
-                  <option value="">Select Gender</option>
-                  <option value="MALE">Male</option>
-                  <option value="FEMALE">Female</option>
-                  <option value="OTHER">Other</option>
-                </select>
-                <FieldError message={stepErrors.gender} />
-              </div>
-              <div className="form-field">
-                <label>Date of Birth</label>
+                <label>Father's Name <span className="req-star">*</span></label>
                 <input
-                  type="date"
-                  name="dob"
-                  value={form.dob}
+                  name="father_name"
+                  placeholder="Father's full name"
+                  value={form.father_name}
                   onChange={handleChange}
-                  className={stepErrors.dob ? "input-error" : ""}
+                  className={stepErrors.father_name ? "input-error" : ""}
                 />
-                <FieldError message={stepErrors.dob} />
+                <FieldError message={stepErrors.father_name} />
+              </div>
+              <div className="form-field">
+                <label>Mother's Name <span className="req-star">*</span></label>
+                <input
+                  name="mother_name"
+                  placeholder="Mother's full name"
+                  value={form.mother_name}
+                  onChange={handleChange}
+                  className={stepErrors.mother_name ? "input-error" : ""}
+                />
+                <FieldError message={stepErrors.mother_name} />
+              </div>
+              <div className="form-field">
+                <label>Address Detail <span className="req-star">*</span></label>
+                <input
+                  name="address_detail"
+                  placeholder="Full address for criminal check"
+                  value={form.address_detail}
+                  onChange={handleChange}
+                  className={stepErrors.address_detail ? "input-error" : ""}
+                />
+                <FieldError message={stepErrors.address_detail} />
+              </div>
+              <div className="form-field">
+                <label>City <span className="req-star">*</span></label>
+                <input
+                  name="city"
+                  placeholder="City"
+                  value={form.city}
+                  onChange={handleChange}
+                  className={stepErrors.city ? "input-error" : ""}
+                />
+                <FieldError message={stepErrors.city} />
               </div>
             </div>
             <div className="form-footer">
@@ -675,19 +961,18 @@ function BgvRequestForm() {
           </div>
         )}
 
-        {/* ══ STEP 5: EMPLOYMENT ══ */}
-        {step === 5 && (
+        {/* ══ EMPLOYMENT ══ */}
+        {currentStep === "employment" && (
           <div className="form-section">
             <h4>Employment Check</h4>
             <p className="form-section-hint">
-              Employment details are <strong>optional</strong>. If you add an organization, Company Name, Employee ID, and Job Title become required for that entry.
+              Add at least one employment record. <strong>Company Name, Employee ID, Job Title, and Start Date</strong> are required for each entry.
             </p>
 
             {employments.map((emp, index) => (
               <div key={index} className="employment-card">
                 <div className="emp-card-header">
                   <h5>Organization {index + 1}</h5>
-                  {/* Allow removing even the last card — it resets to blank */}
                   <button
                     type="button"
                     className="remove-btn"
@@ -700,11 +985,7 @@ function BgvRequestForm() {
 
                 <div className="form-grid">
                   <div className="form-field">
-                    {/* Mark required only when the record has been touched */}
-                    <label>
-                      Company Name{" "}
-                      {isEmploymentTouched(emp) && <span className="req-star">*</span>}
-                    </label>
+                    <label>Company Name <span className="req-star">*</span></label>
                     <input
                       name="company_name"
                       placeholder="Company name"
@@ -716,10 +997,7 @@ function BgvRequestForm() {
                   </div>
 
                   <div className="form-field">
-                    <label>
-                      Employee ID{" "}
-                      {isEmploymentTouched(emp) && <span className="req-star">*</span>}
-                    </label>
+                    <label>Employee ID <span className="req-star">*</span></label>
                     <input
                       name="employee_id"
                       placeholder="Employee ID / Staff number"
@@ -731,10 +1009,7 @@ function BgvRequestForm() {
                   </div>
 
                   <div className="form-field">
-                    <label>
-                      Job Title{" "}
-                      {isEmploymentTouched(emp) && <span className="req-star">*</span>}
-                    </label>
+                    <label>Job Title <span className="req-star">*</span></label>
                     <input
                       name="job_title"
                       placeholder="e.g. Software Engineer"
@@ -746,7 +1021,33 @@ function BgvRequestForm() {
                   </div>
 
                   <div className="form-field">
-                    <label>Start Date</label>
+                    <label>Employment Category</label>
+                    <select
+                      name="employment_category"
+                      value={emp.employment_category}
+                      onChange={(e) => handleEmploymentChange(index, e)}
+                    >
+                      <option value="">Select Category</option>
+                      <option value="Paid">Paid</option>
+                      <option value="Unpaid">Unpaid</option>
+                    </select>
+                  </div>
+
+                  <div className="form-field">
+                    <label>Employment Type</label>
+                    <select
+                      name="employment_type"
+                      value={emp.employment_type}
+                      onChange={(e) => handleEmploymentChange(index, e)}
+                    >
+                      <option value="">Select Type</option>
+                      <option value="Full time">Full Time</option>
+                      <option value="Part time">Part Time</option>
+                    </select>
+                  </div>
+
+                  <div className="form-field">
+                    <label>Start Date <span className="req-star">*</span></label>
                     <input
                       type="date"
                       name="employment_start"
@@ -772,7 +1073,7 @@ function BgvRequestForm() {
 
                   {!emp.is_current && (
                     <div className="form-field">
-                      <label>End Date</label>
+                      <label>End Date <span className="req-star">*</span></label>
                       <input
                         type="date"
                         name="employment_end"
@@ -824,21 +1125,36 @@ function BgvRequestForm() {
           </div>
         )}
 
-        {/* ══ STEP 6: EDUCATION ══ */}
-        {step === 6 && (
+        {/* ══ EDUCATION ══ */}
+        {currentStep === "education" && (
           <div className="form-section">
             <h4>Education Check</h4>
+            <p className="form-section-hint">Fields marked <span className="req-star">*</span> are mandatory.</p>
             <div className="form-grid">
               <div className="form-field">
-                <label>Institute Name</label>
-                <input name="institute_name" placeholder="e.g. IIT Delhi" value={form.institute_name} onChange={handleChange} />
+                <label>Institute Name <span className="req-star">*</span></label>
+                <input
+                  name="institute_name"
+                  placeholder="e.g. IIT Delhi"
+                  value={form.institute_name}
+                  onChange={handleChange}
+                  className={stepErrors.institute_name ? "input-error" : ""}
+                />
+                <FieldError message={stepErrors.institute_name} />
               </div>
               <div className="form-field">
-                <label>University / Board</label>
-                <input name="university" placeholder="e.g. Delhi University" value={form.university} onChange={handleChange} />
+                <label>University / Board <span className="req-star">*</span></label>
+                <input
+                  name="university"
+                  placeholder="e.g. Delhi University"
+                  value={form.university}
+                  onChange={handleChange}
+                  className={stepErrors.university ? "input-error" : ""}
+                />
+                <FieldError message={stepErrors.university} />
               </div>
               <div className="form-field">
-                <label>Start Date</label>
+                <label>Enrollment Date <span className="req-star">*</span></label>
                 <input
                   type="date"
                   name="education_start"
@@ -860,19 +1176,33 @@ function BgvRequestForm() {
                 <FieldError message={stepErrors.education_end} />
               </div>
               <div className="form-field">
-                <label>Roll / Enrollment Number</label>
-                <input name="roll_number" placeholder="Roll number" value={form.roll_number} onChange={handleChange} />
+                <label>Roll / Enrollment Number <span className="req-star">*</span></label>
+                <input
+                  name="roll_number"
+                  placeholder="Roll number"
+                  value={form.roll_number}
+                  onChange={handleChange}
+                  className={stepErrors.roll_number ? "input-error" : ""}
+                />
+                <FieldError message={stepErrors.roll_number} />
               </div>
               <div className="form-field">
-                <label>Qualification</label>
-                <input name="qualification" placeholder="e.g. B.Tech, MBA" value={form.qualification} onChange={handleChange} />
+                <label>Qualification <span className="req-star">*</span></label>
+                <input name="qualification" placeholder="e.g. B.Tech, MBA" value={form.qualification}
+                  onChange={handleChange}
+                  className={stepErrors.qualification ? "input-error" : ""}
+                />
+                <FieldError message={stepErrors.qualification} />
               </div>
               <div className="form-field">
-                <label>Specialization</label>
-                <input name="specialization" placeholder="e.g. Computer Science" value={form.specialization} onChange={handleChange} />
+                <label>Specialization <span className="req-star">*</span></label>
+                <input name="specialization" placeholder="e.g. Computer Science" value={form.specialization} onChange={handleChange}
+                  className={stepErrors.specialization ? "input-error" : ""}
+                />
+                <FieldError message={stepErrors.specialization} />
               </div>
               <div className="form-field">
-                <label>Passing Year</label>
+                <label>Year of Passing <span className="req-star">*</span></label>
                 <input
                   name="passing_year"
                   placeholder="e.g. 2020"
@@ -883,10 +1213,19 @@ function BgvRequestForm() {
                 />
                 <FieldError message={stepErrors.passing_year} />
               </div>
+              <div className="form-field">
+                <label>Degree Status</label>
+                <select name="degree_status" value={form.degree_status} onChange={handleChange}>
+                  <option value="">Select Status</option>
+                  <option value="yes">Yes — Degree Awarded</option>
+                  <option value="no">No — Not Yet Awarded</option>
+                </select>
+              </div>
               <div className="form-field file-field">
-                <label>Education Document <span className="file-hint">(PDF / JPG / PNG, max 5MB)</span></label>
+                <label>Education Document <span className="req-star">*</span> <span className="file-hint">(PDF / JPG / PNG, max 5MB)</span></label>
                 <input type="file" name="edu_doc" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFile} />
                 {form.edu_doc && <p className="file-chosen">✓ {form.edu_doc.name}</p>}
+                <FieldError message={stepErrors.edu_doc} />
               </div>
             </div>
             <div className="form-footer">
@@ -896,66 +1235,139 @@ function BgvRequestForm() {
           </div>
         )}
 
-        {/* ══ STEP 7: SERVICE ══ */}
-        {step === 7 && (
+        {/* ══ CREDIT CHECK ══ */}
+        {currentStep === "credit" && (
           <div className="form-section">
-            <h4>Select Services <span className="req-star">*</span></h4>
-            <p className="form-section-hint">
-              Select at least one service. Selected: <strong>{selectedServices.length}</strong>
-            </p>
-
-            {stepErrors.services && (
-              <div className="bgv-error-banner">⚠ {stepErrors.services}</div>
-            )}
-
-            {services.length === 0 ? (
-              <p className="no-services">No services available for your account.</p>
-            ) : (
-              <div className="service-list">
-                {services.map((item) => (
-                  <label
-                    key={item.service.id}
-                    className={`service-card ${selectedServices.includes(item.service.id) ? "selected" : ""}`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedServices.includes(item.service.id)}
-                      onChange={() => handleServiceToggle(item.service.id)}
-                    />
-                    <span>{item.service.name}</span>
-                  </label>
-                ))}
+            <h4>Credit Checks</h4>
+            <p className="form-section-hint">PAN card number is required for credit verification.</p>
+            <div className="form-grid">
+              <div className="form-field">
+                <label>PAN Card Number <span className="req-star">*</span></label>
+                <input
+                  name="pan_card"
+                  placeholder="e.g. ABCDE1234F"
+                  value={form.pan_card}
+                  onChange={(e) => {
+                    handleChange({ target: { name: "pan_card", value: e.target.value.toUpperCase() } });
+                  }}
+                  maxLength={10}
+                  className={stepErrors.pan_card ? "input-error" : ""}
+                  style={{ textTransform: "uppercase", letterSpacing: "0.1em" }}
+                />
+                <FieldError message={stepErrors.pan_card} />
               </div>
-            )}
-
-            {selectedServices.length > 0 && (
-              <p className="selected-ids-hint">
-                IDs: {JSON.stringify(selectedServices)}
-              </p>
-            )}
-
+            </div>
             <div className="form-footer">
               <button className="btn-back" type="button" onClick={back}>← Back</button>
-              <button
-                className="btn-next"
-                type="button"
-                onClick={() => {
-                  if (Object.keys(validators[7](form, selectedServices)).length === 0) {
-                    next();
-                  } else {
-                    setStepErrors(validators[7](form, selectedServices));
-                    toast.error("Service must be a non-empty array");
-                  }
-                }}
-              >
-                Next →
-              </button>
+              <button className="btn-next" type="button" onClick={next}>Next →</button>
             </div>
           </div>
         )}
 
-        {/* ══ STEP 8: REVIEW ══ */}
-        {step === 8 && (
+        {/* ══ SOCIAL MEDIA ══ */}
+        {currentStep === "social" && (
+          <div className="form-section">
+            <h4>Social Media Checks</h4>
+            <p className="form-section-hint">Fields marked <span className="req-star">*</span> are mandatory.</p>
+            <div className="form-grid">
+              <div className="form-field">
+                <label>Social Media Type <span className="req-star">*</span></label>
+                <select
+                  name="social_media_type"
+                  value={form.social_media_type}
+                  onChange={handleChange}
+                  className={stepErrors.social_media_type ? "input-error" : ""}
+                >
+                  <option value="">Select Platform</option>
+                  <option value="LinkedIn">LinkedIn</option>
+                  <option value="Facebook">Facebook</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="Twitter">Twitter / X</option>
+                  <option value="YouTube">YouTube</option>
+                  <option value="Other">Other</option>
+                </select>
+                <FieldError message={stepErrors.social_media_type} />
+              </div>
+              <div className="form-field">
+                <label>Social Media ID / Username <span className="req-star">*</span></label>
+                <input
+                  name="social_media_id"
+                  placeholder="e.g. @rahulkumar or profile URL"
+                  value={form.social_media_id}
+                  onChange={handleChange}
+                  className={stepErrors.social_media_id ? "input-error" : ""}
+                />
+                <FieldError message={stepErrors.social_media_id} />
+              </div>
+              <div className="form-field">
+                <label>Nick Name / Display Name</label>
+                <input
+                  name="nick_name"
+                  placeholder="e.g. Rahul K"
+                  value={form.nick_name}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <div className="form-footer">
+              <button className="btn-back" type="button" onClick={back}>← Back</button>
+              <button className="btn-next" type="button" onClick={next}>Next →</button>
+            </div>
+          </div>
+        )}
+
+        {/* ══ ACKNOWLEDGE ══ */}
+        {currentStep === "acknowledge" && (
+          <div className="form-section">
+            <h4>Terms & Conditions Acknowledgement</h4>
+            <p className="form-section-hint">
+              Please review the Terms & Conditions and confirm your acknowledgement to continue.
+            </p>
+
+            <div className="bgv-terms-wrapper">
+              <div className="bgv-terms-actions">
+                <a
+                  className="bgv-terms-link"
+                  href={TERMS_PDF_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open Terms & Conditions PDF
+                </a>
+              </div>
+              {/* <iframe
+                className="bgv-terms-viewer"
+                src={TERMS_PDF_URL}
+                title="Terms and Conditions"
+              /> */}
+
+              <PDFViewer url={TERMS_PDF_URL} />
+            </div>
+
+            <label className="bgv-ack-check">
+              <input
+                type="checkbox"
+                checked={acknowledgeChecked}
+                onChange={(e) => {
+                  setAcknowledgeChecked(e.target.checked);
+                  if (stepErrors.acknowledge) {
+                    setStepErrors((prev) => ({ ...prev, acknowledge: undefined }));
+                  }
+                }}
+              />
+              <span>I acknowledge and accept the Terms & Conditions.</span>
+            </label>
+            <FieldError message={stepErrors.acknowledge} />
+
+            <div className="form-footer">
+              <button className="btn-back" type="button" onClick={back}>← Back</button>
+              <button className="btn-next" type="button" onClick={next}>Next →</button>
+            </div>
+          </div>
+        )}
+
+        {/* ══ REVIEW ══ */}
+        {currentStep === "review" && (
           <div className="form-section">
             <h4>Review & Submit</h4>
             <p className="form-section-hint">Review your details before submitting.</p>
@@ -969,72 +1381,124 @@ function BgvRequestForm() {
                   <ReviewRow label="Phone" value={form.candidate_phone} />
                   <ReviewRow label="Designation" value={form.designation} />
                   <ReviewRow label="Department" value={form.department} />
-                </div>
-              </div>
-
-              <div className="review-section">
-                <h5>Identity</h5>
-                <div className="review-grid">
-                  <ReviewRow label="ID Type" value={form.id_type} />
-                  <ReviewRow label="ID Number" value={form.id_number} />
-                  <ReviewRow label="ID Doc" value={form.id_doc?.name} />
-                </div>
-              </div>
-
-              <div className="review-section">
-                <h5>Address</h5>
-                <div className="review-grid">
-                  <ReviewRow label="Current" value={form.current_address} />
-                  <ReviewRow label="Permanent" value={form.permanent_address} />
-                </div>
-              </div>
-
-              <div className="review-section">
-                <h5>Criminal Check</h5>
-                <div className="review-grid">
-                  <ReviewRow label="Father" value={form.father_name} />
-                  <ReviewRow label="Mother" value={form.mother_name} />
                   <ReviewRow label="Gender" value={form.gender} />
                   <ReviewRow label="DOB" value={form.dob} />
                 </div>
               </div>
 
               <div className="review-section">
-                {(() => {
-                  const filled = getFilledEmployments();
-                  return (
-                    <>
-                      <h5>Employment ({filled.length} record{filled.length !== 1 ? "s" : ""})</h5>
-                      {filled.length === 0 ? (
-                        <p className="review-empty">No employment records added.</p>
-                      ) : (
-                        filled.map((emp, i) => (
-                          <div key={i} className="review-emp-row">
-                            <span className="emp-badge">#{i + 1}</span>
-                            <span>{emp.company_name}</span>
-                            <span className="emp-meta">{emp.job_title}</span>
-                            {emp.is_current && <span className="emp-current">Current</span>}
-                          </div>
-                        ))
-                      )}
-                    </>
-                  );
-                })()}
+                <h5>Selected Products ({selectedProducts.length})</h5>
+                <p className="review-services">{getProductNames()}</p>
               </div>
 
-              <div className="review-section">
-                <h5>Education</h5>
-                <div className="review-grid">
-                  <ReviewRow label="Institute" value={form.institute_name} />
-                  <ReviewRow label="Qualification" value={form.qualification} />
-                  <ReviewRow label="Passing Year" value={form.passing_year} />
+              {activeSteps.includes("identity") && (
+                <div className="review-section">
+                  <h5>ID Verification</h5>
+                  <div className="review-grid">
+                    <ReviewRow label="ID Type" value={form.id_type} />
+                    <ReviewRow label="ID Number" value={form.id_number} />
+                    <ReviewRow label="ID Doc" value={form.id_doc?.name} />
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="review-section">
-                <h5>Selected Services ({selectedServices.length})</h5>
-                <p className="review-services">{getServiceNames()}</p>
-              </div>
+              {activeSteps.includes("address") && (
+                <div className="review-section">
+                  <h5>Address Verification</h5>
+                  <div className="review-grid">
+                    <ReviewRow label="Current" value={form.current_address} />
+                    <ReviewRow label="Current Landmark" value={form.current_landmark} />
+                    <ReviewRow label="Permanent" value={form.permanent_address} />
+                    <ReviewRow label="Permanent Landmark" value={form.permanent_landmark} />
+                  </div>
+                </div>
+              )}
+
+              {activeSteps.includes("criminal") && (
+                <div className="review-section">
+                  <h5>Criminal Check</h5>
+                  <div className="review-grid">
+                    <ReviewRow label="Father" value={form.father_name} />
+                    <ReviewRow label="Mother" value={form.mother_name} />
+                    <ReviewRow label="Address Detail" value={form.address_detail} />
+                    <ReviewRow label="City" value={form.city} />
+                  </div>
+                </div>
+              )}
+
+              {activeSteps.includes("employment") && (
+                <div className="review-section">
+                  {(() => {
+                    const filled = getFilledEmployments();
+                    return (
+                      <>
+                        <h5>Employment ({filled.length} record{filled.length !== 1 ? "s" : ""})</h5>
+                        {filled.length === 0 ? (
+                          <p className="review-empty">No employment records added.</p>
+                        ) : (
+                          filled.map((emp, i) => (
+                            <div key={i} className="review-emp-row">
+                              <span className="emp-badge">#{i + 1}</span>
+                              <span>{emp.company_name}</span>
+                              <span className="emp-meta">{emp.job_title}</span>
+                              {emp.employment_category && <span className="emp-meta">{emp.employment_category}</span>}
+                              {emp.employment_type && <span className="emp-meta">{emp.employment_type}</span>}
+                              {emp.is_current && <span className="emp-current">Current</span>}
+                            </div>
+                          ))
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {activeSteps.includes("education") && (
+                <div className="review-section">
+                  <h5>Education Check</h5>
+                  <div className="review-grid">
+                    <ReviewRow label="Institute" value={form.institute_name} />
+                    <ReviewRow label="University" value={form.university} />
+                    <ReviewRow label="Qualification" value={form.qualification} />
+                    <ReviewRow label="Roll Number" value={form.roll_number} />
+                    <ReviewRow label="Passing Year" value={form.passing_year} />
+                    <ReviewRow label="Degree Status" value={form.degree_status === "yes" ? "Awarded" : form.degree_status === "no" ? "Not Yet Awarded" : ""} />
+                    <ReviewRow label="Edu Doc" value={form.edu_doc?.name} />
+                  </div>
+                </div>
+              )}
+
+              {activeSteps.includes("credit") && (
+                <div className="review-section">
+                  <h5>Credit Checks</h5>
+                  <div className="review-grid">
+                    <ReviewRow label="PAN Card" value={form.pan_card} />
+                  </div>
+                </div>
+              )}
+
+              {activeSteps.includes("social") && (
+                <div className="review-section">
+                  <h5>Social Media Checks</h5>
+                  <div className="review-grid">
+                    <ReviewRow label="Platform" value={form.social_media_type} />
+                    <ReviewRow label="ID / Username" value={form.social_media_id} />
+                    <ReviewRow label="Nick Name" value={form.nick_name} />
+                  </div>
+                </div>
+              )}
+
+              {activeSteps.includes("acknowledge") && (
+                <div className="review-section">
+                  <h5>Acknowledgement</h5>
+                  <div className="review-grid">
+                    <ReviewRow
+                      label="Terms Accepted"
+                      value={acknowledgeChecked ? "Yes" : "No"}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="form-footer">
@@ -1052,17 +1516,6 @@ function BgvRequestForm() {
         )}
 
       </div>
-    </div>
-  );
-}
-
-/* ── Review row helper ── */
-function ReviewRow({ label, value }) {
-  if (!value) return null;
-  return (
-    <div className="review-row">
-      <span className="review-label">{label}</span>
-      <span className="review-value">{value}</span>
     </div>
   );
 }

@@ -13,9 +13,9 @@ const Footer = () => {
     // fetch services
     const fetchServices = async () => {
       try {
-        const res = await axiosInstance.get("/service/ext-list", {
+        const res = await axiosInstance.get("/service/get", {
         });
-        const serviceData = res?.data?.data?.services || [];
+        const serviceData = res?.data?.data || [];
         console.log("services res:", res);
         setServices(serviceData);
       } catch (err) {

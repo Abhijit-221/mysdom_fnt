@@ -2,24 +2,124 @@ import { ArrowLeft } from "lucide-react";
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+const getRequestProducts = (data = {}) => {
+  const rawProducts = data.BGVRequestProducts || data.bgvReqestService || [];
+  return rawProducts.map((item) => ({
+    ...item,
+    productTitle: item.Product?.title || item.services?.name || "—",
+  }));
+};
+
+const SINGLE_VALUE_LABELS = new Set([
+  "Mode of Response",
+  "Mode of Verification",
+  "Verifier's Comments",
+  "Final Disposition",
+  "Check Status",
+]);
+
+const markSingleValueRows = (rows = []) =>
+  rows.map((row) => ({
+    ...row,
+    singleValue: SINGLE_VALUE_LABELS.has(row.label),
+  }));
+
+const getProductTableRows = (product, data = {}) => {
+  const title = (product?.productTitle || "").toLowerCase();
+  const firstEmployment = data.employments?.[0] || {};
+
+  if (title.includes("employment")) {
+    return markSingleValueRows([
+      { label: "Employer", stated: firstEmployment.company_name || "—", verified: firstEmployment.company_name || "—" },
+      { label: "Employee Code", stated: firstEmployment.employee_id || "—", verified: firstEmployment.employee_id || "—" },
+      { label: "Start Date", stated: firstEmployment.employment_start || "—", verified: firstEmployment.employment_start || "—" },
+      { label: "End Date", stated: firstEmployment.employment_end || "—", verified: firstEmployment.employment_end || "—" },
+      { label: "Designation", stated: firstEmployment.job_title || "—", verified: firstEmployment.job_title || "—" },
+      { label: "Mode of Response", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
+      { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
+      { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
+    ]);
+  }
+
+  if (title.includes("education")) {
+    return markSingleValueRows([
+      { label: "Institute", stated: data.institute_name || "—", verified: data.institute_name || "—" },
+      { label: "University", stated: data.university || "—", verified: data.university || "—" },
+      { label: "Qualification", stated: data.qualification || "—", verified: data.qualification || "—" },
+      { label: "Specialization", stated: data.specialization || "—", verified: data.specialization || "—" },
+      { label: "Roll Number", stated: data.roll_number || "—", verified: data.roll_number || "—" },
+      { label: "Passing Year", stated: data.passing_year || "—", verified: data.passing_year || "—" },
+      { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
+      { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
+      { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
+    ]);
+  }
+
+  if (title.includes("address")) {
+    return markSingleValueRows([
+      { label: "Current Address", stated: data.current_address || "—", verified: data.current_address || "—" },
+      { label: "Permanent Address", stated: data.permanent_address || "—", verified: data.permanent_address || "—" },
+      { label: "Current Residency", stated: data.current_residency || "—", verified: data.current_residency || "—" },
+      { label: "Permanent Residency", stated: data.permanent_residency || "—", verified: data.permanent_residency || "—" },
+      { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
+      { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
+      { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
+    ]);
+  }
+
+  if (title.includes("id")) {
+    return markSingleValueRows([
+      { label: "ID Type", stated: data.id_type || "—", verified: data.id_type || "—" },
+      { label: "ID Number", stated: data.id_number || "—", verified: data.id_number || "—" },
+      { label: "PAN", stated: data.pan_card || "—", verified: data.pan_card || "—" },
+      { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
+      { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
+      { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
+    ]);
+  }
+
+  if (title.includes("social")) {
+    return markSingleValueRows([
+      { label: "Social Media Type", stated: data.social_media_type || "—", verified: data.social_media_type || "—" },
+      { label: "Social Media ID", stated: data.social_media_id || "—", verified: data.social_media_id || "—" },
+      { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
+      { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
+      { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
+    ]);
+  }
+
+  return markSingleValueRows([
+    { label: "Product", stated: product.productTitle || "—", verified: product.productTitle || "—" },
+    { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
+    { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
+    { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+    { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
+  ]);
+};
+
 /* ─────────────────────────────────────────────
    COLORS  (RGB tuples for jsPDF)
 ───────────────────────────────────────────── */
 const C = {
-  navy: [30, 43, 74],
-  green: [123, 193, 66],
-  orange: [245, 166, 35],
+  navy: [131, 24, 67],
+  green: [255, 47, 143],
+  orange: [255, 47, 143],
   cleared: [39, 174, 96],
-  tableHead: [30, 43, 74],
-  rowAlt: [244, 246, 250],
+  tableHead: [255, 47, 143],
+  rowAlt: [253, 242, 248],
   white: [255, 255, 255],
-  gray: [136, 136, 136],
-  lightGray: [229, 231, 235],
+  gray: [113, 63, 97],
+  lightGray: [244, 209, 228],
   bodyText: [31, 41, 55],
-  labelText: [107, 114, 128],
-  successBg: [240, 253, 244],
-  successBorder: [187, 247, 208],
-  successText: [22, 101, 52],
+  labelText: [131, 24, 67],
+  successBg: [252, 231, 243],
+  successBorder: [244, 114, 182],
+  successText: [157, 23, 77],
 };
 
 /* ─────────────────────────────────────────────
@@ -81,7 +181,7 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
   const CW = PW - ML - MR;
   let y = 0;
 
-  const services = data.bgvReqestService || [];
+  const products = getRequestProducts(data);
   const reqDate = data.createdAt ? data.createdAt.slice(0, 10) : "N/A";
   const updateDate = data.updatedAt ? data.updatedAt.slice(0, 10) : "N/A";
   const isCompleted = ["COMPLETED", "REJECTED", "CLOSED"].includes(data.status);
@@ -101,7 +201,10 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     doc.setFontSize(size);
     doc.setFont("helvetica", bold ? "bold" : "normal");
     doc.setTextColor(...color);
-    doc.text(sanitize(str), x, yy, { align, ...(maxWidth ? { maxWidth } : {}) });
+    const safeText = Array.isArray(str)
+      ? str.map((line) => sanitize(line))
+      : sanitize(str);
+    doc.text(safeText, x, yy, { align, ...(maxWidth ? { maxWidth } : {}) });
   };
 
   /**
@@ -120,7 +223,22 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
   const drawHeader = () => {
     fill(C.green); doc.rect(0, 0, 4, 20, "F");
     fill([248, 249, 252]); doc.rect(4, 0, 152, 20, "F");
-    txt("MYSDOM", 10, 13, { bold: true, size: 16, color: C.navy });
+    const logoB64 = imageCache.__brandLogo;
+    if (logoB64) {
+      try {
+        const logoProps = doc.getImageProperties(logoB64);
+        const maxW = 44;
+        const maxH = 11;
+        const ratio = Math.min(maxW / logoProps.width, maxH / logoProps.height);
+        const drawW = logoProps.width * ratio;
+        const drawH = logoProps.height * ratio;
+        doc.addImage(logoB64, 10, 5, drawW, drawH);
+      } catch {
+        txt("MYSDOM", 10, 13, { bold: true, size: 16, color: C.navy });
+      }
+    } else {
+      txt("MYSDOM", 10, 13, { bold: true, size: 16, color: C.navy });
+    }
     const bars = [[0, 5], [3, 9], [6, 7], [9, 12], [12, 8]];
     fill(C.green);
     bars.forEach(([bx, bh]) => doc.rect(88 + bx, 13 - bh, 2.2, bh, "F"));
@@ -183,7 +301,7 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     return bw;
   };
 
-  /* Service overview card (grid) */
+  /* Product overview card (grid) */
   const serviceStatusCard = (sv, x, cardY, cardW) => {
     const statusLabel = (sv.status || "N/A").replace(/_/g, " ");
     fill(C.rowAlt); stroke(C.lightGray);
@@ -191,7 +309,7 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     doc.roundedRect(x, cardY, cardW, 22, 2, 2, "FD");
     // left accent bar
     fill(C.green); doc.rect(x, cardY, 3, 22, "F");
-    txt(sv.services?.name || "—", x + 7, cardY + 8, { bold: true, size: 9, color: C.navy, maxWidth: cardW - 14 });
+    txt(sv.productTitle || "—", x + 7, cardY + 8, { bold: true, size: 9, color: C.navy, maxWidth: cardW - 14 });
     statusBadge(statusLabel, x + 7, cardY + 17);
   };
 
@@ -226,14 +344,103 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     y += 11;
   };
 
+  const drawProductDetailTable = (product) => {
+    const rows = getProductTableRows(product, data);
+    const headerH = 9;
+    const detailW = 38;
+    const valueW = (CW - detailW) / 2;
+    const cols = [
+      { key: "label", title: "Details", width: detailW },
+      { key: "stated", title: "Stated", width: valueW },
+      { key: "verified", title: "Verified", width: valueW },
+    ];
+
+    const drawHeaderRow = () => {
+      checkPage(headerH + 4);
+      let x = ML;
+      cols.forEach((col) => {
+        fill(C.tableHead);
+        stroke([31, 41, 55]);
+        doc.setLineWidth(0.25);
+        doc.rect(x, y, col.width, headerH, "FD");
+        txt(col.title, x + 2, y + 6, { bold: true, size: 8, color: C.white });
+        x += col.width;
+      });
+      y += headerH;
+    };
+
+    drawHeaderRow();
+    rows.forEach((row) => {
+      const labelLines = doc.splitTextToSize(sanitize(row.label || "—"), detailW - 4);
+      const statedLines = doc.splitTextToSize(sanitize(row.stated || "—"), valueW - 4);
+      const verifiedLines = row.singleValue
+        ? []
+        : doc.splitTextToSize(sanitize(row.verified || "—"), valueW - 4);
+      const singleValueLines = row.singleValue
+        ? doc.splitTextToSize(sanitize(row.stated || row.verified || "—"), valueW * 2 - 4)
+        : [];
+      const maxLines = Math.max(labelLines.length, statedLines.length, verifiedLines.length);
+      const mergedMaxLines = row.singleValue
+        ? Math.max(labelLines.length, singleValueLines.length)
+        : maxLines;
+      const rowH = Math.max(9, mergedMaxLines * 4.2 + 3);
+
+      if (y + rowH > 282) {
+        doc.addPage();
+        y = 0;
+        drawHeader();
+        y += 6;
+        drawHeaderRow();
+      }
+
+      let x = ML;
+      fill(C.tableHead);
+      stroke([31, 41, 55]);
+      doc.setLineWidth(0.25);
+      doc.rect(x, y, detailW, rowH, "FD");
+      txt(labelLines, x + 2, y + 5.5, {
+        bold: true,
+        size: 7.5,
+        color: C.white,
+      });
+      x += detailW;
+
+      if (row.singleValue) {
+        fill(C.white);
+        stroke([31, 41, 55]);
+        doc.setLineWidth(0.25);
+        doc.rect(x, y, valueW * 2, rowH, "FD");
+        txt(singleValueLines, x + 2, y + 5.5, {
+          size: 7.5,
+          color: C.bodyText,
+        });
+      } else {
+        const values = [statedLines, verifiedLines];
+        [valueW, valueW].forEach((width, idx) => {
+          fill(C.white);
+          stroke([31, 41, 55]);
+          doc.setLineWidth(0.25);
+          doc.rect(x, y, width, rowH, "FD");
+          txt(values[idx], x + 2, y + 5.5, {
+            size: 7.5,
+            color: C.bodyText,
+          });
+          x += width;
+        });
+      }
+      y += rowH;
+    });
+    y += 6;
+  };
+
   /* ══════════════════════════════════════════
      PAGE 1 — Cover + Executive Summary
   ══════════════════════════════════════════ */
   drawHeader();
 
   /* ── Cover card ── */
-  // Calculate dynamic height based on number of services
-  const bh = Math.max(66, 46 + services.length * 5);
+  // Dynamic card height keeps all left-column content inside the card.
+  const bh = Math.max(92, 74 + products.length * 6);
   fill(C.rowAlt); doc.roundedRect(ML, y, CW, bh, 3, 3, "F");
   stroke(C.lightGray); doc.setLineWidth(0.3);
   doc.roundedRect(ML, y, CW, bh, 3, 3, "S");
@@ -246,8 +453,8 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
   txt(data.candidate_name || "—", ML + 6, ly, { bold: true, size: 11, color: C.navy }); ly += 7;
   txt(data.req_code ? `Requested #${data.req_code}` : "", ML + 6, ly, { size: 8, color: C.labelText }); ly += 9;
   txt("PACKAGE OPTED", ML + 6, ly, { bold: true, size: 7, color: C.navy }); ly += 5;
-  services.forEach(s => {
-    txt(`- ${s.services?.name || "—"}`, ML + 8, ly, { size: 8, color: C.bodyText, maxWidth: halfX - ML - 10 });
+  products.forEach((p) => {
+    txt(`- ${p.productTitle || "—"}`, ML + 8, ly, { size: 8, color: C.bodyText, maxWidth: halfX - ML - 10 });
     ly += 5;
   });
   ly += 3;
@@ -283,52 +490,64 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
   sectionTitle("Executive Summary");
   cardHeader("EXECUTIVE SUMMARY");
 
-  /* Dynamic column widths: fixed cols + one per service */
-  const serviceNames = services.map(s => s.services?.name || "—");
-  const nSvc = serviceNames.length;
-  // fixed cols: MYS# | Applicant | Organisation | Package
-  const col0 = CW * 0.12;
-  const col1 = CW * 0.17;
-  const col2 = CW * 0.18;
-  const col3 = CW * 0.20;
-  const svcColW = nSvc > 0 ? (CW - col0 - col1 - col2 - col3) / nSvc : 0;
-  const execColW = [col0, col1, col2, col3, ...serviceNames.map(() => svcColW)];
-  const execCols = ["MYS#", "Applicant", "Organisation", "Package", ...serviceNames];
+  const drawSummaryTable = ({ headers, rows, colWidths }) => {
+    const headH = 9;
+    checkPage(26);
+    let x = ML;
+    headers.forEach((h, idx) => {
+      fill(C.tableHead);
+      stroke(C.lightGray);
+      doc.setLineWidth(0.2);
+      doc.rect(x, y, colWidths[idx], headH, "FD");
+      txt(h, x + 2, y + 6, { size: 7.5, bold: true, color: C.white });
+      x += colWidths[idx];
+    });
+    y += headH;
 
-  // Header row
-  checkPage(22);
-  fill(C.tableHead); doc.rect(ML, y, CW, 9, "F");
-  let cx = ML;
-  execCols.forEach((h, i) => {
-    txt(h, cx + execColW[i] / 2, y + 6, { bold: true, size: 7, color: C.white, align: "center", maxWidth: execColW[i] - 2 });
-    cx += execColW[i];
-  });
-  y += 9;
+    rows.forEach((row) => {
+      const lines = row.map((v, idx) => doc.splitTextToSize(sanitize(v), colWidths[idx] - 4));
+      const maxLines = Math.max(...lines.map((l) => l.length), 1);
+      const bodyH = Math.max(12, maxLines * 4 + 3);
+      checkPage(bodyH + 4);
+      x = ML;
+      row.forEach((_, idx) => {
+        fill(C.rowAlt);
+        stroke(C.lightGray);
+        doc.setLineWidth(0.2);
+        doc.rect(x, y, colWidths[idx], bodyH, "FD");
+        txt(lines[idx], x + 2, y + 5, { size: 7.2, color: C.bodyText });
+        x += colWidths[idx];
+      });
+      y += bodyH;
+    });
+    y += 6;
+  };
 
-  // Data row
-  fill(C.rowAlt); doc.rect(ML, y, CW, 11, "F");
-  stroke(C.lightGray); doc.setLineWidth(0.2); doc.rect(ML, y, CW, 11, "S");
-  cx = ML;
-  const pkgText = services.map(s => s.services?.name).join(", ") || "—";
-  [data.req_code, data.candidate_name, data.client?.companyName, pkgText].forEach((v, i) => {
-    txt(v ?? "—", cx + execColW[i] / 2, y + 7, { size: 7, color: C.bodyText, align: "center", maxWidth: execColW[i] - 2 });
-    cx += execColW[i];
+  const overviewHeaders = ["MYS#", "Applicant", "Organisation", "Package"];
+  const overviewColW = [CW * 0.18, CW * 0.20, CW * 0.22, CW * 0.40];
+  const pkgText = products.map((p) => p.productTitle).join(", ") || "—";
+  drawSummaryTable({
+    headers: overviewHeaders,
+    rows: [[data.req_code || "—", data.candidate_name || "—", data.client?.companyName || "—", pkgText]],
+    colWidths: overviewColW,
   });
-  services.forEach((sv, i) => {
-    const sl = (sv.status || "N/A").replace(/_/g, " ");
-    txt(sl, cx + execColW[4 + i] / 2, y + 7, { size: 7, color: C.cleared, bold: true, align: "center", maxWidth: execColW[4 + i] - 2 });
-    cx += execColW[4 + i];
+
+  const statusHeaders = ["Product", "Status"];
+  const statusColW = [CW * 0.72, CW * 0.28];
+  drawSummaryTable({
+    headers: statusHeaders,
+    rows: products.map((sv) => [sv.productTitle || "—", (sv.status || "N/A").replace(/_/g, " ")]),
+    colWidths: statusColW,
   });
-  y += 15;
 
   /* ══════════════════════════════════════════
      SERVICE PAGES — one per service
   ══════════════════════════════════════════ */
-  services.forEach((sv) => {
+  products.forEach((sv) => {
     doc.addPage();
     y = 0; drawHeader();
 
-    const svcName = sv.services?.name || "Service";
+    const svcName = sv.productTitle || "Product";
     const svcStatus = (sv.status || "N/A").replace(/_/g, " ");
     const isSvcCompleted = ["COMPLETED", "REJECTED", "CLOSED"].includes(sv.status);
     const svcCompletionDate = isSvcCompleted
@@ -362,6 +581,9 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     txt("Completion Date:", compLabelX, y + 5, { size: 7, color: C.gray });
     txt(svcCompletionDate, compLabelX, y + 10.5, { bold: true, size: 8, color: C.orange });
     y += 17;
+
+    /* Product details table */
+    drawProductDetailTable(sv);
 
     /* Documents */
     const hasDocs = sv.doc_1 || sv.doc_2;
@@ -397,28 +619,28 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
       });
     } else {
       checkPage(12);
-      txt("No documents attached for this service.", ML, y + 6, { size: 8, color: C.labelText });
+      txt("No documents attached for this product.", ML, y + 6, { size: 8, color: C.labelText });
       y += 12;
     }
   });
 
   /* ══════════════════════════════════════════
-     SERVICES OVERVIEW PAGE
+    PRODUCTS OVERVIEW PAGE
   ══════════════════════════════════════════ */
   doc.addPage();
   y = 0; drawHeader();
 
-  sectionTitle("Services Overview");
-  cardHeader("SERVICES STATUS");
+  sectionTitle("Products Overview");
+  cardHeader("PRODUCTS STATUS");
   y += 6;
 
-  if (services.length > 0) {
+  if (products.length > 0) {
     const cols = 2;
     const gap = 8;
     const cardW = (CW - gap * (cols - 1)) / cols;
     const cardH = 24;
 
-    services.forEach((sv, i) => {
+    products.forEach((sv, i) => {
       const col = i % cols;
       const row = Math.floor(i / cols);
       if (col === 0) checkPage(cardH + 4);
@@ -427,10 +649,10 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
       serviceStatusCard(sv, xPos, yPos, cardW);
     });
 
-    const rows = Math.ceil(services.length / cols);
+    const rows = Math.ceil(products.length / cols);
     y += rows * (cardH + 4) + 4;
   } else {
-    txt("No services found.", ML, y + 6, { size: 9, color: C.labelText });
+    txt("No products found.", ML, y + 6, { size: 9, color: C.labelText });
     y += 14;
   }
 
@@ -466,10 +688,10 @@ function loadJsPDF() {
 ───────────────────────────────────────────── */
 const statusColor = (st = "") => {
   const s = st.toUpperCase();
-  if (["CLEARED", "COMPLETED", "CLEAR"].includes(s)) return { bg: "#d1fae5", txt: "#065f46" };
-  if (["IN_PROGRESS", "NEW"].includes(s)) return { bg: "#fef9c3", txt: "#854d0e" };
+  if (["CLEARED", "COMPLETED", "CLEAR"].includes(s)) return { bg: "#ffe4f1", txt: "#a10f5f" };
+  if (["IN_PROGRESS", "NEW"].includes(s)) return { bg: "#ffe9f5", txt: "#a10f5f" };
   if (["FAILED", "DISCREPANCY", "REJECTED"].includes(s)) return { bg: "#fee2e2", txt: "#991b1b" };
-  return { bg: "#e0f2fe", txt: "#075985" };
+  return { bg: "#ffeaf6", txt: "#a10f5f" };
 };
 
 const Badge = ({ label, color }) => (
@@ -492,7 +714,7 @@ const CardHeader = ({ icon, title, right }) => (
   <div style={{
     display: "flex", alignItems: "center", justifyContent: "space-between",
     padding: "14px 20px",
-    background: "linear-gradient(90deg,#1e2b4a 0%,#243459 100%)", color: "#fff"
+    background: "linear-gradient(90deg,#ff2f8f 0%,#cf1a70 100%)", color: "#fff"
   }}>
     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
       <span style={{ fontSize: 18 }}>{icon}</span>
@@ -507,7 +729,7 @@ const SectionDivider = ({ title }) => (
     <div style={{ flex: 1, height: 1, background: "#e5e7eb" }} />
     <span style={{
       fontWeight: 800, fontSize: 12, letterSpacing: "0.12em",
-      color: "#1e2b4a", textTransform: "uppercase"
+      color: "#a10f5f", textTransform: "uppercase"
     }}>{title}</span>
     <div style={{ flex: 1, height: 1, background: "#e5e7eb" }} />
   </div>
@@ -548,10 +770,10 @@ const DownloadButton = ({ onClick, loading, size = "md" }) => (
     display: "flex", alignItems: "center", gap: 8,
     padding: size === "lg" ? "12px 28px" : "9px 20px",
     borderRadius: 8, border: "none",
-    background: loading ? "#9ca3af" : "linear-gradient(135deg,#7bc142 0%,#5a9e2f 100%)",
+    background: loading ? "#9ca3af" : "linear-gradient(135deg,#ff2f8f 0%,#cf1a70 100%)",
     color: "#fff", fontSize: size === "lg" ? 14 : 12,
     fontWeight: 700, cursor: loading ? "not-allowed" : "pointer",
-    boxShadow: loading ? "none" : "0 4px 14px rgba(123,193,66,.4)",
+    boxShadow: loading ? "none" : "0 4px 14px rgba(255,47,143,.35)",
     transition: "all .2s", letterSpacing: "0.02em",
   }}>
     {loading
@@ -574,9 +796,11 @@ const BGVReportPage = () => {
     setLoading(true);
     try {
       const jsPDF = await loadJsPDF();
-      // Pre-fetch all service document images to base64 before building PDF
-      const services = data.bgvReqestService || [];
-      const imageCache = await preloadImages(services, base_url);
+      // Pre-fetch all product document images to base64 before building PDF
+      const products = getRequestProducts(data);
+      const imageCache = await preloadImages(products, base_url);
+      const logoUrl = `${window.location.origin}/logo.png`;
+      imageCache.__brandLogo = await fetchImageAsBase64(logoUrl);
       const doc = buildPDF(jsPDF, data, base_url, imageCache);
       doc.save(`BGV-Report-${data.req_code || "report"}.pdf`);
     } catch (err) {
@@ -587,7 +811,7 @@ const BGVReportPage = () => {
     }
   };
 
-  const services = data.bgvReqestService || [];
+  const products = getRequestProducts(data);
   const reqDate = data.createdAt ? new Date(data.createdAt).toLocaleDateString("en-IN") : "—";
   const updateDate = data.updatedAt ? new Date(data.updatedAt).toLocaleDateString("en-IN") : "—";
   const isCompleted = ["COMPLETED", "REJECTED", "CLOSED"].includes(data.status);
@@ -611,7 +835,7 @@ const BGVReportPage = () => {
 
       <div style={{
         minHeight: "100vh",
-        background: "linear-gradient(160deg,#f0f4ff 0%,#f8fafc 60%,#edf7e6 100%)",
+        background: "linear-gradient(160deg,#fff0f8 0%,#fff6fb 60%,#ffeef7 100%)",
         padding: "32px 24px 60px",
         fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
       }}>
@@ -622,7 +846,7 @@ const BGVReportPage = () => {
             <button
               style={{
                 display: "flex", flexDirection: "row", alignItems: "center", gap: "2px",
-                textAlign: "center", padding: "6px", background: "#3d6ca9",
+                textAlign: "center", padding: "6px", background: "#3D6CA9",
                 color: "white", borderRadius: "5px", border: "none", cursor: "pointer"
               }}
               onClick={() => navigate('/bgv/list')}
@@ -639,14 +863,14 @@ const BGVReportPage = () => {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                 <div style={{
-                  background: "linear-gradient(135deg,#1e2b4a,#2d4070)",
+                  background: "linear-gradient(135deg,#ff2f8f,#cf1a70)",
                   color: "#fff", fontWeight: 800, fontSize: 18,
                   padding: "6px 14px", borderRadius: 8, letterSpacing: "0.06em"
                 }}>MYSDOM</div>
-                <div style={{ width: 3, height: 28, background: "#7bc142", borderRadius: 2 }} />
+                <div style={{ width: 3, height: 28, background: "#ff2f8f", borderRadius: 2 }} />
                 <span style={{ fontWeight: 700, fontSize: 13, color: "#6b7280" }}>BGV Report</span>
               </div>
-              <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#1e2b4a" }}>
+              <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#a10f5f" }}>
                 Background Verification Report
               </h1>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 6, flexWrap: "wrap" }}>
@@ -664,21 +888,21 @@ const BGVReportPage = () => {
           {/* ── Cover ── */}
           <div className="rs">
             <Card>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "stretch" }}>
                 <div style={{ padding: 20, borderRight: "1px solid #f3f4f6" }}>
-                  <p style={{ margin: "0 0 4px", fontSize: 11, fontWeight: 700, color: "#7bc142", textTransform: "uppercase", letterSpacing: "0.08em" }}>Final Report</p>
+                  <p style={{ margin: "0 0 4px", fontSize: 11, fontWeight: 700, color: "#ff2f8f", textTransform: "uppercase", letterSpacing: "0.08em" }}>Final Report</p>
                   <p style={{ margin: "0 0 2px", fontSize: 13, color: "#1f2937", fontWeight: 600 }}>{data.candidate_name || "—"}</p>
                   <p style={{ margin: "0 0 14px", fontSize: 12, color: "#6b7280" }}>{data.req_code ? `Requested #${data.req_code}` : ""}</p>
-                  <p style={{ margin: "0 0 4px", fontSize: 11, fontWeight: 700, color: "#1e2b4a", textTransform: "uppercase", letterSpacing: "0.06em" }}>Package Opted</p>
-                  {services.length > 0
-                    ? services.map(s => <p key={s.id} style={{ margin: "0 0 2px", fontSize: 12, color: "#374151" }}>• {s.services?.name}</p>)
+                  <p style={{ margin: "0 0 4px", fontSize: 11, fontWeight: 700, color: "#a10f5f", textTransform: "uppercase", letterSpacing: "0.06em" }}>Package Opted</p>
+                  {products.length > 0
+                    ? products.map((p) => <p key={p.id} style={{ margin: "0 0 2px", fontSize: 12, color: "#374151" }}>• {p.productTitle}</p>)
                     : <p style={{ fontSize: 12, color: "#aaa" }}>—</p>}
-                  <p style={{ margin: "14px 0 4px", fontSize: 11, fontWeight: 700, color: "#1e2b4a", textTransform: "uppercase", letterSpacing: "0.06em" }}>Date of Request</p>
+                  <p style={{ margin: "14px 0 4px", fontSize: 11, fontWeight: 700, color: "#a10f5f", textTransform: "uppercase", letterSpacing: "0.06em" }}>Date of Request</p>
                   <p style={{ margin: "0 0 2px", fontSize: 12, color: "#374151" }}>{reqDate}</p>
                   <p style={{ margin: 0, fontSize: 12, color: "#374151" }}>{data.client?.companyName || ""}</p>
                 </div>
                 <div style={{ padding: 20, background: "#f9fafb" }}>
-                  <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 700, color: "#1e2b4a", textTransform: "uppercase", letterSpacing: "0.06em", textAlign: "right" }}>Prepared By</p>
+                  <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 700, color: "#a10f5f", textTransform: "uppercase", letterSpacing: "0.06em", textAlign: "right" }}>Prepared By</p>
                   {["Mysdom", "Bhubaneswar", "www.mysdom.com", "contactus@mysdom.com"].map(v => (
                     <p key={v} style={{ margin: "0 0 2px", fontSize: 12, color: "#374151", textAlign: "right" }}>{v}</p>
                   ))}
@@ -686,7 +910,7 @@ const BGVReportPage = () => {
                     <div style={{ display: "flex", justifyContent: "flex-end", gap: 20 }}>
                       <div style={{ textAlign: "right" }}>
                         <p style={{ margin: 0, fontSize: 10, color: "#9ca3af" }}>Report No</p>
-                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#7bc142" }}>{data.req_code ? `#${data.req_code}` : "—"}</p>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#ff2f8f" }}>{data.req_code ? `#${data.req_code}` : "—"}</p>
                       </div>
                       <div style={{ textAlign: "right" }}>
                         <p style={{ margin: 0, fontSize: 10, color: "#9ca3af" }}>Completion Date</p>
@@ -704,38 +928,74 @@ const BGVReportPage = () => {
             <SectionDivider title="Executive Summary" />
             <Card>
               <CardHeader icon="📊" title="EXECUTIVE SUMMARY" />
-              <div style={{ overflowX: "auto", paddingBottom: 4 }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+              <div style={{ padding: "12px 16px 16px" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, marginBottom: 14, tableLayout: "fixed" }}>
+                  <colgroup>
+                    <col style={{ width: "18%" }} />
+                    <col style={{ width: "20%" }} />
+                    <col style={{ width: "22%" }} />
+                    <col style={{ width: "40%" }} />
+                  </colgroup>
                   <thead>
-                    <tr>{["MYS#", "Applicant", "Organisation", "Package", ...services.map(s => s.services?.name)].map(h => (
-                      <th key={h} style={{ background: "#1e2b4a", color: "#fff", padding: "9px 10px", textAlign: "center", fontWeight: 700, fontSize: 11 }}>{h}</th>
+                    <tr>{["MYS#", "Applicant", "Organisation", "Package"].map(h => (
+                      <th key={h} style={{ background: "#ff2f8f", color: "#fff", padding: "9px 10px", textAlign: "left", fontWeight: 700, fontSize: 11, border: "1px solid #f7b5d7" }}>{h}</th>
                     ))}</tr>
                   </thead>
                   <tbody>
                     <tr style={{ background: "#f9fafb" }}>
-                      {[data.req_code, data.candidate_name, data.client?.companyName, services.map(s => s.services?.name).join(", ") || "—"].map((v, i) => (
-                        <td key={i} style={{ padding: "9px 10px", textAlign: "center", fontSize: 12, color: "#1f2937", borderBottom: "1px solid #e5e7eb" }}>{v || "—"}</td>
-                      ))}
-                      {services.map((sv, i) => (
-                        <td key={i} style={{ padding: "9px 10px", textAlign: "center", borderBottom: "1px solid #e5e7eb" }}>
-                          <Badge label={sv.status?.replace(/_/g, " ")} color={{ bg: "#d1fae5", txt: "#065f46" }} />
+                      {[data.req_code, data.candidate_name, data.client?.companyName, products.map((p) => p.productTitle).join(", ") || "—"].map((v, i) => (
+                        <td
+                          key={i}
+                          style={{
+                            padding: "9px 10px",
+                            textAlign: "left",
+                            fontSize: 12,
+                            color: "#1f2937",
+                            border: "1px solid #f1c6dd",
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            overflowWrap: "anywhere",
+                            verticalAlign: "top",
+                          }}
+                        >
+                          {v || "—"}
                         </td>
                       ))}
                     </tr>
+                  </tbody>
+                </table>
+
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                  <thead>
+                    <tr>
+                      <th style={{ background: "#ff2f8f", color: "#fff", padding: "9px 10px", textAlign: "left", fontWeight: 700, fontSize: 11, border: "1px solid #f7b5d7" }}>Product</th>
+                      <th style={{ background: "#ff2f8f", color: "#fff", padding: "9px 10px", textAlign: "left", fontWeight: 700, fontSize: 11, border: "1px solid #f7b5d7" }}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {products.map((sv) => (
+                      <tr key={sv.id}>
+                        <td style={{ padding: "9px 10px", border: "1px solid #f1c6dd", color: "#1f2937" }}>{sv.productTitle || "—"}</td>
+                        <td style={{ padding: "9px 10px", border: "1px solid #f1c6dd" }}>
+                          <Badge label={sv.status?.replace(/_/g, " ") || "—"} color={statusColor(sv.status)} />
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
             </Card>
           </div>
 
-          {/* ── Service Sections — one card per service, matching PDF layout ── */}
-          {services.map(sv => {
-            const svcName = sv.services?.name || "Service";
+          {/* ── Product Sections — one card per product, matching PDF layout ── */}
+          {products.map((sv) => {
+            const svcName = sv.productTitle || "Product";
             const svcStatus = sv.status || "—";
             const isSvcCompleted = ["COMPLETED", "REJECTED", "CLOSED"].includes(sv.status);
             const svcDate = isSvcCompleted
               ? (sv.updatedAt ? new Date(sv.updatedAt).toLocaleDateString("en-IN") : updateDate)
               : "_ _ _";
+            const productRows = getProductTableRows(sv, data);
 
             return (
               <div className="rs" key={sv.id}>
@@ -757,6 +1017,45 @@ const BGVReportPage = () => {
                       <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#f5a623" }}>{svcDate}</p>
                     </div>
                   </div>
+                  <div style={{ padding: "0 20px 16px" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, border: "1px solid #ff2f8f" }}>
+                      <thead>
+                        <tr>
+                          {["Details", "Stated", "Verified"].map((head) => (
+                            <th
+                              key={head}
+                              style={{
+                                background: "#ff2f8f",
+                                color: "#fff",
+                                border: "1px solid #1f2937",
+                                textAlign: "left",
+                                padding: "8px",
+                                fontWeight: 700,
+                              }}
+                            >
+                              {head}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {productRows.map((row) => (
+                          <tr key={row.label}>
+                            <td style={{ background: "#ff2f8f", color: "#fff", border: "1px solid #1f2937", padding: "8px", fontWeight: 600 }}>{row.label}</td>
+                            <td
+                              colSpan={row.singleValue ? 2 : 1}
+                              style={{ border: "1px solid #1f2937", padding: "8px", color: "#1f2937" }}
+                            >
+                              {row.stated}
+                            </td>
+                            {!row.singleValue && (
+                              <td style={{ border: "1px solid #1f2937", padding: "8px", color: "#1f2937" }}>{row.verified}</td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                   {(sv.doc_1 || sv.doc_2) && (
                     <div style={{ padding: "0 20px 16px" }}>
                       <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.06em" }}>
@@ -771,26 +1070,26 @@ const BGVReportPage = () => {
             );
           })}
 
-          {/* ── Services Overview ── */}
+          {/* ── Products Overview ── */}
           <div className="rs">
-            <SectionDivider title="Services Overview" />
+            <SectionDivider title="Products Overview" />
             <Card>
-              <CardHeader icon="⚙️" title="SERVICES STATUS" />
-              {services.length > 0
+              <CardHeader icon="⚙️" title="PRODUCTS STATUS" />
+              {products.length > 0
                 ? (
                   <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 12 }}>
-                    {services.map(sv => {
+                    {products.map((sv) => {
                       const sc = statusColor(sv.status);
                       return (
                         <div key={sv.id} style={{ border: `1.5px solid ${sc.bg}`, borderRadius: 10, padding: "12px 14px", background: sc.bg + "55" }}>
-                          <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: 13, color: "#1e2b4a" }}>{sv.services?.name}</p>
+                          <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: 13, color: "#a10f5f" }}>{sv.productTitle}</p>
                           <Badge label={sv.status?.replace(/_/g, " ") || "—"} color={sc} />
                         </div>
                       );
                     })}
                   </div>
                 )
-                : <div style={{ padding: 24, color: "#aaa", fontSize: 13 }}>No services found.</div>
+                : <div style={{ padding: 24, color: "#aaa", fontSize: 13 }}>No products found.</div>
               }
             </Card>
           </div>
@@ -798,10 +1097,10 @@ const BGVReportPage = () => {
           {/* ── Footer CTA ── */}
           <div className="no-print" style={{ display: "flex", justifyContent: "center", paddingTop: 24 }}>
             <div style={{
-              background: "linear-gradient(135deg,#1e2b4a,#2d4070)",
+              background: "linear-gradient(135deg,#ff2f8f,#cf1a70)",
               borderRadius: 16, padding: "24px 40px", textAlign: "center", color: "#fff", maxWidth: 480
             }}>
-              <p style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 700, color: "#7bc142" }}>MYSDOM Background Verification</p>
+              <p style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 700, color: "#ffd3ea" }}>MYSDOM Background Verification</p>
               <p style={{ margin: "0 0 16px", fontSize: 12, color: "rgba(255,255,255,.7)" }}>
                 Download the official PDF report
                 {data.candidate_name && <> for <strong style={{ color: "#fff" }}>{data.candidate_name}</strong></>}
