@@ -141,9 +141,9 @@ export default function ClientList() {
                           <button className="clt-edit-btn" onClick={() => setSelectedClient(client)}>
                             <Edit3 size={16} />
                           </button>
-                          <button className="clt-add-btn" onClick={() => (navigate(`/client/service-add/${client.id}`))}>
+                          {/* <button className="clt-add-btn" onClick={() => (navigate(`/client/service-add/${client.id}`))}>
                             Add Service
-                          </button>
+                          </button> */}
                           <button className="clt-dlt-btn" onClick={()=>(deleteClntHandler(client.id))}>
                             <TrashIcon size={18} />
                           </button>

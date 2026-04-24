@@ -11,30 +11,31 @@
 }
 
 .tb-container {
-  width: min(1200px, 100%);
+  width: min(1450px, 100%);
   margin: 0 auto;
-  padding: 10px 40px;
+  padding: 5px 0;
   display: flex;
   align-items: center;
-  gap: 14px;
-  justify-content: space-between;
+  gap: 6px;
+  justify-content: flex-end;
 }
 
-.tb-left {
+.tb-text-actions {
   display: flex;
   align-items: center;
-  cursor: pointer;
+  gap: 6px;
 }
 
-.tb-left p {
+.tb-text-actions p {
   margin: 0;
   color: #cbd5e1;
   font-weight: 500;
   letter-spacing: 0.02em;
   transition: color 0.25s ease;
+  cursor: pointer;
 }
 
-.tb-left p:hover {
+.tb-text-actions p:hover {
   color: #7dd3fc;
 }
 
@@ -47,7 +48,7 @@
 .tb-right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 2px;
 }
 
 .tb-profile {
@@ -69,7 +70,7 @@
 .tb-login-btn,
 .tb-logout-btn {
   border: none;
-  padding: 7px 16px;
+  padding: 4px 16px;
   border-radius: 999px;
   cursor: pointer;
   font-size: 13px;
@@ -113,6 +114,8 @@
 ══════════════════════════════════════════ */
 .navbar {
   background: rgba(255, 255, 255, 0.95);
+  /* background: rgb(212, 227, 242); */
+
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   padding: 12px 30px;
@@ -133,7 +136,7 @@
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   gap: 18px;
 }
@@ -212,6 +215,10 @@
   text-decoration: none;
   color: inherit;
   transition: color 0.25s ease;
+}
+
+.nav-links li span {
+  color: inherit;
 }
 
 .nav-links li a:hover {

@@ -104,16 +104,16 @@
 }
 
 .client-table thead {
-  background: #f8fafc;
-  border-bottom: 0.5px solid #e2e8f0;
+  background: #dce1e7;
+  border-bottom: 0.5px solid #a9b0b8;
 }
 
 .client-table th {
   text-align: left;
   padding: 11px 14px;
-  color: #64748b;
+  color: #484d54;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 800;
   white-space: nowrap;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -127,8 +127,9 @@
 
 .client-table td {
   text-align: center;
+  align-items: center;
   padding: 11px 14px;
-  border-bottom: 0.5px solid #e2e8f0;
+  border-bottom: 0.5px solid #deeafa;
   color: #334155;
   font-size: 13px;
   white-space: nowrap;
@@ -141,7 +142,7 @@
 }
 
 .client-table tbody tr:hover {
-  background: #eef4fd;
+  background: #eceff6;
 }
 
 /* Status badges */
@@ -154,47 +155,75 @@
 }
 
 .status-badge.active {
-  background: #EAF3DE;
+  background: #d1f5a2;
   color: #3B6D11;
 }
 
 .status-badge.inactive {
-  background: #FCEBEB;
+  background: #ffdbdb;
   color: #A32D2D;
 }
 
 /* Action buttons */
 .button-grp {
   display: flex;
-  justify-content: flex-end;
-  gap: 6px;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
 }
-/* Give actions column enough room for 3 buttons */
-/* .client-table th:last-child,
-.client-table td:last-child {
-  width: 200px;
-  text-align: right;
-} */
 
-.clt-edit-btn,
-.clt-add-btn,
-.clt-dlt-btn {
-  padding: 5px 10px;
-  border-radius: 6px;
+.button-grp button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 12px;
-  background: transparent;
-  transition: background 0.15s, color 0.15s;
+  transition: all 0.2s ease;
 }
 
-.clt-edit-btn  { border: 0.5px solid #BA7517; color: #854F0B; }
-.clt-edit-btn:hover  { background: #FAEEDA; }
+.clt-edit-btn {
+  background-color: #b3cdf8;
+  color: #2563eb;
+}
 
-.clt-add-btn   { border: 0.5px solid #185FA5; color: #185FA5; }
-.clt-add-btn:hover   { background: #E6F1FB; }
+.clt-edit-btn:hover {
+  background-color: #8cacd6;
+}
 
-.clt-dlt-btn   { border: 0.5px solid #A32D2D; color: #A32D2D; }
-.clt-dlt-btn:hover   { background: #FCEBEB; }
+.clt-dlt-btn {
+  background-color: #f4b7b7;
+  color: #dc2626;
+}
+
+.clt-dlt-btn:hover {
+  background-color: #fecaca;
+}
+
+.clt-add-btn {
+  padding: 0 14px;
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  background-color: #16a34a;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clt-add-btn:hover {
+  background-color: #15803d;
+}
+
+.button-grp button:focus-visible {
+  outline: 2px solid #1d4ed8;
+  outline-offset: 2px;
+}
 
 /* Pagination */
 .pagination {

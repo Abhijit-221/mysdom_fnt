@@ -34,9 +34,6 @@ import ForgotPassword from "../pages/ForgotPassword";
 import BGVReportPage from "../components/BGVRequest/BGVReport";
 import BGVEmailSubmitForm from "../components/BGVRequest/BGVEmailSubmitForm";
 
-
-
-
 const AppRoutes = () => {
   return (
     <Routes>
@@ -49,7 +46,7 @@ const AppRoutes = () => {
         <Route
           path="/product/add"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
               <AddProduct />
             </ProtectedRoute>
           }
@@ -57,7 +54,7 @@ const AppRoutes = () => {
         <Route
           path="/product/view/:id"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
               <ViewOrEditProduct />
             </ProtectedRoute>
           }
@@ -68,7 +65,7 @@ const AppRoutes = () => {
         <Route
           path="/manage-users"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
               <ManageUsers />
             </ProtectedRoute>
           }
@@ -85,39 +82,39 @@ const AppRoutes = () => {
         }
         />
         <Route path="/service/add" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
             {/* <ServiceAdd /> */}
             <CreateService />
           </ProtectedRoute>
         }
         />
         <Route path="/service/update/:id" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
             <UpdateService />
           </ProtectedRoute>
         }
         />
         <Route path="/service/getby/:id" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
             <ServiceDetails />
           </ProtectedRoute>
         }
         />
         <Route path="/clients" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
             <ClientList />
           </ProtectedRoute>
         }
         />
         <Route path="/client/add" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
             <AddClient />
           </ProtectedRoute>
         }
         />
         {/* client service */}
         <Route path="/client/service-add/:client_id" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
             <AddClientService />
           </ProtectedRoute>
         }
@@ -142,7 +139,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }/>
         <Route path="/bgv-update/:req_id" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
             <BGVStatusUpdate />
           </ProtectedRoute>
         }/>

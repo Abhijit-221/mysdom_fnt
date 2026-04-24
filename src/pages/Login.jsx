@@ -3,8 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import "./auth.css";
 import toast from "react-hot-toast";
-import axios from "axios"
 import axiosInstance from "../api/axiosInstance";
+import { isBasicUserRole } from "../utils/roleAccess";
 const Login = () => {
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
@@ -42,7 +42,7 @@ const Login = () => {
             toast.success("Login Successful 🎉");
 
             // redirect if needed
-            navigate("/");
+            navigate(isBasicUserRole(user.role) ? "/bgv/list" : "/");
 
         } catch (error) {
             console.log(error);
