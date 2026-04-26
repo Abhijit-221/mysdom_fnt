@@ -109,11 +109,12 @@ export default function ServiceDetailPage() {
           <main className="service-main">
             <div className="service-image-wrap">
               <img
-                src="https://mysdom.com/assets/img/regular-employee-hiring.webp"
-                alt="Regular Employee Verification"
+                // src="https://mysdom.com/assets/img/regular-employee-hiring.webp"
+                src="/verification.avif"
+                alt="Employee Verification"
                 className="service-image"
               />
-              <div className="image-tag">Verified Hiring</div>
+              <div className="image-tag">Verified Services</div>
             </div>
 
             <div className="service-content">

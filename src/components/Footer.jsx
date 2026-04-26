@@ -13,13 +13,13 @@ const Footer = () => {
     // fetch services
     const fetchServices = async () => {
       try {
-        const res = await axiosInstance.get("/service/get", {
-        });
+        const res = await axiosInstance.get("/service/get");
+        console.log("res:",res);
         const serviceData = res?.data?.data || [];
-        console.log("services res:", res);
+        console.log("serviceData:",serviceData);
         setServices(serviceData);
       } catch (err) {
-        toast.error(err.response?.data?.message || "Failed to load Services");
+        console.error("Failed to load footer services:", err);
       }
     };
     fetchServices();
