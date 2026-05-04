@@ -175,6 +175,8 @@
   letter-spacing: 0.07em;
   color: var(--bsu-primary);
   white-space: nowrap;
+  text-align: center;
+  align-items: center;
 }
 
 /* ── Body ── */
@@ -183,6 +185,8 @@
   border-bottom: 1px solid var(--bsu-border);
   color: var(--bsu-text);
   vertical-align: top;
+  text-align: center; 
+  align-items: center;
 }
 
 .service-table tbody tr:last-child td { border-bottom: none; }

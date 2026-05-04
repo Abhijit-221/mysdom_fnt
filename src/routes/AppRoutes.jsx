@@ -33,6 +33,7 @@ import CreateService from "../components/serviceComponent/CreateService";
 import ForgotPassword from "../pages/ForgotPassword";
 import BGVReportPage from "../components/BGVRequest/BGVReport";
 import BGVEmailSubmitForm from "../components/BGVRequest/BGVEmailSubmitForm";
+import BGVVerificationForm from "../components/BGVRequest/Bgvverificationform";
 
 const AppRoutes = () => {
   return (
@@ -152,6 +153,13 @@ const AppRoutes = () => {
         <Route path="/bgv-report" element={
           <ProtectedRoute>
             <BGVReportPage />
+          </ProtectedRoute>
+        }
+        />
+
+        <Route path="/bgv-verification" element={
+          <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
+            <BGVVerificationForm />
           </ProtectedRoute>
         }
         />

@@ -4,9 +4,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import './bgvStatusUpdate.css';
 import { ArrowLeft } from 'lucide-react';
+import BGVVerificationForm from './Bgvverificationform';
 
 const STATUS_OPTIONS = [
-  { value: 'NEW', label: 'New' },
+  { value: 'SUBMITED', label: 'SUBMITED' },
   { value: 'IN_PROGRESS', label: 'In Progress' },
   { value: 'ON_HOLD', label: 'On Hold' },
   { value: 'COMPLETED', label: 'Completed' },
@@ -14,7 +15,7 @@ const STATUS_OPTIONS = [
 ];
 
 const STATUS_CLASS = {
-  NEW: 'badge-new',
+  SUBMITED: 'badge-new',
   IN_PROGRESS: 'badge-progress',
   ON_HOLD: 'badge-hold',
   COMPLETED: 'badge-done',
@@ -27,6 +28,10 @@ function BGVStatusUpdate() {
   const [requestData, setRequestData] = useState({});
   const [updateProduct, setUpdateProduct] = useState({});
   const [submitting, setSubmitting] = useState({});
+  const [verificationModal, setVerificationModal] = useState({
+    open: false,
+    productId: '',
+  });
 
   const baseUrl = import.meta.env.VITE_BASE_URL;
 
@@ -34,11 +39,13 @@ function BGVStatusUpdate() {
     try {
       const response = await axiosInstance.get(`/bgvrequest/getby/${req_id}`);
       setRequestData(response.data.data);
+      return response.data.data;
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
         (error.request ? 'Server not responding.' : error.message)
       );
+      return null;
     }
   };
 
@@ -249,8 +256,8 @@ function BGVStatusUpdate() {
                   <th>Mode of Verification</th>
                   <th>Verifier's Comment</th>
                   <th>Final Disposition</th>
-                  <th>Document 1</th>
-                  <th>Document 2</th>
+                  {/* <th>Document 1</th>
+                  <th>Document 2</th> */}
                   <th>Action</th>
                 </tr>
               </thead>
@@ -270,7 +277,8 @@ function BGVStatusUpdate() {
                       </td>
 
                       <td>
-                        <select
+                        {product.status }
+                        {/* <select
                           value={draft?.status ?? product.status}
                           onChange={(e) => handleStatusChange(requestId, productId, e)}
                         >
@@ -279,59 +287,75 @@ function BGVStatusUpdate() {
                               {opt.label}
                             </option>
                           ))}
-                        </select>
+                        </select> */}
                       </td>
 
                       <td>
-                        <input
+                        {product.remark || 'NA'}
+                        {/* <input
                           type="text"
                           value={draft?.remark ?? (product.remark || '')}
                           placeholder="Enter remarks..."
                           onChange={(e) => handleRemarkChange(requestId, productId, e)}
-                        />
+                        /> */}
                       </td>
                       <td>
-                        <select
+                        {product.mode_of_verification || 'NA'}
+                        {/* <select
                           value={draft?.mode_of_verification ?? product.mode_of_verification ?? ''}
                           onChange={(e) => handleModeOfVerification(requestId, productId, e)}
                         >
                           <option value="">Select verification mode..</option>
                           <option value="Online">Online</option>
                           <option value="Offline">Offline</option>
-                        </select>
+                        </select> */}
                       </td>
                       <td>
-                        <textarea
+                        {product.verifier_comment || 'NA'}
+                        {/* <textarea
                           type="text"
                           value={draft?.verifier_comment ?? (product.verifier_comment || '')}
                           placeholder=""
                           onChange={(e) => handleVerifierComment(requestId, productId, e)}
-                        />
+                        /> */}
                       </td>
                       <td>
-                        <textarea
+                        {product.final_desc || 'NA'}
+                        {/* <textarea
                           type="text"
                           value={draft?.final_desc ?? (product.final_desc || '')}
                           placeholder=""
                           onChange={(e) => handleFinalDisposition(requestId, productId, e)}
-                        />
+                        /> */}
                       </td>
-                      <td>
+                      {/* <td>
                         <DocCell product={product} docField="doc_1" label="Doc 1" />
                       </td>
 
                       <td>
                         <DocCell product={product} docField="doc_2" label="Doc 2" />
-                      </td>
+                      </td> */}
 
                       <td>
-                        <button
+                        {/* <button
                           className={`update-btn${dirty ? ' btn-active' : ''}`}
                           disabled={!dirty || loading}
                           onClick={() => handleStatusSubmit(productId)}
                         >
                           {loading ? <span className="bsu-spinner" /> : dirty ? 'Update' : 'No Changes'}
+                        </button> */}
+                        <button
+                          className={`update-btn btn-active`}
+                          onClick={() =>
+                            setVerificationModal({
+                              open: true,
+                              productId,
+                            })
+                          }
+                        >
+                          verify
                         </button>
+                        
                       </td>
                     </tr>
                   );
@@ -341,6 +365,16 @@ function BGVStatusUpdate() {
           </div>
         </div>
       </div>
+
+      {verificationModal.open && (
+        <BGVVerificationForm
+          bgvData={requestData}
+          initialProductId={verificationModal.productId}
+          onUpdated={fetchSingleRequest}
+          isModal
+          onClose={() => setVerificationModal({ open: false, productId: '' })}
+        />
+      )}
     </div>
   );
 }
