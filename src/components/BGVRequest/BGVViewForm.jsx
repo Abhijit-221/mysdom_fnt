@@ -43,7 +43,7 @@ const readProductName = (entry) =>
 
 const ReviewRow = ({ k, v }) => (
   <div className="bgv-review-row">
-    {/* <span className="bgv-review-key">{k}</span> */}
+    <span className="bgv-review-key">{k}</span>
     <span>{v || <em className="bgv-review-empty">Not provided</em>}</span>
   </div>
 );
@@ -132,6 +132,8 @@ function BGVViewForm() {
             <ReviewRow k="Phone" v={data.candidate_phone} />
             <ReviewRow k="Designation" v={data.designation} />
             <ReviewRow k="Department" v={data.department} />
+            <ReviewRow k="Gender" v={data.gender} />
+            <ReviewRow k="Date of Birth" v={formatDate(data.dob)} />
             <ReviewRow k="Submitted On" v={formatDate(data.createdAt)} />
           </div>
 
@@ -188,8 +190,8 @@ function BGVViewForm() {
             <p className="bgv-review-title">Criminal Check</p>
             <ReviewRow k="Father's Name" v={data.father_name} />
             <ReviewRow k="Mother's Name" v={data.mother_name} />
-            <ReviewRow k="Gender" v={data.gender} />
-            <ReviewRow k="Date of Birth" v={formatDate(data.dob)} />
+            <ReviewRow k="Address" v={data.address_detail} />
+            <ReviewRow k="City" v={data.city} />
           </div>
 
           <div className="bgv-review-card">
@@ -198,11 +200,29 @@ function BGVViewForm() {
             <ReviewRow k="University" v={data.university} />
             <ReviewRow k="Qualification" v={data.qualification} />
             <ReviewRow k="Specialization" v={data.specialization} />
+            <ReviewRow k="Start Date" v={data.education_start} />
+            <ReviewRow k="End Date" v={data.education_end} />
+            <ReviewRow k="Roll Number" v={data.roll_number} />
+            <ReviewRow k="Passing Year" v={data.passing_year} />
+            <ReviewRow k="Have Degree" v={data.degree_status} />
+            <ReviewRow k="Roll Number" v={data.roll_number} />
             <FileOrLink
               value={data.edu_doc}
               base={baseUrl}
               label="Education Document"
             />
+          </div>
+
+          <div className="bgv-review-card">
+            <p className="bgv-review-title">Credit Check</p>
+            <ReviewRow k="PAN" v={data.pan_card} />
+          </div>
+
+          <div className="bgv-review-card">
+            <p className="bgv-review-title">Social Media</p>
+            <ReviewRow k="Social Media" v={data.social_media_type} />
+            <ReviewRow k="Social Media ID" v={data.social_media_id} />
+            <ReviewRow k="Nick Name" v={data.nick_name} />
           </div>
         </div>
 

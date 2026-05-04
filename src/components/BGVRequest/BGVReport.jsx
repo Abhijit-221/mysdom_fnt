@@ -15,6 +15,7 @@ const SINGLE_VALUE_LABELS = new Set([
   "Mode of Verification",
   "Verifier's Comments",
   "Final Disposition",
+  "Remark",
   "Check Status",
 ]);
 
@@ -26,11 +27,12 @@ const markSingleValueRows = (rows = []) =>
 
 const getProductTableRows = (product, data = {}) => {
   const title = (product?.productTitle || "").toLowerCase();
+  console.log("Generating table rows for product:", title);
   const firstEmployment = data.employments?.[0] || {};
 
   if (title.includes("employment")) {
     return markSingleValueRows([
-      { label: "Employer", stated: firstEmployment.company_name || "—", verified: firstEmployment.company_name || "—" },
+      { label: "Employer", stated: firstEmployment.company_name || "—", verified: firstEmployment.verify_company_name || "—" },
       { label: "Employee Code", stated: firstEmployment.employee_id || "—", verified: firstEmployment.employee_id || "—" },
       { label: "Start Date", stated: firstEmployment.employment_start || "—", verified: firstEmployment.employment_start || "—" },
       { label: "End Date", stated: firstEmployment.employment_end || "—", verified: firstEmployment.employment_end || "—" },
@@ -38,6 +40,7 @@ const getProductTableRows = (product, data = {}) => {
       { label: "Mode of Response", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
       { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Remark", stated: product.remark || "—", verified: product.remark || "—" },
       { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
     ]);
   }
@@ -53,6 +56,7 @@ const getProductTableRows = (product, data = {}) => {
       { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
       { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Remark", stated: product.remark || "—", verified: product.remark || "—" },
       { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
     ]);
   }
@@ -66,6 +70,7 @@ const getProductTableRows = (product, data = {}) => {
       { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
       { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Remark", stated: product.remark || "—", verified: product.remark || "—" },
       { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
     ]);
   }
@@ -78,6 +83,33 @@ const getProductTableRows = (product, data = {}) => {
       { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
       { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Remark", stated: product.remark || "—", verified: product.remark || "—" },
+      { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
+    ]);
+  }
+
+  if (title.includes("criminal")) {
+    return markSingleValueRows([
+      { label: "Father's Name", stated: data.father_name || "—", verified: data.verify_father_name || "—" },
+      { label: "Mother's Name", stated: data.mother_name || "—", verified: data.verify_mother_name || "—" },
+      { label: "Address", stated: data.address_detail || "—", verified: data.verify_address_detail || "—" },
+      { label: "City", stated: data.city || "—", verified: data.verify_city || "—" },
+      { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
+      { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
+      { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Remark", stated: product.remark || "—", verified: product.remark || "—" },
+      { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
+    ]);
+  }
+  
+  if (title.includes("credit")) {
+    return markSingleValueRows([
+      { label: "Name", stated: data.candidate_name || "—", verified: data.candidate_name || "—" },
+      { label: "PAN Card", stated: data.pan_card || "—", verified: data.verify_pan_card || "—" },
+      { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
+      { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
+      { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Remark", stated: product.remark || "—", verified: product.remark || "—" },
       { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
     ]);
   }
@@ -89,6 +121,7 @@ const getProductTableRows = (product, data = {}) => {
       { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
       { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Remark", stated: product.remark || "—", verified: product.remark || "—" },
       { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
     ]);
   }
@@ -98,6 +131,7 @@ const getProductTableRows = (product, data = {}) => {
     { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
     { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
     { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+    { label: "Remark", stated: product.remark || "—", verified: product.remark || "—" },
     { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
   ]);
 };
@@ -247,7 +281,7 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     txt("Date", PW - MR, 8, { size: 7, color: C.gray, align: "right" });
     txt(reqDate, PW - MR, 13, { size: 8, bold: true, color: C.orange, align: "right" });
     stroke(C.lightGray); doc.setLineWidth(0.3);
-    doc.line(PW - MR - 34, 3, PW - MR - 34, 17);
+    // doc.line(PW - MR - 34, 3, PW - MR - 34, 17);
     stroke(C.green); doc.setLineWidth(1.2);
     doc.line(0, 20, PW, 20);
     y = 26;
@@ -479,9 +513,9 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
 
   // Report No label + value (left of two-col footer)
   const midRx = halfX + (rx - halfX) / 2 - 4;
-  txt("Report No", midRx, ry, { size: 7, color: C.gray, align: "right" });
+  // txt("Report No", midRx, ry, { size: 7, color: C.gray, align: "right" });
   txt("Completion Date", rx, ry, { size: 7, color: C.gray, align: "right" }); ry += 5;
-  txt(data.req_code ? `#${data.req_code}` : "—", midRx, ry, { bold: true, size: 8, color: C.green, align: "right", maxWidth: midRx - halfX - 4 });
+  // txt(data.req_code ? `#${data.req_code}` : "—", midRx, ry, { bold: true, size: 8, color: C.green, align: "right", maxWidth: midRx - halfX - 4 });
   txt(isCompleted ? updateDate : "_ _ _", rx, ry, { bold: true, size: 9, color: C.orange, align: "right" });
 
   y += bh + 10;
@@ -571,15 +605,15 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     stroke(C.lightGray); doc.setLineWidth(0.2); doc.rect(ML, y, CW, 13, "S");
 
     // Left: "SERVICE NAME - STATUS" — each part on its own x position
-    txt(svcName.toUpperCase() + "  -", ML + 5, y + 8, { bold: true, size: 8, color: C.labelText });
-    doc.setFontSize(8); doc.setFont("helvetica", "bold");
-    const labelPartW = measuredWidth(svcName.toUpperCase() + "  -");
-    txt(svcStatus, ML + 5 + labelPartW + 2, y + 8, { bold: true, size: 8, color: C.cleared });
+    // txt(svcName.toUpperCase() + "  -", ML + 5, y + 8, { bold: true, size: 8, color: C.labelText });
+    // doc.setFontSize(8); doc.setFont("helvetica", "bold");
+    // const labelPartW = measuredWidth(svcName.toUpperCase() + "  -");
+    // txt(svcStatus, ML + 5 + labelPartW + 2, y + 8, { bold: true, size: 8, color: C.cleared });
 
     // Right: "Completion Date" label on top, value below — two separate lines
-    const compLabelX = ML + CW * 0.62;
-    txt("Completion Date:", compLabelX, y + 5, { size: 7, color: C.gray });
-    txt(svcCompletionDate, compLabelX, y + 10.5, { bold: true, size: 8, color: C.orange });
+    const compLabelX = ML + 5 * 0.62;
+    txt("Completion Date:", compLabelX, y + 8, { size: 7, color: C.gray });
+    txt(svcCompletionDate, compLabelX, y + 10.2, { bold: true, size: 8, color: C.orange });
     y += 17;
 
     /* Product details table */
@@ -627,34 +661,34 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
   /* ══════════════════════════════════════════
     PRODUCTS OVERVIEW PAGE
   ══════════════════════════════════════════ */
-  doc.addPage();
-  y = 0; drawHeader();
+  // doc.addPage();
+  // y = 0; drawHeader();
 
-  sectionTitle("Products Overview");
-  cardHeader("PRODUCTS STATUS");
-  y += 6;
+  // sectionTitle("Products Overview");
+  // cardHeader("PRODUCTS STATUS");
+  // y += 6;
 
-  if (products.length > 0) {
-    const cols = 2;
-    const gap = 8;
-    const cardW = (CW - gap * (cols - 1)) / cols;
-    const cardH = 24;
+  // if (products.length > 0) {
+  //   const cols = 2;
+  //   const gap = 8;
+  //   const cardW = (CW - gap * (cols - 1)) / cols;
+  //   const cardH = 24;
 
-    products.forEach((sv, i) => {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      if (col === 0) checkPage(cardH + 4);
-      const xPos = ML + col * (cardW + gap);
-      const yPos = y + row * (cardH + 4);
-      serviceStatusCard(sv, xPos, yPos, cardW);
-    });
+  //   products.forEach((sv, i) => {
+  //     const col = i % cols;
+  //     const row = Math.floor(i / cols);
+  //     if (col === 0) checkPage(cardH + 4);
+  //     const xPos = ML + col * (cardW + gap);
+  //     const yPos = y + row * (cardH + 4);
+  //     serviceStatusCard(sv, xPos, yPos, cardW);
+  //   });
 
-    const rows = Math.ceil(products.length / cols);
-    y += rows * (cardH + 4) + 4;
-  } else {
-    txt("No products found.", ML, y + 6, { size: 9, color: C.labelText });
-    y += 14;
-  }
+  //   const rows = Math.ceil(products.length / cols);
+  //   y += rows * (cardH + 4) + 4;
+  // } else {
+  //   txt("No products found.", ML, y + 6, { size: 9, color: C.labelText });
+  //   y += 14;
+  // }
 
   /* ── Footer ── */
   checkPage(18);
@@ -908,10 +942,10 @@ const BGVReportPage = () => {
                   ))}
                   <div style={{ marginTop: 20, borderTop: "1px solid #e5e7eb", paddingTop: 14 }}>
                     <div style={{ display: "flex", justifyContent: "flex-end", gap: 20 }}>
-                      <div style={{ textAlign: "right" }}>
+                      {/* <div style={{ textAlign: "right" }}>
                         <p style={{ margin: 0, fontSize: 10, color: "#9ca3af" }}>Report No</p>
                         <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#ff2f8f" }}>{data.req_code ? `#${data.req_code}` : "—"}</p>
-                      </div>
+                      </div> */}
                       <div style={{ textAlign: "right" }}>
                         <p style={{ margin: 0, fontSize: 10, color: "#9ca3af" }}>Completion Date</p>
                         <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#f5a623" }}>{isCompleted ? updateDate : "_ _ _"}</p>
@@ -1007,11 +1041,11 @@ const BGVReportPage = () => {
                     right={<Badge label={svcStatus.replace(/_/g, " ")} color={{ bg: "#d1fae5", txt: "#065f46" }} />}
                   />
                   <div style={{ padding: "4px", display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
-                    <div style={{ padding: "12px 20px 4px" }}>
+                    {/* <div style={{ padding: "12px 20px 4px" }}>
                       <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase" }}>
                         {svcName} — <span style={{ color: "#27ae60" }}>{svcStatus.replace(/_/g, " ")}</span>
                       </span>
-                    </div>
+                    </div> */}
                     <div style={{ padding: "12px 20px 4px" }}>
                       <p style={{ margin: 0, fontSize: 10, color: "#757677" }}>Completion Date</p>
                       <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#f5a623" }}>{svcDate}</p>
@@ -1071,7 +1105,7 @@ const BGVReportPage = () => {
           })}
 
           {/* ── Products Overview ── */}
-          <div className="rs">
+          {/* <div className="rs">
             <SectionDivider title="Products Overview" />
             <Card>
               <CardHeader icon="⚙️" title="PRODUCTS STATUS" />
@@ -1092,7 +1126,7 @@ const BGVReportPage = () => {
                 : <div style={{ padding: 24, color: "#aaa", fontSize: 13 }}>No products found.</div>
               }
             </Card>
-          </div>
+          </div> */}
 
           {/* ── Footer CTA ── */}
           <div className="no-print" style={{ display: "flex", justifyContent: "center", paddingTop: 24 }}>
