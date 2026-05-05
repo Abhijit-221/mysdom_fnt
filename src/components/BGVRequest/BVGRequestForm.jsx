@@ -299,6 +299,9 @@ function BgvRequestForm() {
   const activeSteps = getActiveSteps();
   const currentIndex = activeSteps.indexOf(currentStep);
   const totalSteps = activeSteps.length;
+  const scrollActiveSectionToTop = () => {
+    document.querySelector(".form-section")?.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   /* ── Data fetching ── */
   const fetchUser = useCallback(async () => {
@@ -365,7 +368,7 @@ function BgvRequestForm() {
   const goToStep = (target) => {
     runValidation(currentStep);
     setCurrentStep(target);
-    document.querySelector(".bgv-modal")?.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(scrollActiveSectionToTop, 0);
   };
 
   const next = () => {
@@ -385,14 +388,14 @@ function BgvRequestForm() {
     const nextIndex = currentIndex + 1;
     if (nextIndex < activeSteps.length) {
       setCurrentStep(activeSteps[nextIndex]);
-      document.querySelector(".bgv-modal")?.scrollTo({ top: 0, behavior: "smooth" });
+      setTimeout(scrollActiveSectionToTop, 0);
     }
   };
 
   const back = () => {
     if (currentIndex > 0) {
       setCurrentStep(activeSteps[currentIndex - 1]);
-      document.querySelector(".bgv-modal")?.scrollTo({ top: 0, behavior: "smooth" });
+      setTimeout(scrollActiveSectionToTop, 0);
     }
   };
 
@@ -854,7 +857,16 @@ function BgvRequestForm() {
               </div>
               <div className="form-field">
                 <label>Residency Status</label>
-                <input name="current_residency" placeholder="e.g. Rented, Owned" value={form.current_residency} onChange={handleChange} />
+                <select
+                  name="current_residency"
+                  value={form.current_residency}
+                  onChange={handleChange}
+                  className={stepErrors.current_residency ? "input-error" : ""}
+                >
+                  <option value="">Select Residency Status</option>
+                  <option value="Owned">Owned</option>
+                  <option value="Rented">Rented</option>
+                </select>
               </div>
               <div className="form-field">
                 <label>Duration of Stay</label>
@@ -888,7 +900,17 @@ function BgvRequestForm() {
               </div>
               <div className="form-field">
                 <label>Residency Status</label>
-                <input name="permanent_residency" placeholder="e.g. Rented, Owned" value={form.permanent_residency} onChange={handleChange} />
+                <select
+                  name="permanent_residency"
+                  value={form.permanent_residency}
+                  onChange={handleChange}
+                  className={stepErrors.permanent_residency ? "input-error" : ""}
+                >
+                  <option value="">Select Residency Status</option>
+                  <option value="Owned">Owned</option>
+                  <option value="Rented">Rented</option>
+                </select>
+                {/* <input name="permanent_residency" placeholder="e.g. Rented, Owned" value={form.permanent_residency} onChange={handleChange} /> */}
               </div>
               <div className="form-field">
                 <label>Duration of Stay</label>

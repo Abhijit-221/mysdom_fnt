@@ -113,6 +113,33 @@ const getValue = (primaryValue, fallbackValue) =>
     ? primaryValue
     : (fallbackValue ?? "");
 
+const getFieldValue = (value, options) => {
+  if (typeof value === "boolean" && Array.isArray(options)) {
+    return value ? "Yes" : "No";
+  }
+
+  return value ?? "";
+};
+
+const normalizeBooleanSelection = (value) => {
+  if (value === true || value === false) return value;
+  if (value === "Yes") return true;
+  if (value === "No") return false;
+  return value;
+};
+
+const normalizeVerificationData = (verificationData = {}) => ({
+  ...verificationData,
+  employeeDetails: Array.isArray(verificationData.employeeDetails)
+    ? verificationData.employeeDetails.map((employee) => ({
+        ...employee,
+        verify_isCurrent: normalizeBooleanSelection(employee?.verify_isCurrent),
+      }))
+    : verificationData.employeeDetails,
+});
+
+const isImageFile = (file) => file?.type?.startsWith("image/");
+
 // ─── Tiny helper components ───────────────────────────────────────────────────
 const InfoRow = ({ label, value }) => (
   <div className="bgv-info-row">
@@ -127,7 +154,7 @@ const Field = ({ label, name, value, onChange, type = "text", options, fullWidth
   <div className={`bgv-field${fullWidth ? " full" : ""}`}>
     <label>{label}</label>
     {options ? (
-      <select name={name} value={value || ""} onChange={onChange}>
+      <select name={name} value={getFieldValue(value, options)} onChange={onChange}>
         <option value="">— Select —</option>
         {options.map((o) => <option key={o} value={o}>{o}</option>)}
       </select>
@@ -135,7 +162,7 @@ const Field = ({ label, name, value, onChange, type = "text", options, fullWidth
       <input
         type={type}
         name={name}
-        value={value || ""}
+        value={getFieldValue(value)}
         onChange={onChange}
         placeholder={`Verified ${label.toLowerCase()}`}
       />
@@ -197,6 +224,7 @@ function EmploymentForm({ bgv, vd, onVerify, onEmpVerify }) {
         {bgv.employments.map((emp, i) => {
           const ev = empList[i] || {};
           const handle = (e) => onEmpVerify(i, e, empList);
+          console.log("Rendering employment form for:", empList[i]);
           return (
             <div key={i} className="bgv-emp-block">
               <div className="bgv-emp-block-title">#{i + 1} — {emp.company_name}</div>
@@ -205,7 +233,7 @@ function EmploymentForm({ bgv, vd, onVerify, onEmpVerify }) {
               <Field label="Job Title" name="verify_job_title" value={getValue(ev.verify_job_title, emp.verify_job_title)} onChange={handle} />
               <Field label="Start Date" name="verify_employment_start" value={getValue(ev.verify_employment_start, emp.verify_employment_start)} onChange={handle} type="date" />
               <Field label="End Date" name="verify_employment_end" value={getValue(ev.verify_employment_end, emp.verify_employment_end)} onChange={handle} type="date" />
-              <Field label="Is Current" name="verify_isCurrent" value={getValue(ev.verify_isCurrent, emp.verify_isCurrent ? "Yes" : "No")} onChange={handle} options={["Yes", "No"]} />
+              <Field label="Is Current" name="verify_isCurrent" value={getValue(ev.verify_isCurrent, emp.verify_isCurrent )} onChange={handle} options={["Yes", "No"]} />
               <Field label="Leaving Reason" name="verify_leaving_reason" value={getValue(ev.verify_leaving_reason, emp.verify_leaving_reason)} onChange={handle} />
               <Field label="Employment Category" name="verify_employment_category" value={getValue(ev.verify_employment_category, emp.verify_employment_category)} onChange={handle} />
               <Field label="Employment Type" name="verify_employment_type" value={getValue(ev.verify_employment_type, emp.verify_employment_type)} onChange={handle} />
@@ -299,12 +327,12 @@ function AddressForm({ bgv, vd, onVerify }) {
         <div className="bgv-sub-label">Current</div>
         <Field label="Address" name="verify_current_address" value={getValue(vd.verify_current_address, bgv.verify_current_address)} onChange={onVerify} />
         <Field label="Landmark" name="verify_current_landmark" value={getValue(vd.verify_current_landmark, bgv.verify_current_landmark)} onChange={onVerify} />
-        <Field label="Residency" name="verify_current_residency" value={getValue(vd.verify_current_residency, bgv.verify_current_residency)} onChange={onVerify} options={["Owned", "Rented", "Leased", "Company Provided"]} />
+        <Field label="Residency" name="verify_current_residency" value={getValue(vd.verify_current_residency, bgv.verify_current_residency)} onChange={onVerify} options={["Owned", "Rented"]} />
         <Field label="Duration (yrs)" name="verify_current_duration" value={getValue(vd.verify_current_duration, bgv.verify_current_duration)} onChange={onVerify} />
         <div className="bgv-sub-label">Permanent</div>
         <Field label="Address" name="verify_permanent_address" value={getValue(vd.verify_permanent_address, bgv.verify_permanent_address)} onChange={onVerify} />
         <Field label="Landmark" name="verify_permanent_landmark" value={getValue(vd.verify_permanent_landmark, bgv.verify_permanent_landmark)} onChange={onVerify} />
-        <Field label="Residency" name="verify_permanent_residency" value={getValue(vd.verify_permanent_residency, bgv.verify_permanent_residency)} onChange={onVerify} options={["Owned", "Rented", "Leased", "Company Provided"]} />
+        <Field label="Residency" name="verify_permanent_residency" value={getValue(vd.verify_permanent_residency, bgv.verify_permanent_residency)} onChange={onVerify} options={["Owned", "Rented"]} />
         <Field label="Duration (yrs)" name="verify_permanent_duration" value={getValue(vd.verify_permanent_duration, bgv.verify_permanent_duration)} onChange={onVerify} />
       </Card>
     </div>
@@ -416,7 +444,12 @@ export default function BGVVerificationForm({ onClose, bgvData, initialProductId
     if (!updated[idx]) {
       updated[idx] = { id: bgv.employments[idx]?.id, bgvRequestId: bgv.employments[idx]?.bgvRequestId };
     }
-    updated[idx] = { ...updated[idx], [name]: value };
+    const parsedValue =
+      name === "verify_isCurrent"
+        ? value === "Yes"
+        : value;
+
+    updated[idx] = { ...updated[idx], [name]: parsedValue };
     setFormState((prev) => ({
       ...prev,
       [pid]: { ...prev[pid], verification_data: { ...vd, employeeDetails: updated } },
@@ -424,11 +457,19 @@ export default function BGVVerificationForm({ onClose, bgvData, initialProductId
   };
 
   const handleFileChange = (field, file) => {
+    if (!file) return;
+
+    if (!isImageFile(file)) {
+      toast.error("Only image files are allowed for Document 1 and Document 2");
+      return;
+    }
+
     setFiles((prev) => ({ ...prev, [pid]: { ...(prev[pid] || {}), [field]: file } }));
   };
 
   const handleSubmit = async() => {
     try {
+    const normalizedVerificationData = normalizeVerificationData(pForm.verification_data || {});
     const payload = {
       request_id: bgv.id,
       product_id: pid,
@@ -437,7 +478,7 @@ export default function BGVVerificationForm({ onClose, bgvData, initialProductId
       mode_of_verification: pForm.mode_of_verification || null,
       verifier_comment: pForm.verifier_comment || null,
       final_desc: pForm.final_desc || null,
-      verification_data: pForm.verification_data || {},
+      verification_data: normalizedVerificationData,
     };
     console.log("📦 Payload:", payload);
     console.log("📎 Files:", files[pid]);
@@ -620,7 +661,7 @@ export default function BGVVerificationForm({ onClose, bgvData, initialProductId
                   <div className="bgv-field">
                     {/* <ExistingFile path={activeProduct.doc_1} label={"Document 1"} /> */}
                     <label>Document 1</label>
-                    <input type="file" onChange={(e) => handleFileChange("doc_1", e.target.files[0])} />
+                    <input type="file" accept="image/*" onChange={(e) => handleFileChange("doc_1", e.target.files[0])} />
                     {activeProduct.doc_1 && (
                       <span className="bgv-existing-file">Existing: {activeProduct.doc_1.split("/").pop()}</span>
                     )}
@@ -629,7 +670,7 @@ export default function BGVVerificationForm({ onClose, bgvData, initialProductId
                   <div className="bgv-field">
                     {/* <ExistingFile path={activeProduct.doc_2} label={"Document 2"} /> */}
                     <label>Document 2</label>
-                    <input type="file" onChange={(e) => handleFileChange("doc_2", e.target.files[0])} />
+                    <input type="file" accept="image/*" onChange={(e) => handleFileChange("doc_2", e.target.files[0])} />
                     {activeProduct.doc_2 && (
                       <span className="bgv-existing-file">Existing: {activeProduct.doc_2.split("/").pop()}</span>
                     )}

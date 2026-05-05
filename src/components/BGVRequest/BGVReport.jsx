@@ -2,12 +2,44 @@ import { ArrowLeft } from "lucide-react";
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+const PRODUCT_DISPLAY_ORDER = [
+  "id verification",
+  "criminal check",
+  "address verification",
+  "education check",
+  "employment check",
+  "credit check",
+  "social media check",
+];
+
+const normalizeProductTitle = (title = "") =>
+  String(title)
+    .toLowerCase()
+    .replace(/checks/g, "check")
+    .replace(/\s+/g, " ")
+    .trim();
+
 const getRequestProducts = (data = {}) => {
   const rawProducts = data.BGVRequestProducts || data.bgvReqestService || [];
-  return rawProducts.map((item) => ({
-    ...item,
-    productTitle: item.Product?.title || item.services?.name || "—",
-  }));
+  return rawProducts
+    .map((item) => ({
+      ...item,
+      productTitle: item.Product?.title || item.services?.name || "—",
+    }))
+    .sort((a, b) => {
+      const aTitle = normalizeProductTitle(a.productTitle);
+      const bTitle = normalizeProductTitle(b.productTitle);
+      const aIndex = PRODUCT_DISPLAY_ORDER.indexOf(aTitle);
+      const bIndex = PRODUCT_DISPLAY_ORDER.indexOf(bTitle);
+      const safeAIndex = aIndex === -1 ? Number.MAX_SAFE_INTEGER : aIndex;
+      const safeBIndex = bIndex === -1 ? Number.MAX_SAFE_INTEGER : bIndex;
+
+      if (safeAIndex !== safeBIndex) {
+        return safeAIndex - safeBIndex;
+      }
+
+      return aTitle.localeCompare(bTitle);
+    });
 };
 
 const SINGLE_VALUE_LABELS = new Set([
@@ -31,12 +63,18 @@ const getProductTableRows = (product, data = {}) => {
   const firstEmployment = data.employments?.[0] || {};
 
   if (title.includes("employment")) {
+    console.log("First employment record:", firstEmployment);
     return markSingleValueRows([
       { label: "Employer", stated: firstEmployment.company_name || "—", verified: firstEmployment.verify_company_name || "—" },
-      { label: "Employee Code", stated: firstEmployment.employee_id || "—", verified: firstEmployment.employee_id || "—" },
-      { label: "Start Date", stated: firstEmployment.employment_start || "—", verified: firstEmployment.employment_start || "—" },
-      { label: "End Date", stated: firstEmployment.employment_end || "—", verified: firstEmployment.employment_end || "—" },
-      { label: "Designation", stated: firstEmployment.job_title || "—", verified: firstEmployment.job_title || "—" },
+      { label: "Employee Code", stated: firstEmployment.employee_id || "—", verified: firstEmployment.verify_employee_id || "—" },
+      { label: "Start Date", stated: firstEmployment.employment_start || "—", verified: firstEmployment.verify_employment_start || "—" },
+      { label: "Recent Employment", stated: (firstEmployment.isCurrent ? "Yes" : "No") || "—", verified: ((firstEmployment.verify_isCurrent===false||firstEmployment.verify_isCurrent==="false")? "No" : "_") || "—" },
+      { label: "End Date", stated: firstEmployment.employment_end || "—", verified: firstEmployment.verify_employment_end || "—" },
+      { label: "Designation", stated: firstEmployment.job_title || "—", verified: firstEmployment.verify_job_title || "—" },
+      { label: "Employment Category", stated: firstEmployment.employment_category || "—", verified: firstEmployment.verify_employment_category || "—" },
+      { label: "Employment Type", stated: firstEmployment.employment_type || "—", verified: firstEmployment.verify_employment_type || "—" },
+      { label: "Leaving Reason", stated: firstEmployment.leaving_reason || "—", verified: firstEmployment.verify_leaving_reason || "—" },
+
       { label: "Mode of Response", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
       { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
@@ -47,12 +85,16 @@ const getProductTableRows = (product, data = {}) => {
 
   if (title.includes("education")) {
     return markSingleValueRows([
-      { label: "Institute", stated: data.institute_name || "—", verified: data.institute_name || "—" },
-      { label: "University", stated: data.university || "—", verified: data.university || "—" },
-      { label: "Qualification", stated: data.qualification || "—", verified: data.qualification || "—" },
-      { label: "Specialization", stated: data.specialization || "—", verified: data.specialization || "—" },
-      { label: "Roll Number", stated: data.roll_number || "—", verified: data.roll_number || "—" },
-      { label: "Passing Year", stated: data.passing_year || "—", verified: data.passing_year || "—" },
+      { label: "Institute", stated: data.institute_name || "—", verified: data.verify_institute_name || "—" },
+      { label: "University", stated: data.university || "—", verified: data.verify_university || "—" },
+      { label: "Qualification", stated: data.qualification || "—", verified: data.verify_qualification || "—" },
+      { label: "Specialization", stated: data.specialization || "—", verified: data.verify_specialization || "—" },
+      { label: "Roll Number", stated: data.roll_number || "—", verified: data.verify_roll_number || "—" },
+      { label: "Education Start", stated: data.education_start || "—", verified: data.verify_education_start || "—" },
+      { label: "Education End", stated: data.education_end || "—", verified: data.verify_education_end || "—" },
+      { label: "Passing Year", stated: data.passing_year || "—", verified: data.verify_passing_year || "—" },
+      { label: "Degree Completion", stated: (data.degree_status==="yes" ? "Yes" : "No") || "—", verified: (data.verify_degree_status==="yes"? "Yes" : "No") || "—" },
+
       { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
       { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
@@ -63,10 +105,16 @@ const getProductTableRows = (product, data = {}) => {
 
   if (title.includes("address")) {
     return markSingleValueRows([
-      { label: "Current Address", stated: data.current_address || "—", verified: data.current_address || "—" },
-      { label: "Permanent Address", stated: data.permanent_address || "—", verified: data.permanent_address || "—" },
-      { label: "Current Residency", stated: data.current_residency || "—", verified: data.current_residency || "—" },
-      { label: "Permanent Residency", stated: data.permanent_residency || "—", verified: data.permanent_residency || "—" },
+      { label: "Current Address", stated: data.current_address || "—", verified: data.verify_current_address || "—" },
+      { label: "Current Landmark", stated: data.current_landmark || "—", verified: data.verify_current_landmark || "—" },
+      { label: "Current Residency", stated: data.current_residency || "—", verified: data.verify_current_residency || "—" },
+      { label: "Current Duration", stated: data.current_duration || "—", verified: data.verify_current_duration || "—" },
+
+      { label: "Permanent Address", stated: data.permanent_address || "—", verified: data.verify_permanent_address || "—" },
+      { label: "Permanent Landmark", stated: data.permanent_landmark || "—", verified: data.verify_permanent_landmark || "—" },
+      { label: "Permanent Residency", stated: data.permanent_residency || "—", verified: data.verify_permanent_residency || "—" },
+      { label: "Permanent Duration", stated: data.permanent_duration || "—", verified: data.verify_permanent_duration || "—" },
+
       { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
       { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
@@ -77,9 +125,9 @@ const getProductTableRows = (product, data = {}) => {
 
   if (title.includes("id")) {
     return markSingleValueRows([
-      { label: "ID Type", stated: data.id_type || "—", verified: data.id_type || "—" },
-      { label: "ID Number", stated: data.id_number || "—", verified: data.id_number || "—" },
-      { label: "PAN", stated: data.pan_card || "—", verified: data.pan_card || "—" },
+      { label: "ID Type", stated: data.id_type || "—", verified: data.verify_id_type || "—" },
+      { label: "ID Number", stated: data.id_number || "—", verified: data.verify_id_number || "—" },
+      { label: "PAN", stated: data.pan_card || "—", verified: data.verify_pan_card || "—" },
       { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
       { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
@@ -104,7 +152,7 @@ const getProductTableRows = (product, data = {}) => {
   
   if (title.includes("credit")) {
     return markSingleValueRows([
-      { label: "Name", stated: data.candidate_name || "—", verified: data.candidate_name || "—" },
+      // { label: "Name", stated: data.candidate_name || "—", verified: data.candidate_name || "—" },
       { label: "PAN Card", stated: data.pan_card || "—", verified: data.verify_pan_card || "—" },
       { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
@@ -116,8 +164,8 @@ const getProductTableRows = (product, data = {}) => {
 
   if (title.includes("social")) {
     return markSingleValueRows([
-      { label: "Social Media Type", stated: data.social_media_type || "—", verified: data.social_media_type || "—" },
-      { label: "Social Media ID", stated: data.social_media_id || "—", verified: data.social_media_id || "—" },
+      { label: "Social Media Type", stated: data.social_media_type || "—", verified: data.verify_social_media_type || "—" },
+      { label: "Social Media ID", stated: data.social_media_id || "—", verified: data.verify_social_media_id || "—" },
       { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
       { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
@@ -139,6 +187,54 @@ const getProductTableRows = (product, data = {}) => {
 /* ─────────────────────────────────────────────
    COLORS  (RGB tuples for jsPDF)
 ───────────────────────────────────────────── */
+const formatEmploymentBoolean = (value) => {
+  if (value === true || value === "true" || value === "Yes" || value === "yes") return "Yes";
+  if (value === false || value === "false" || value === "No" || value === "no") return "No";
+  return "_";
+};
+
+const getEmploymentTableRows = (employment = {}) =>
+  markSingleValueRows([
+    { label: "Employer", stated: employment.company_name || "_", verified: employment.verify_company_name || "_" },
+    { label: "Employee Code", stated: employment.employee_id || "_", verified: employment.verify_employee_id || "_" },
+    { label: "Start Date", stated: employment.employment_start || "_", verified: employment.verify_employment_start || "_" },
+    { label: "Recent Employment", stated: formatEmploymentBoolean(employment.isCurrent), verified: formatEmploymentBoolean(employment.verify_isCurrent) },
+    { label: "End Date", stated: employment.employment_end || "_", verified: employment.verify_employment_end || "_" },
+    { label: "Designation", stated: employment.job_title || "_", verified: employment.verify_job_title || "_" },
+    { label: "Employment Category", stated: employment.employment_category || "_", verified: employment.verify_employment_category || "_" },
+    { label: "Employment Type", stated: employment.employment_type || "_", verified: employment.verify_employment_type || "_" },
+    { label: "Leaving Reason", stated: employment.leaving_reason || "_", verified: employment.verify_leaving_reason || "_" },
+  ]);
+
+const getProductTableSections = (product, data = {}) => {
+  const title = (product?.productTitle || "").toLowerCase();
+
+  if (!title.includes("employment")) {
+    return [{ title: null, rows: getProductTableRows(product, data) }];
+  }
+
+  const employments = Array.isArray(data.employments) ? data.employments : [];
+  const detailSections = employments.length
+    ? employments.map((employment, index) => ({
+        title: `Employment ${index + 1}`,
+        rows: getEmploymentTableRows(employment),
+      }))
+    : [{ title: "Employment", rows: getEmploymentTableRows() }];
+
+  const summaryRows = markSingleValueRows([
+    { label: "Mode of Response", stated: product.mode_of_verification || "_", verified: product.mode_of_verification || "_" },
+    { label: "Verifier's Comments", stated: product.verifier_comment || "_", verified: product.verifier_comment || "_" },
+    { label: "Final Disposition", stated: product.final_desc || "_", verified: product.final_desc || "_" },
+    { label: "Remark", stated: product.remark || "_", verified: product.remark || "_" },
+    { label: "Check Status", stated: product.status || "_", verified: product.status || "_" },
+  ]);
+
+  return [...detailSections, { title: "Verification Summary", rows: summaryRows }];
+};
+
+const isEmploymentVerificationSummarySection = (section) =>
+  section?.title === "Verification Summary";
+
 const C = {
   navy: [131, 24, 67],
   green: [255, 47, 143],
@@ -322,7 +418,7 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     // pick colour by status
     const up = safeLabel.toUpperCase();
     let bg = C.successBg, border = C.successBorder, textColor = C.cleared;
-    if (["IN PROGRESS", "NEW"].includes(up)) {
+    if (["IN PROGRESS", "SUBMITTED"].includes(up)) {
       bg = [254, 249, 195]; border = [253, 224, 71]; textColor = [133, 77, 14];
     } else if (["FAILED", "DISCREPANCY", "REJECTED"].includes(up)) {
       bg = [254, 226, 226]; border = [252, 165, 165]; textColor = [153, 27, 27];
@@ -365,16 +461,17 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
   /* File fallback pill (no emoji) */
   const filePill = (path, labelText) => {
     checkPage(14);
-    txt(labelText + ":", ML, y + 5, { bold: true, size: 8, color: C.labelText });
+    txt(labelText + ":", PW / 2, y + 5, { bold: true, size: 8, color: C.labelText, align: "center" });
     y += 9;
     const filename = path.split(/[\\/]/).pop();
     const display = "[Attachment] " + filename;
     doc.setFontSize(8); doc.setFont("helvetica", "normal");
     const tw = measuredWidth(display);
     const pillW = Math.min(tw + 8, CW);
+    const pillX = ML + (CW - pillW) / 2;
     fill(C.successBg); stroke(C.successBorder); doc.setLineWidth(0.25);
-    doc.roundedRect(ML, y, pillW, 7, 1.5, 1.5, "FD");
-    txt(display, ML + 4, y + 5, { size: 8, color: C.cleared, maxWidth: pillW - 6 });
+    doc.roundedRect(pillX, y, pillW, 7, 1.5, 1.5, "FD");
+    txt(display, pillX + pillW / 2, y + 5, { size: 8, color: C.cleared, align: "center", maxWidth: pillW - 6 });
     y += 11;
   };
 
@@ -389,7 +486,7 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
       { key: "verified", title: "Verified", width: valueW },
     ];
 
-    const drawHeaderRow = () => {
+    const drawHeaderRow = (section) => {
       checkPage(headerH + 4);
       let x = ML;
       cols.forEach((col) => {
@@ -397,11 +494,98 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
         stroke([31, 41, 55]);
         doc.setLineWidth(0.25);
         doc.rect(x, y, col.width, headerH, "FD");
-        txt(col.title, x + 2, y + 6, { bold: true, size: 8, color: C.white });
+        const headerTitle =
+          isEmploymentVerificationSummarySection(section) && col.key === "stated"
+            ? ""
+            : col.title;
+        txt(headerTitle, x + 2, y + 6, { bold: true, size: 8, color: C.white });
         x += col.width;
       });
       y += headerH;
     };
+
+    const employmentSections = getProductTableSections(product, data);
+    if (employmentSections.length > 1) {
+      employmentSections.forEach((section, sectionIndex) => {
+        if (section.title) {
+          checkPage(12);
+          txt(section.title, ML, y + 5, { bold: true, size: 8.5, color: C.navy });
+          y += 8;
+        }
+
+        drawHeaderRow(section);
+        section.rows.forEach((row) => {
+          const labelLines = doc.splitTextToSize(sanitize(row.label || "_"), detailW - 4);
+          const statedLines = doc.splitTextToSize(sanitize(row.stated || "_"), valueW - 4);
+          const verifiedLines = row.singleValue
+            ? []
+            : doc.splitTextToSize(sanitize(row.verified || "_"), valueW - 4);
+          const singleValueLines = row.singleValue
+            ? doc.splitTextToSize(sanitize(row.stated || row.verified || "_"), valueW * 2 - 4)
+            : [];
+          const maxLines = Math.max(labelLines.length, statedLines.length, verifiedLines.length);
+          const mergedMaxLines = row.singleValue
+            ? Math.max(labelLines.length, singleValueLines.length)
+            : maxLines;
+          const rowH = Math.max(9, mergedMaxLines * 4.2 + 3);
+
+          if (y + rowH > 282) {
+            doc.addPage();
+            y = 0;
+            drawHeader();
+            y += 6;
+            if (section.title) {
+              txt(section.title, ML, y + 5, { bold: true, size: 8.5, color: C.navy });
+              y += 8;
+            }
+            drawHeaderRow(section);
+          }
+
+          let x = ML;
+          fill(C.tableHead);
+          stroke([31, 41, 55]);
+          doc.setLineWidth(0.25);
+          doc.rect(x, y, detailW, rowH, "FD");
+          txt(labelLines, x + 2, y + 5.5, {
+            bold: true,
+            size: 7.5,
+            color: C.white,
+          });
+          x += detailW;
+
+          if (row.singleValue) {
+            fill(C.white);
+            stroke([31, 41, 55]);
+            doc.setLineWidth(0.25);
+            doc.rect(x, y, valueW * 2, rowH, "FD");
+            txt(singleValueLines, x + 2, y + 5.5, {
+              size: 7.5,
+              color: C.bodyText,
+            });
+          } else {
+            const values = [statedLines, verifiedLines];
+            [valueW, valueW].forEach((width, idx) => {
+              fill(C.white);
+              stroke([31, 41, 55]);
+              doc.setLineWidth(0.25);
+              doc.rect(x, y, width, rowH, "FD");
+              txt(values[idx], x + 2, y + 5.5, {
+                size: 7.5,
+                color: C.bodyText,
+              });
+              x += width;
+            });
+          }
+          y += rowH;
+        });
+
+        if (sectionIndex < employmentSections.length - 1) {
+          y += 6;
+        }
+      });
+      y += 6;
+      return;
+    }
 
     drawHeaderRow();
     rows.forEach((row) => {
@@ -557,6 +741,18 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     y += 6;
   };
 
+  const getSummaryTableHeight = ({ rows, colWidths }) => {
+    const headH = 9;
+    const rowsHeight = rows.reduce((total, row) => {
+      const lines = row.map((v, idx) => doc.splitTextToSize(sanitize(v), colWidths[idx] - 4));
+      const maxLines = Math.max(...lines.map((l) => l.length), 1);
+      const bodyH = Math.max(12, maxLines * 4 + 3);
+      return total + bodyH;
+    }, 0);
+
+    return headH + rowsHeight + 6;
+  };
+
   const overviewHeaders = ["MYS#", "Applicant", "Organisation", "Package"];
   const overviewColW = [CW * 0.18, CW * 0.20, CW * 0.22, CW * 0.40];
   const pkgText = products.map((p) => p.productTitle).join(", ") || "—";
@@ -568,9 +764,23 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
 
   const statusHeaders = ["Product", "Status"];
   const statusColW = [CW * 0.72, CW * 0.28];
+  const statusRows = products.map((sv) => [sv.productTitle || "—", (sv.status || "N/A").replace(/_/g, " ")]);
+  const statusTableHeight = getSummaryTableHeight({
+    rows: statusRows,
+    colWidths: statusColW,
+  });
+
+  if (y + statusTableHeight > 282) {
+    doc.addPage();
+    y = 0;
+    drawHeader();
+    sectionTitle("Executive Summary");
+    cardHeader("EXECUTIVE SUMMARY");
+  }
+
   drawSummaryTable({
     headers: statusHeaders,
-    rows: products.map((sv) => [sv.productTitle || "—", (sv.status || "N/A").replace(/_/g, " ")]),
+    rows: statusRows,
     colWidths: statusColW,
   });
 
@@ -634,17 +844,18 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
 
         if (isImage) {
           checkPage(80);
-          txt(label + ":", ML, y + 5, { bold: true, size: 8, color: C.labelText });
+          txt(label + ":", PW / 2, y + 5, { bold: true, size: 8, color: C.labelText, align: "center" });
           y += 9;
           const imgH = 65;
           const imgW = 100;
-          const embedded = tryEmbedImage(path, ML, y, imgW, imgH);
+          const imgX = ML + (CW - imgW) / 2;
+          const embedded = tryEmbedImage(path, imgX, y, imgW, imgH);
           if (!embedded) {
             filePill(path, label);
           } else {
             // thin border around image
             stroke(C.lightGray); doc.setLineWidth(0.3);
-            doc.rect(ML, y, imgW, imgH, "S");
+            doc.rect(imgX, y, imgW, imgH, "S");
             y += imgH + 5;
           }
         } else {
@@ -723,7 +934,7 @@ function loadJsPDF() {
 const statusColor = (st = "") => {
   const s = st.toUpperCase();
   if (["CLEARED", "COMPLETED", "CLEAR"].includes(s)) return { bg: "#ffe4f1", txt: "#a10f5f" };
-  if (["IN_PROGRESS", "NEW"].includes(s)) return { bg: "#ffe9f5", txt: "#a10f5f" };
+  if (["IN_PROGRESS", "SUBMITTED"].includes(s)) return { bg: "#ffe9f5", txt: "#a10f5f" };
   if (["FAILED", "DISCREPANCY", "REJECTED"].includes(s)) return { bg: "#fee2e2", txt: "#991b1b" };
   return { bg: "#ffeaf6", txt: "#a10f5f" };
 };
@@ -1029,7 +1240,7 @@ const BGVReportPage = () => {
             const svcDate = isSvcCompleted
               ? (sv.updatedAt ? new Date(sv.updatedAt).toLocaleDateString("en-IN") : updateDate)
               : "_ _ _";
-            const productRows = getProductTableRows(sv, data);
+            const productSections = getProductTableSections(sv, data);
 
             return (
               <div className="rs" key={sv.id}>
@@ -1052,43 +1263,52 @@ const BGVReportPage = () => {
                     </div>
                   </div>
                   <div style={{ padding: "0 20px 16px" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, border: "1px solid #ff2f8f" }}>
-                      <thead>
-                        <tr>
-                          {["Details", "Stated", "Verified"].map((head) => (
-                            <th
-                              key={head}
-                              style={{
-                                background: "#ff2f8f",
-                                color: "#fff",
-                                border: "1px solid #1f2937",
-                                textAlign: "left",
-                                padding: "8px",
-                                fontWeight: 700,
-                              }}
-                            >
-                              {head}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {productRows.map((row) => (
-                          <tr key={row.label}>
-                            <td style={{ background: "#ff2f8f", color: "#fff", border: "1px solid #1f2937", padding: "8px", fontWeight: 600 }}>{row.label}</td>
-                            <td
-                              colSpan={row.singleValue ? 2 : 1}
-                              style={{ border: "1px solid #1f2937", padding: "8px", color: "#1f2937" }}
-                            >
-                              {row.stated}
-                            </td>
-                            {!row.singleValue && (
-                              <td style={{ border: "1px solid #1f2937", padding: "8px", color: "#1f2937" }}>{row.verified}</td>
-                            )}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    {productSections.map((section, sectionIndex) => (
+                      <div key={`${svcName}-${section.title || "default"}-${sectionIndex}`} style={{ marginBottom: sectionIndex < productSections.length - 1 ? 18 : 0 }}>
+                        {section.title && (
+                          <p style={{ margin: "0 0 8px", fontSize: 12, fontWeight: 700, color: "#a10f5f" }}>
+                            {section.title}
+                          </p>
+                        )}
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, border: "1px solid #ff2f8f" }}>
+                          <thead>
+                            <tr>
+                              {["Details", "Stated", "Verified"].map((head) => (
+                                <th
+                                  key={head}
+                                  style={{
+                                    background: "#ff2f8f",
+                                    color: "#fff",
+                                    border: "1px solid #1f2937",
+                                    textAlign: "left",
+                                    padding: "8px",
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  {isEmploymentVerificationSummarySection(section) && head === "Stated" ? "" : head}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {section.rows.map((row) => (
+                              <tr key={`${section.title || "row"}-${row.label}`}>
+                                <td style={{ background: "#ff2f8f", color: "#fff", border: "1px solid #1f2937", padding: "8px", fontWeight: 600 }}>{row.label}</td>
+                                <td
+                                  colSpan={row.singleValue ? 2 : 1}
+                                  style={{ border: "1px solid #1f2937", padding: "8px", color: "#1f2937" }}
+                                >
+                                  {row.stated}
+                                </td>
+                                {!row.singleValue && (
+                                  <td style={{ border: "1px solid #1f2937", padding: "8px", color: "#1f2937" }}>{row.verified}</td>
+                                )}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ))}
                   </div>
                   {(sv.doc_1 || sv.doc_2) && (
                     <div style={{ padding: "0 20px 16px" }}>
