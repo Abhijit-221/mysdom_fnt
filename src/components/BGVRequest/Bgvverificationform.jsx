@@ -580,7 +580,17 @@ export default function BGVVerificationForm({ onClose, bgvData, initialProductId
                     <label>Status</label>
                     <select name="status" value={pForm.status || ""} onChange={handleTopLevel}>
                       <option value="">— Select Status —</option>
-                      {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                      {STATUS_OPTIONS.map((s) => {
+                        let t=s;
+                        if(s === "IN PROGRESS"){
+                          t = "IN_PROGRESS";
+                        }
+                        if(s === "ON HOLD"){
+                          t = "ON_HOLD";
+                        }
+
+                        return <option key={s} value={t}>{s}</option>;
+                      })}
                     </select>
                   </div>
 

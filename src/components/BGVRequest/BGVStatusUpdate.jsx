@@ -33,6 +33,15 @@ function BGVStatusUpdate() {
     productId: '',
   });
 
+  let checkStatus =(status)=>{
+    if(status === "ON_HOLD"){
+      return "ON HOLD"
+    }
+    if(status === "IN_PROGRESS"){
+      return "IN PROGRESS"
+    }
+    return status;
+  }
   const baseUrl = import.meta.env.VITE_BASE_URL;
 
   const fetchSingleRequest = async () => {
@@ -237,7 +246,7 @@ function BGVStatusUpdate() {
             <p>
               <b>Status</b>
               <span className={`bsu-status-badge ${STATUS_CLASS[requestData?.status] || ''}`}>
-                {requestData?.status || '—'}
+                {checkStatus(requestData?.status) || '—'}
               </span>
             </p>
           </div>
@@ -277,7 +286,7 @@ function BGVStatusUpdate() {
                       </td>
 
                       <td>
-                        {product.status }
+                        {checkStatus(product.status)}
                         {/* <select
                           value={draft?.status ?? product.status}
                           onChange={(e) => handleStatusChange(requestId, productId, e)}
