@@ -38,8 +38,8 @@ export default function WhyMysdom() {
               <div className="why-stat-card stat-2 pink">
                 <Globe size={20} />
                 <div className="small-stat-card2">
-                  <h3>10+</h3>
-                  <p>Cities</p>
+                  <h3>25+</h3>
+                  <p>States</p>
                 </div>
               </div>
             </div>

@@ -237,17 +237,17 @@ const isEmploymentVerificationSummarySection = (section) =>
 
 const C = {
   navy: [131, 24, 67],
-  green: [255, 47, 143],
+  green: [253, 242, 248],//[255, 47, 143],
   orange: [255, 47, 143],
   cleared: [39, 174, 96],
-  tableHead: [255, 47, 143],
+  tableHead: [248, 164, 204],
   rowAlt: [253, 242, 248],
   white: [255, 255, 255],
   gray: [113, 63, 97],
   lightGray: [244, 209, 228],
   bodyText: [31, 41, 55],
   labelText: [131, 24, 67],
-  successBg: [252, 231, 243],
+  successBg: [253, 242, 248],//[252, 231, 243],
   successBorder: [244, 114, 182],
   successText: [157, 23, 77],
 };
@@ -350,9 +350,10 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     if (y + needed > 282) { doc.addPage(); y = 0; drawHeader(); y += 6; }
   };
 
+  /* PDF top bar pink accent — matches UI brand (#ff2f8f / C.orange) */
   const drawHeader = () => {
-    fill(C.green); doc.rect(0, 0, 4, 20, "F");
-    fill([248, 249, 252]); doc.rect(4, 0, 152, 20, "F");
+    fill(C.orange); doc.rect(0, 0, 4, 20, "F");
+    fill([248, 249, 252]); doc.rect(4, 0, PW - 4, 20, "F");
     const logoB64 = imageCache.__brandLogo;
     if (logoB64) {
       try {
@@ -370,15 +371,14 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
       txt("MYSDOM", 10, 13, { bold: true, size: 16, color: C.navy });
     }
     const bars = [[0, 5], [3, 9], [6, 7], [9, 12], [12, 8]];
-    fill(C.green);
+    fill(C.orange);
     bars.forEach(([bx, bh]) => doc.rect(88 + bx, 13 - bh, 2.2, bh, "F"));
     txt("BGV Report", PW - MR - 32, 8, { size: 7, color: C.gray, align: "right" });
-    txt(`#-${data.req_code || "N/A"}`, PW - MR - 32, 13, { size: 8, bold: true, color: C.green, align: "right" });
+    txt(`#-${data.req_code || "N/A"}`, PW - MR - 32, 13, { size: 8, bold: true, color: C.navy, align: "right" });
     txt("Date", PW - MR, 8, { size: 7, color: C.gray, align: "right" });
     txt(reqDate, PW - MR, 13, { size: 8, bold: true, color: C.orange, align: "right" });
     stroke(C.lightGray); doc.setLineWidth(0.3);
-    // doc.line(PW - MR - 34, 3, PW - MR - 34, 17);
-    stroke(C.green); doc.setLineWidth(1.2);
+    stroke(C.orange); doc.setLineWidth(1.2);
     doc.line(0, 20, PW, 20);
     y = 26;
   };
@@ -449,9 +449,15 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     const b64 = imageCache[path];
     if (!b64) return false;
     try {
-      // b64 is a data URL like "data:image/png;base64,..."
-      doc.addImage(b64, xPos, yPos, w, h);
-      return true;
+      // Keep original orientation and center-fit image within the document box.
+      const props = doc.getImageProperties(b64);
+      const scale = Math.min(w / props.width, h / props.height);
+      const drawW = props.width * scale;
+      const drawH = props.height * scale;
+      const drawX = xPos + (w - drawW) / 2;
+      const drawY = yPos + (h - drawH) / 2;
+      doc.addImage(b64, drawX, drawY, drawW, drawH);
+      return { drawX, drawY, drawW, drawH };
     } catch (e) {
       console.warn("addImage failed for", path, e);
       return false;
@@ -498,7 +504,11 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
           isEmploymentVerificationSummarySection(section) && col.key === "stated"
             ? ""
             : col.title;
-        txt(headerTitle, x + 2, y + 6, { bold: true, size: 8, color: C.white });
+        txt(headerTitle, x + 2, y + 6, {
+          bold: true,
+          size: col.key === "stated" || col.key === "verified" ? 9 : 8,
+          color: C.white,
+        });
         x += col.width;
       });
       y += headerH;
@@ -559,7 +569,7 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
             doc.setLineWidth(0.25);
             doc.rect(x, y, valueW * 2, rowH, "FD");
             txt(singleValueLines, x + 2, y + 5.5, {
-              size: 7.5,
+              size: 8.2,
               color: C.bodyText,
             });
           } else {
@@ -570,7 +580,7 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
               doc.setLineWidth(0.25);
               doc.rect(x, y, width, rowH, "FD");
               txt(values[idx], x + 2, y + 5.5, {
-                size: 7.5,
+                size: 8.2,
                 color: C.bodyText,
               });
               x += width;
@@ -629,7 +639,7 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
         doc.setLineWidth(0.25);
         doc.rect(x, y, valueW * 2, rowH, "FD");
         txt(singleValueLines, x + 2, y + 5.5, {
-          size: 7.5,
+          size: 8.2,
           color: C.bodyText,
         });
       } else {
@@ -640,7 +650,7 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
           doc.setLineWidth(0.25);
           doc.rect(x, y, width, rowH, "FD");
           txt(values[idx], x + 2, y + 5.5, {
-            size: 7.5,
+            size: 8.2,
             color: C.bodyText,
           });
           x += width;
@@ -669,7 +679,14 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
   let ly = y + 8;
   txt("FINAL REPORT", ML + 6, ly, { bold: true, size: 7, color: C.green }); ly += 6;
   txt(data.candidate_name || "—", ML + 6, ly, { bold: true, size: 11, color: C.navy }); ly += 7;
-  txt(data.req_code ? `Requested #${data.req_code}` : "", ML + 6, ly, { size: 8, color: C.labelText }); ly += 9;
+  txt(data.candidate_email || "—", ML + 6, ly, { bold: true, size: 11, color: C.navy }); ly += 7;
+  txt(data.candidate_phone || "—", ML + 6, ly, { bold: true, size: 11, color: C.navy }); ly += 7;
+  txt(data.gender || "—", ML + 6, ly, { bold: true, size: 11, color: C.navy }); ly += 7;
+  txt(data.dob || "—", ML + 6, ly, { bold: true, size: 11, color: C.navy }); ly += 7;
+  txt(data.designation || "", ML + 6, ly, { bold: true, size: 11, color: C.navy }); ly += 7;
+  txt(data.department || "", ML + 6, ly, { bold: true, size: 11, color: C.navy }); ly += 7;
+
+  // txt(data.req_code ? `Requested #${data.req_code}` : "", ML + 6, ly, { size: 8, color: C.labelText }); ly += 9;
   txt("PACKAGE OPTED", ML + 6, ly, { bold: true, size: 7, color: C.navy }); ly += 5;
   products.forEach((p) => {
     txt(`- ${p.productTitle || "—"}`, ML + 8, ly, { size: 8, color: C.bodyText, maxWidth: halfX - ML - 10 });
@@ -829,36 +846,86 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     /* Product details table */
     drawProductDetailTable(sv);
 
-    /* Documents */
+    /* Documents — dedicated PDF page(s), large embed with aspect-preserving fit */
     const hasDocs = sv.doc_1 || sv.doc_2;
     if (hasDocs) {
-      checkPage(14);
-      txt(svcName + " Documents", ML, y + 5, { bold: true, size: 9, color: C.navy });
-      y += 12;
+      const docPairs = [["doc_1", "Document 1"], ["doc_2", "Document 2"]].filter(([field]) => sv[field]);
+      let docSectionStarted = false;
 
-      [["doc_1", "Document 1"], ["doc_2", "Document 2"]].forEach(([field, label]) => {
-        if (!sv[field]) return;
+      const ensureDocumentsCoverPage = () => {
+        if (docSectionStarted) return;
+        doc.addPage();
+        y = 0;
+        drawHeader();
+        cardHeader("DOCUMENTS");
+        txt(sanitize(svcName), PW / 2, y + 5, {
+          bold: true,
+          size: 10,
+          color: C.navy,
+          align: "center",
+        });
+        y += 13;
+        docSectionStarted = true;
+      };
+
+      docPairs.forEach(([field, label], idx) => {
         const path = sv[field];
         const ext = path.split(".").pop().toLowerCase();
         const isImage = ["jpg", "jpeg", "png", "gif", "webp"].includes(ext);
 
         if (isImage) {
-          checkPage(80);
-          txt(label + ":", PW / 2, y + 5, { bold: true, size: 8, color: C.labelText, align: "center" });
-          y += 9;
-          const imgH = 65;
-          const imgW = 100;
-          const imgX = ML + (CW - imgW) / 2;
-          const embedded = tryEmbedImage(path, imgX, y, imgW, imgH);
-          if (!embedded) {
-            filePill(path, label);
+          if (idx === 0) {
+            ensureDocumentsCoverPage();
+            txt(label, PW / 2, y + 6, {
+              bold: true,
+              size: 11,
+              color: C.navy,
+              align: "center",
+            });
+            const imgTop = y + 12;
+            const imgMaxW = CW;
+            const imgMaxH = Math.max(40, 275 - imgTop - 10);
+            const embeddedBox = tryEmbedImage(path, ML, imgTop, imgMaxW, imgMaxH);
+            if (!embeddedBox) {
+              y = imgTop + 4;
+              filePill(path, label);
+            } else {
+              stroke(C.lightGray);
+              doc.setLineWidth(0.3);
+              doc.rect(ML, imgTop, imgMaxW, imgMaxH, "S");
+              y = imgTop + imgMaxH + 8;
+            }
           } else {
-            // thin border around image
-            stroke(C.lightGray); doc.setLineWidth(0.3);
-            doc.rect(imgX, y, imgW, imgH, "S");
-            y += imgH + 5;
+            doc.addPage();
+            y = 0;
+            drawHeader();
+            txt(label, PW / 2, y + 7, {
+              bold: true,
+              size: 11,
+              color: C.navy,
+              align: "center",
+            });
+            const imgTop = y + 13;
+            const imgMaxW = CW;
+            const imgMaxH = Math.max(40, 275 - imgTop - 10);
+            const embeddedBox = tryEmbedImage(path, ML, imgTop, imgMaxW, imgMaxH);
+            if (!embeddedBox) {
+              y = imgTop + 4;
+              filePill(path, label);
+            } else {
+              stroke(C.lightGray);
+              doc.setLineWidth(0.3);
+              doc.rect(ML, imgTop, imgMaxW, imgMaxH, "S");
+              y = imgTop + imgMaxH + 8;
+            }
           }
         } else {
+          if (idx === 0) ensureDocumentsCoverPage();
+          else {
+            doc.addPage();
+            y = 0;
+            drawHeader();
+          }
           filePill(path, label);
         }
       });
@@ -901,15 +968,14 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
   //   y += 14;
   // }
 
-  /* ── Footer ── */
-  checkPage(18);
-  y += 8;
-  stroke(C.green); doc.setLineWidth(0.8);
-  doc.line(ML, y, ML + CW, y);
-  y += 7;
-  txt("MYSDOM Background Verification", PW / 2, y, { bold: true, size: 8, color: C.navy, align: "center" });
-  y += 5;
-  txt("www.mysdom.com  |  contactus@mysdom.com  |  Bhubaneswar", PW / 2, y, { size: 7, color: C.labelText, align: "center" });
+  /* ── Footer — same page as last content (no extra blank page from checkPage) ── */
+  const pageH = doc.internal.pageSize.getHeight() || 297;
+  const footerMinY = Math.min(275, pageH - 22);
+  const lineY = Math.min(Math.max(y + 6, footerMinY), pageH - 18);
+  stroke(C.orange); doc.setLineWidth(0.8);
+  doc.line(ML, lineY, ML + CW, lineY);
+  txt("MYSDOM Background Verification", PW / 2, lineY + 7, { bold: true, size: 8, color: C.navy, align: "center" });
+  txt("www.mysdom.com  |  contactus@mysdom.com  |  Bhubaneswar", PW / 2, lineY + 12, { size: 7, color: C.labelText, align: "center" });
 
   return doc;
 }
@@ -1137,7 +1203,14 @@ const BGVReportPage = () => {
                 <div style={{ padding: 20, borderRight: "1px solid #f3f4f6" }}>
                   <p style={{ margin: "0 0 4px", fontSize: 11, fontWeight: 700, color: "#ff2f8f", textTransform: "uppercase", letterSpacing: "0.08em" }}>Final Report</p>
                   <p style={{ margin: "0 0 2px", fontSize: 13, color: "#1f2937", fontWeight: 600 }}>{data.candidate_name || "—"}</p>
-                  <p style={{ margin: "0 0 14px", fontSize: 12, color: "#6b7280" }}>{data.req_code ? `Requested #${data.req_code}` : ""}</p>
+                  <p style={{ margin: "0 0 2px", fontSize: 13, color: "#1f2937", fontWeight: 600 }}>{data.candidate_email || "—"}</p>
+                  <p style={{ margin: "0 0 2px", fontSize: 13, color: "#1f2937", fontWeight: 600 }}>{data.candidate_phone || "—"}</p>
+                  <p style={{ margin: "0 0 2px", fontSize: 13, color: "#1f2937", fontWeight: 600 }}>{data.gender || "—"}</p>
+                  <p style={{ margin: "0 0 2px", fontSize: 13, color: "#1f2937", fontWeight: 600 }}>{data.dob || "—"}</p>
+                  {data?.designation && <p style={{ margin: "0 0 2px", fontSize: 13, color: "#1f2937", fontWeight: 600 }}>{data.designation || "—"}</p>}
+                  {data?.department && <p style={{ margin: "0 0 2px", fontSize: 13, color: "#1f2937", fontWeight: 600 }}>{data.department || "—"}</p>}
+
+                  {/* <p style={{ margin: "0 0 14px", fontSize: 12, color: "#6b7280" }}>{data.req_code ? `Requested #${data.req_code}` : ""}</p> */}
                   <p style={{ margin: "0 0 4px", fontSize: 11, fontWeight: 700, color: "#a10f5f", textTransform: "uppercase", letterSpacing: "0.06em" }}>Package Opted</p>
                   {products.length > 0
                     ? products.map((p) => <p key={p.id} style={{ margin: "0 0 2px", fontSize: 12, color: "#374151" }}>• {p.productTitle}</p>)
@@ -1312,9 +1385,10 @@ const BGVReportPage = () => {
                   </div>
                   {(sv.doc_1 || sv.doc_2) && (
                     <div style={{ padding: "0 20px 16px" }}>
-                      <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                        {svcName} Documents
+                      <p style={{ margin: "0 0 2px", fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                        Documents
                       </p>
+                      <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 600, color: "#a10f5f" }}>{svcName}</p>
                       {sv.doc_1 && <FilePill path={sv.doc_1} base_url={base_url} label="Document 1" />}
                       {sv.doc_2 && <FilePill path={sv.doc_2} base_url={base_url} label="Document 2" />}
                     </div>
