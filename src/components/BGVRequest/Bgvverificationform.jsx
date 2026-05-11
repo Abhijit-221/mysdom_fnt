@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./BGVVerificationForm.css";
+import "./Bgvverificationform.css";
 import toast from "react-hot-toast";
 import axiosInstance from "../../api/axiosInstance";
 
