@@ -855,7 +855,6 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     drawHeader();
     sectionTitle("Executive Summary");
     cardHeader("EXECUTIVE SUMMARY");
-    drawDiscrepancyLegend();
   }
 
   drawSummaryTable({
@@ -1263,7 +1262,7 @@ const BGVReportPage = () => {
           <div className="rs">
             <Card>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "stretch" }}>
-                <div style={{ padding: 20, borderRight: "1px solid #f3f4f6" }}>
+                <div style={{ padding: "20px 20px 28px", borderRight: "1px solid #f3f4f6" }}>
                   <p style={{ margin: "0 0 4px", fontSize: 11, fontWeight: 700, color: "#ff2f8f", textTransform: "uppercase", letterSpacing: "0.08em" }}>Final Report</p>
                   <p style={{ margin: "0 0 2px", fontSize: 13, color: "#1f2937", fontWeight: 600 }}>{data.candidate_name || "—"}</p>
                   <p style={{ margin: "0 0 2px", fontSize: 13, color: "#1f2937", fontWeight: 600 }}>{data.candidate_email || "—"}</p>
