@@ -86,6 +86,7 @@ const ICONS = {
 
 const STATUS_OPTIONS = ['SUBMITED', 'IN PROGRESS', 'ON HOLD', 'COMPLETED', 'REJECTED', 'CLOSED'];
 const MODE_OPTIONS = ["Online", "Offline"];
+const DISCREPANCY_OPTIONS = ["Clear Discrepancy", "Minor Discrepancy", "Discrepancy"];
 
 const parseVerificationData = (value) => {
   if (!value) return {};
@@ -104,6 +105,7 @@ const buildInitialProductState = (product) => ({
   mode_of_verification: product?.mode_of_verification || "",
   verifier_comment: product?.verifier_comment || "",
   final_desc: product?.final_desc || "",
+  final_discrepancy: product?.final_discrepancy || "",
   remark: product?.remark || "",
   verification_data: parseVerificationData(product?.verification_data),
 });
@@ -478,6 +480,7 @@ export default function BGVVerificationForm({ onClose, bgvData, initialProductId
       mode_of_verification: pForm.mode_of_verification || null,
       verifier_comment: pForm.verifier_comment || null,
       final_desc: pForm.final_desc || null,
+      final_discrepancy: pForm.final_discrepancy || null,
       verification_data: normalizedVerificationData,
     };
     console.log("📦 Payload:", payload);
@@ -487,6 +490,7 @@ export default function BGVVerificationForm({ onClose, bgvData, initialProductId
     fd.append("product_id", payload.product_id);
     if (payload.remark) fd.append("remark", payload.remark);
     if (payload.status) fd.append("status", payload.status);
+    if (payload.final_discrepancy) fd.append("final_discrepancy", payload.final_discrepancy);
     if (payload.mode_of_verification) fd.append("mode_of_verification", payload.mode_of_verification);
     if (payload.verifier_comment) fd.append("verifier_comment", payload.verifier_comment);
     if (payload.final_desc) fd.append("final_desc", payload.final_desc);
@@ -634,7 +638,26 @@ export default function BGVVerificationForm({ onClose, bgvData, initialProductId
                       })}
                     </select>
                   </div>
-
+                  <div className="bgv-field">
+                    <label>Final Discrepancy</label>
+                    <select name="final_discrepancy" value={pForm.final_discrepancy || ""} onChange={handleTopLevel}>
+                      <option value="">— Select Discrepancy —</option>
+                      {DISCREPANCY_OPTIONS.map((d) => {
+                        let v=d;
+                        if(d === "Clear Discrepancy"){
+                          v = "CLEAR";
+                        }
+                        if(d === "Minor Discrepancy"){
+                          console.log("Minor discrepancy selected");
+                          v = "MINOR";
+                        }
+                        if(d === "Discrepancy"){
+                          v = "DISCREPANCY";
+                        }
+                        return <option key={d} value={v}>{d}</option>;
+                      })}
+                    </select>
+                  </div>
                   <div className="bgv-field">
                     <label>Mode of Verification</label>
                     <select name="mode_of_verification" value={pForm.mode_of_verification || ""} onChange={handleTopLevel}>

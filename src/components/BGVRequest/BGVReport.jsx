@@ -235,6 +235,28 @@ const getProductTableSections = (product, data = {}) => {
 const isEmploymentVerificationSummarySection = (section) =>
   section?.title === "Verification Summary";
 
+const DISCREPANCY_LEGEND = [
+  { label: "CLEAR", ui: { dot: "#22c55e", bg: "#dcfce7", text: "#166534" }, pdf: { dot: [34, 197, 94], bg: [220, 252, 231], text: [22, 101, 52] } },
+  { label: "MINOR", ui: { dot: "#f59e0b", bg: "#fef3c7", text: "#92400e" }, pdf: { dot: [245, 158, 11], bg: [254, 243, 199], text: [146, 64, 14] } },
+  { label: "DISCREPANCY", ui: { dot: "#ef4444", bg: "#fee2e2", text: "#991b1b" }, pdf: { dot: [239, 68, 68], bg: [254, 226, 226], text: [153, 27, 27] } },
+];
+
+const normalizeFinalDiscrepancy = (value = "") => {
+  const normalized = String(value || "")
+    .toUpperCase()
+    .replace(/[_\s]+/g, " ")
+    .trim();
+
+  if (["CLEAR", "CLEARED"].includes(normalized)) return "CLEAR";
+  if (normalized === "MINOR") return "MINOR";
+  if (normalized === "DISCREPANCY") return "DISCREPANCY";
+  return "";
+};
+
+const getDiscrepancyMeta = (value = "") =>
+  DISCREPANCY_LEGEND.find((item) => item.label === normalizeFinalDiscrepancy(value)) ||
+  { label: "—", ui: { dot: "#cbd5e1", bg: "#f8fafc", text: "#475569" }, pdf: { dot: [203, 213, 225], bg: [248, 250, 252], text: [71, 85, 105] } };
+
 const C = {
   navy: [131, 24, 67],
   green: [253, 242, 248],//[255, 47, 143],
@@ -725,6 +747,23 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
   sectionTitle("Executive Summary");
   cardHeader("EXECUTIVE SUMMARY");
 
+  const drawDiscrepancyLegend = () => {
+    checkPage(20);
+    txt("Final Discrepancy", ML, y + 5, { size: 8, bold: true, color: C.navy });
+
+    let legendX = ML;
+    const legendY = y + 11;
+
+    DISCREPANCY_LEGEND.forEach((item, index) => {
+      if (index > 0) legendX += 42;
+      fill(item.pdf.dot);
+      doc.circle(legendX + 2, legendY, 2, "F");
+      txt(item.label, legendX + 7, legendY + 1, { size: 8, bold: true, color: item.pdf.text });
+    });
+
+    y += 18;
+  };
+
   const drawSummaryTable = ({ headers, rows, colWidths }) => {
     const headH = 9;
     checkPage(26);
@@ -740,17 +779,19 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     y += headH;
 
     rows.forEach((row) => {
+      const rowDiscrepancy = row.finalDiscrepancy;
+      const rowMeta = getDiscrepancyMeta(rowDiscrepancy);
       const lines = row.map((v, idx) => doc.splitTextToSize(sanitize(v), colWidths[idx] - 4));
       const maxLines = Math.max(...lines.map((l) => l.length), 1);
       const bodyH = Math.max(12, maxLines * 4 + 3);
       checkPage(bodyH + 4);
       x = ML;
       row.forEach((_, idx) => {
-        fill(C.rowAlt);
+        fill(rowDiscrepancy ? rowMeta.pdf.bg : C.rowAlt);
         stroke(C.lightGray);
         doc.setLineWidth(0.2);
         doc.rect(x, y, colWidths[idx], bodyH, "FD");
-        txt(lines[idx], x + 2, y + 5, { size: 7.2, color: C.bodyText });
+        txt(lines[idx], x + 2, y + 5, { size: 7.2, color: rowDiscrepancy ? rowMeta.pdf.text : C.bodyText });
         x += colWidths[idx];
       });
       y += bodyH;
@@ -779,11 +820,32 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     colWidths: overviewColW,
   });
 
+  drawDiscrepancyLegend();
+
   const statusHeaders = ["Product", "Status"];
   const statusColW = [CW * 0.72, CW * 0.28];
-  const statusRows = products.map((sv) => [sv.productTitle || "—", (sv.status || "N/A").replace(/_/g, " ")]);
+  const statusRows = products.map((sv) => {
+    const discrepancy = normalizeFinalDiscrepancy(sv.final_discrepancy);
+    const row = [sv.productTitle || "—", discrepancy || "—"];
+    row.finalDiscrepancy = discrepancy;
+    return row;
+  });
+  const executiveStatusRows = products.map((sv) => {
+    const discrepancy = normalizeFinalDiscrepancy(sv.final_discrepancy);
+    const row = [sv.productTitle || "â€”", (sv.status || "N/A").replace(/_/g, " ")];
+    row.finalDiscrepancy = discrepancy;
+    return row;
+  });
+
+  const executiveSummaryStatusRows = products.map((sv) => {
+    const discrepancy = normalizeFinalDiscrepancy(sv.final_discrepancy);
+    const row = [sv.productTitle || "N/A", (sv.status || "N/A").replace(/_/g, " ")];
+    row.finalDiscrepancy = discrepancy;
+    return row;
+  });
+
   const statusTableHeight = getSummaryTableHeight({
-    rows: statusRows,
+    rows: executiveSummaryStatusRows,
     colWidths: statusColW,
   });
 
@@ -793,11 +855,12 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     drawHeader();
     sectionTitle("Executive Summary");
     cardHeader("EXECUTIVE SUMMARY");
+    drawDiscrepancyLegend();
   }
 
   drawSummaryTable({
     headers: statusHeaders,
-    rows: statusRows,
+    rows: executiveSummaryStatusRows,
     colWidths: statusColW,
   });
 
@@ -1283,6 +1346,24 @@ const BGVReportPage = () => {
                   </tbody>
                 </table>
 
+                <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap", marginBottom: 14 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#a10f5f" }}>Final Discrepancy</span>
+                  {DISCREPANCY_LEGEND.map((item) => (
+                    <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span
+                        style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: "50%",
+                          background: item.ui.dot,
+                          display: "inline-block",
+                        }}
+                      />
+                      <span style={{ fontSize: 12, fontWeight: 700, color: item.ui.text }}>{item.label}</span>
+                    </div>
+                  ))}
+                </div>
+
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                   <thead>
                     <tr>
@@ -1291,14 +1372,20 @@ const BGVReportPage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {products.map((sv) => (
-                      <tr key={sv.id}>
-                        <td style={{ padding: "9px 10px", border: "1px solid #f1c6dd", color: "#1f2937" }}>{sv.productTitle || "—"}</td>
-                        <td style={{ padding: "9px 10px", border: "1px solid #f1c6dd" }}>
-                          <Badge label={sv.status?.replace(/_/g, " ") || "—"} color={statusColor(sv.status)} />
-                        </td>
-                      </tr>
-                    ))}
+                    {products.map((sv) => {
+                      const discrepancyLabel = normalizeFinalDiscrepancy(sv.final_discrepancy) || "—";
+                      const discrepancyMeta = getDiscrepancyMeta(sv.final_discrepancy);
+                      const statusLabel = sv.status?.replace(/_/g, " ") || "—";
+
+                      return (
+                        <tr key={sv.id} style={{ background: discrepancyLabel !== "—" ? discrepancyMeta.ui.bg : "#f9fafb" }}>
+                          <td style={{ padding: "9px 10px", border: "1px solid #f1c6dd", color: discrepancyLabel !== "—" ? discrepancyMeta.ui.text : "#1f2937" }}>{sv.productTitle || "—"}</td>
+                          <td style={{ padding: "9px 10px", border: "1px solid #f1c6dd", color: discrepancyLabel !== "—" ? discrepancyMeta.ui.text : "#1f2937", fontWeight: 700 }}>
+                            <Badge label={statusLabel} color={statusColor(sv.status)} />
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
