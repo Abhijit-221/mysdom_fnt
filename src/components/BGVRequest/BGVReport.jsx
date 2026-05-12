@@ -747,24 +747,7 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
   sectionTitle("Executive Summary");
   cardHeader("EXECUTIVE SUMMARY");
 
-  const drawDiscrepancyLegend = () => {
-    checkPage(20);
-    txt("Final Discrepancy", ML, y + 5, { size: 8, bold: true, color: C.navy });
-
-    let legendX = ML;
-    const legendY = y + 11;
-
-    DISCREPANCY_LEGEND.forEach((item, index) => {
-      if (index > 0) legendX += 42;
-      fill(item.pdf.dot);
-      doc.circle(legendX + 2, legendY, 2, "F");
-      txt(item.label, legendX + 7, legendY + 1, { size: 8, bold: true, color: item.pdf.text });
-    });
-
-    y += 18;
-  };
-
-  const drawSummaryTable = ({ headers, rows, colWidths }) => {
+  const drawSummaryTable = ({ headers, rows, colWidths, getCellTextColor }) => {
     const headH = 9;
     checkPage(26);
     let x = ML;
@@ -779,19 +762,18 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     y += headH;
 
     rows.forEach((row) => {
-      const rowDiscrepancy = row.finalDiscrepancy;
-      const rowMeta = getDiscrepancyMeta(rowDiscrepancy);
       const lines = row.map((v, idx) => doc.splitTextToSize(sanitize(v), colWidths[idx] - 4));
       const maxLines = Math.max(...lines.map((l) => l.length), 1);
       const bodyH = Math.max(12, maxLines * 4 + 3);
       checkPage(bodyH + 4);
       x = ML;
       row.forEach((_, idx) => {
-        fill(rowDiscrepancy ? rowMeta.pdf.bg : C.rowAlt);
+        const cellTextColor = getCellTextColor ? getCellTextColor(row, idx) : C.bodyText;
+        fill(C.rowAlt);
         stroke(C.lightGray);
         doc.setLineWidth(0.2);
         doc.rect(x, y, colWidths[idx], bodyH, "FD");
-        txt(lines[idx], x + 2, y + 5, { size: 7.2, color: rowDiscrepancy ? rowMeta.pdf.text : C.bodyText });
+        txt(lines[idx], x + 2, y + 5, { size: 7.2, color: cellTextColor });
         x += colWidths[idx];
       });
       y += bodyH;
@@ -820,26 +802,11 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     colWidths: overviewColW,
   });
 
-  drawDiscrepancyLegend();
-
-  const statusHeaders = ["Product", "Status"];
-  const statusColW = [CW * 0.72, CW * 0.28];
-  const statusRows = products.map((sv) => {
-    const discrepancy = normalizeFinalDiscrepancy(sv.final_discrepancy);
-    const row = [sv.productTitle || "—", discrepancy || "—"];
-    row.finalDiscrepancy = discrepancy;
-    return row;
-  });
-  const executiveStatusRows = products.map((sv) => {
-    const discrepancy = normalizeFinalDiscrepancy(sv.final_discrepancy);
-    const row = [sv.productTitle || "â€”", (sv.status || "N/A").replace(/_/g, " ")];
-    row.finalDiscrepancy = discrepancy;
-    return row;
-  });
-
+  const statusHeaders = ["Product", "Status", "Final Discrepancy"];
+  const statusColW = [CW * 0.44, CW * 0.24, CW * 0.32];
   const executiveSummaryStatusRows = products.map((sv) => {
     const discrepancy = normalizeFinalDiscrepancy(sv.final_discrepancy);
-    const row = [sv.productTitle || "N/A", (sv.status || "N/A").replace(/_/g, " ")];
+    const row = [sv.productTitle || "N/A", (sv.status || "N/A").replace(/_/g, " "), discrepancy || "—"];
     row.finalDiscrepancy = discrepancy;
     return row;
   });
@@ -861,6 +828,10 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     headers: statusHeaders,
     rows: executiveSummaryStatusRows,
     colWidths: statusColW,
+    getCellTextColor: (row, idx) => {
+      if (idx !== 2 || !row.finalDiscrepancy) return C.bodyText;
+      return getDiscrepancyMeta(row.finalDiscrepancy).pdf.text;
+    },
   });
 
   /* ══════════════════════════════════════════
@@ -1345,7 +1316,7 @@ const BGVReportPage = () => {
                   </tbody>
                 </table>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap", marginBottom: 14 }}>
+                {/* <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap", marginBottom: 14 }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color: "#a10f5f" }}>Final Discrepancy</span>
                   {DISCREPANCY_LEGEND.map((item) => (
                     <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1361,13 +1332,14 @@ const BGVReportPage = () => {
                       <span style={{ fontSize: 12, fontWeight: 700, color: item.ui.text }}>{item.label}</span>
                     </div>
                   ))}
-                </div>
+                </div> */}
 
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                   <thead>
                     <tr>
                       <th style={{ background: "#ff2f8f", color: "#fff", padding: "9px 10px", textAlign: "left", fontWeight: 700, fontSize: 11, border: "1px solid #f7b5d7" }}>Product</th>
                       <th style={{ background: "#ff2f8f", color: "#fff", padding: "9px 10px", textAlign: "left", fontWeight: 700, fontSize: 11, border: "1px solid #f7b5d7" }}>Status</th>
+                      <th style={{ background: "#ff2f8f", color: "#fff", padding: "9px 10px", textAlign: "left", fontWeight: 700, fontSize: 11, border: "1px solid #f7b5d7" }}>Final Discrepancy</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1375,12 +1347,14 @@ const BGVReportPage = () => {
                       const discrepancyLabel = normalizeFinalDiscrepancy(sv.final_discrepancy) || "—";
                       const discrepancyMeta = getDiscrepancyMeta(sv.final_discrepancy);
                       const statusLabel = sv.status?.replace(/_/g, " ") || "—";
-
                       return (
-                        <tr key={sv.id} style={{ background: discrepancyLabel !== "—" ? discrepancyMeta.ui.bg : "#f9fafb" }}>
-                          <td style={{ padding: "9px 10px", border: "1px solid #f1c6dd", color: discrepancyLabel !== "—" ? discrepancyMeta.ui.text : "#1f2937" }}>{sv.productTitle || "—"}</td>
-                          <td style={{ padding: "9px 10px", border: "1px solid #f1c6dd", color: discrepancyLabel !== "—" ? discrepancyMeta.ui.text : "#1f2937", fontWeight: 700 }}>
+                        <tr key={sv.id} >
+                          <td style={{ padding: "9px 10px", border: "1px solid #f1c6dd", color: "#1f2937" }}>{sv.productTitle || "—"}</td>
+                          <td style={{ padding: "9px 10px", border: "1px solid #f1c6dd", color: "#1f2937", fontWeight: 700 }}>
                             <Badge label={statusLabel} color={statusColor(sv.status)} />
+                          </td>
+                          <td style={{ padding: "9px 10px", border: "1px solid #f1c6dd", color: discrepancyLabel !== "—" ? discrepancyMeta.ui.text : "#1f2937", fontWeight: 700 }}>
+                            {discrepancyLabel}
                           </td>
                         </tr>
                       );
