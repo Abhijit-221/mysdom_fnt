@@ -68,7 +68,7 @@ const getProductTableRows = (product, data = {}) => {
       { label: "Employer", stated: firstEmployment.company_name || "—", verified: firstEmployment.verify_company_name || "—" },
       { label: "Employee Code", stated: firstEmployment.employee_id || "—", verified: firstEmployment.verify_employee_id || "—" },
       { label: "Start Date", stated: firstEmployment.employment_start || "—", verified: firstEmployment.verify_employment_start || "—" },
-      { label: "Recent Employment", stated: (firstEmployment.isCurrent ? "Yes" : "No") || "—", verified: ((firstEmployment.verify_isCurrent===false||firstEmployment.verify_isCurrent==="false")? "No" : "_") || "—" },
+      { label: "Recent Employment", stated: (firstEmployment.isCurrent ? "Yes" : "No") || "—", verified: ((firstEmployment.verify_isCurrent === false || firstEmployment.verify_isCurrent === "false") ? "No" : "_") || "—" },
       { label: "End Date", stated: firstEmployment.employment_end || "—", verified: firstEmployment.verify_employment_end || "—" },
       { label: "Designation", stated: firstEmployment.job_title || "—", verified: firstEmployment.verify_job_title || "—" },
       { label: "Employment Category", stated: firstEmployment.employment_category || "—", verified: firstEmployment.verify_employment_category || "—" },
@@ -93,7 +93,7 @@ const getProductTableRows = (product, data = {}) => {
       { label: "Education Start", stated: data.education_start || "—", verified: data.verify_education_start || "—" },
       { label: "Education End", stated: data.education_end || "—", verified: data.verify_education_end || "—" },
       { label: "Passing Year", stated: data.passing_year || "—", verified: data.verify_passing_year || "—" },
-      { label: "Degree Completion", stated: (data.degree_status==="yes" ? "Yes" : "No") || "—", verified: (data.verify_degree_status==="yes"? "Yes" : "No") || "—" },
+      { label: "Degree Completion", stated: (data.degree_status === "yes" ? "Yes" : "No") || "—", verified: (data.verify_degree_status === "yes" ? "Yes" : "No") || "—" },
 
       { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
@@ -149,7 +149,7 @@ const getProductTableRows = (product, data = {}) => {
       { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
     ]);
   }
-  
+
   if (title.includes("credit")) {
     return markSingleValueRows([
       // { label: "Name", stated: data.candidate_name || "—", verified: data.candidate_name || "—" },
@@ -216,9 +216,9 @@ const getProductTableSections = (product, data = {}) => {
   const employments = Array.isArray(data.employments) ? data.employments : [];
   const detailSections = employments.length
     ? employments.map((employment, index) => ({
-        title: `Employment ${index + 1}`,
-        rows: getEmploymentTableRows(employment),
-      }))
+      title: `Employment ${index + 1}`,
+      rows: getEmploymentTableRows(employment),
+    }))
     : [{ title: "Employment", rows: getEmploymentTableRows() }];
 
   const summaryRows = markSingleValueRows([
@@ -237,8 +237,8 @@ const isEmploymentVerificationSummarySection = (section) =>
 
 const DISCREPANCY_LEGEND = [
   { label: "CLEAR", ui: { dot: "#22c55e", bg: "#dcfce7", text: "#166534" }, pdf: { dot: [34, 197, 94], bg: [220, 252, 231], text: [22, 101, 52] } },
-  { label: "MINOR", ui: { dot: "#f59e0b", bg: "#fef3c7", text: "#92400e" }, pdf: { dot: [245, 158, 11], bg: [254, 243, 199], text: [146, 64, 14] } },
-  { label: "DISCREPANCY", ui: { dot: "#ef4444", bg: "#fee2e2", text: "#991b1b" }, pdf: { dot: [239, 68, 68], bg: [254, 226, 226], text: [153, 27, 27] } },
+  { label: "MINOR DISCREPANCY", ui: { dot: "#f59e0b", bg: "#fef3c7", text: "#c18833" }, pdf: { dot: [245, 158, 11], bg: [254, 243, 199], text: [146, 64, 14] } },
+  { label: "MAJOR DISCREPANCY", ui: { dot: "#ef4444", bg: "#fee2e2", text: "#a42929" }, pdf: { dot: [239, 68, 68], bg: [254, 226, 226], text: [153, 27, 27] } },
 ];
 
 const normalizeFinalDiscrepancy = (value = "") => {
@@ -248,8 +248,8 @@ const normalizeFinalDiscrepancy = (value = "") => {
     .trim();
 
   if (["CLEAR", "CLEARED"].includes(normalized)) return "CLEAR";
-  if (normalized === "MINOR") return "MINOR";
-  if (normalized === "DISCREPANCY") return "DISCREPANCY";
+  if (["MINOR", "MINOR DISCREPANCY"].includes(normalized)) return "MINOR DISCREPANCY";
+  if (["DISCREPANCY", "MAJOR", "MAJOR DISCREPANCY"].includes(normalized)) return "MAJOR DISCREPANCY";
   return "";
 };
 
@@ -1159,6 +1159,12 @@ const BGVReportPage = () => {
   const reqDate = data.createdAt ? new Date(data.createdAt).toLocaleDateString("en-IN") : "—";
   const updateDate = data.updatedAt ? new Date(data.updatedAt).toLocaleDateString("en-IN") : "—";
   const isCompleted = ["COMPLETED", "REJECTED", "CLOSED"].includes(data.status);
+
+  // let displayDisposition = (disposition)=>{
+  //   if(disposition === "MINOR") return "MINOR DISCREPANCY";
+  //   if(disposition === "DISCREPANCY") return "MAJOR DISCREPANCY";
+  //   return disposition || "—";
+  // }
 
   return (
     <>

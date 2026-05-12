@@ -86,7 +86,7 @@ const ICONS = {
 
 const STATUS_OPTIONS = ['SUBMITED', 'IN PROGRESS', 'ON HOLD', 'COMPLETED', 'REJECTED', 'CLOSED'];
 const MODE_OPTIONS = ["Online", "Offline"];
-const DISCREPANCY_OPTIONS = ["Clear Discrepancy", "Minor Discrepancy", "Discrepancy"];
+const DISCREPANCY_OPTIONS = ["Clear", "Minor Discrepancy", "Major Discrepancy"];
 
 const parseVerificationData = (value) => {
   if (!value) return {};
@@ -644,14 +644,14 @@ export default function BGVVerificationForm({ onClose, bgvData, initialProductId
                       <option value="">— Select Discrepancy —</option>
                       {DISCREPANCY_OPTIONS.map((d) => {
                         let v=d;
-                        if(d === "Clear Discrepancy"){
+                        if(d === "Clear"){
                           v = "CLEAR";
                         }
                         if(d === "Minor Discrepancy"){
                           console.log("Minor discrepancy selected");
                           v = "MINOR";
                         }
-                        if(d === "Discrepancy"){
+                        if(d === "Major Discrepancy"){
                           v = "DISCREPANCY";
                         }
                         return <option key={d} value={v}>{d}</option>;
