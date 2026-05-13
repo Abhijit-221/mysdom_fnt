@@ -31,8 +31,8 @@ export default function ServiceDetails({ service }) {
     } catch (err) {
       if (err.response) {
         // Server responded with error (4xx, 5xx)
-        console.log("Status:", err.response.status);
-        console.log("Data:", err.response.data);
+        // console.log("Status:", err.response.status);
+        // console.log("Data:", err.response.data);
 
         toast.error(err.response.data.message || "Server Error");
       }
@@ -75,7 +75,7 @@ export default function ServiceDetails({ service }) {
       ...(formData.description && { description: formData.description }),
       ...(typeof formData.isActive !== 'undefined' && { isActive: formData.isActive })
     };
-    console.log("updatedData:", updatedData);
+    // console.log("updatedData:", updatedData);
     try {
       const res = await axiosInstance.put(
         `/service/update`,
@@ -95,8 +95,8 @@ export default function ServiceDetails({ service }) {
     } catch (err) {
       if (err.response) {
         // Server responded with error (4xx, 5xx)
-        console.log("Status:", err.response.status);
-        console.log("Data:", err.response.data);
+        // console.log("Status:", err.response.status);
+        // console.log("Data:", err.response.data);
 
         toast.error(err.response.data.message || "Server Error");
       }
@@ -112,7 +112,7 @@ export default function ServiceDetails({ service }) {
       }
     }
   };
-  console.log(canEdit,isEditing);
+  // console.log(canEdit,isEditing);
   return (
     <div className="service-details-wrapper">
       <div className="service-details-card">

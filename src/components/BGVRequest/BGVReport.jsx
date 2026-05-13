@@ -46,6 +46,7 @@ const SINGLE_VALUE_LABELS = new Set([
   "Mode of Response",
   "Mode of Verification",
   "Verifier's Comments",
+  "Final Description",
   "Final Disposition",
   "Remark",
   "Check Status",
@@ -59,11 +60,11 @@ const markSingleValueRows = (rows = []) =>
 
 const getProductTableRows = (product, data = {}) => {
   const title = (product?.productTitle || "").toLowerCase();
-  console.log("Generating table rows for product:", title);
+  // console.log("Generating table rows for product:", title);
   const firstEmployment = data.employments?.[0] || {};
 
   if (title.includes("employment")) {
-    console.log("First employment record:", firstEmployment);
+    // console.log("First employment record:", firstEmployment);
     return markSingleValueRows([
       { label: "Employer", stated: firstEmployment.company_name || "—", verified: firstEmployment.verify_company_name || "—" },
       { label: "Employee Code", stated: firstEmployment.employee_id || "—", verified: firstEmployment.verify_employee_id || "—" },
@@ -77,9 +78,10 @@ const getProductTableRows = (product, data = {}) => {
 
       { label: "Mode of Response", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
-      { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Final Description", stated: product.final_desc || "—", verified: product.final_desc || "—" },
       { label: "Remark", stated: product.remark || "—", verified: product.remark || "—" },
-      { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
+      { label: "Final Disposition", stated:  normalizeFinalDiscrepancy(product.final_discrepancy) || "—", verified: normalizeFinalDiscrepancy(product.final_discrepancy) || "—" },
+      { label: "Check Status", stated:product.status.replace(/_/g, " ") || "—", verified: product.status.replace(/_/g, " ") || "—" },
     ]);
   }
 
@@ -97,9 +99,10 @@ const getProductTableRows = (product, data = {}) => {
 
       { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
-      { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Final Description", stated: product.final_desc || "—", verified: product.final_desc || "—" },
       { label: "Remark", stated: product.remark || "—", verified: product.remark || "—" },
-      { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
+      { label: "Final Disposition", stated:  normalizeFinalDiscrepancy(product.final_discrepancy) || "—", verified: normalizeFinalDiscrepancy(product.final_discrepancy) || "—" },
+      { label: "Check Status", stated:product.status.replace(/_/g, " ") || "—", verified: product.status.replace(/_/g, " ") || "—" },
     ]);
   }
 
@@ -117,9 +120,10 @@ const getProductTableRows = (product, data = {}) => {
 
       { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
-      { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Final Description", stated: product.final_desc || "—", verified: product.final_desc || "—" },
       { label: "Remark", stated: product.remark || "—", verified: product.remark || "—" },
-      { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
+      { label: "Final Disposition", stated:  normalizeFinalDiscrepancy(product.final_discrepancy) || "—", verified: normalizeFinalDiscrepancy(product.final_discrepancy) || "—" },
+      { label: "Check Status", stated: product.status.replace(/_/g, " ") || "—", verified: product.status.replace(/_/g, " ") || "—" },
     ]);
   }
 
@@ -130,9 +134,10 @@ const getProductTableRows = (product, data = {}) => {
       { label: "PAN", stated: data.pan_card || "—", verified: data.verify_pan_card || "—" },
       { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
-      { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Final Description", stated: product.final_desc || "—", verified: product.final_desc || "—" },
       { label: "Remark", stated: product.remark || "—", verified: product.remark || "—" },
-      { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
+      { label: "Final Disposition", stated:  normalizeFinalDiscrepancy(product.final_discrepancy) || "—", verified: normalizeFinalDiscrepancy(product.final_discrepancy) || "—" },
+      { label: "Check Status", stated: product.status.replace(/_/g, " ") || "—", verified: product.status.replace(/_/g, " ") || "—" },
     ]);
   }
 
@@ -144,9 +149,10 @@ const getProductTableRows = (product, data = {}) => {
       { label: "City", stated: data.city || "—", verified: data.verify_city || "—" },
       { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
-      { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Final Description", stated: product.final_desc || "—", verified: product.final_desc || "—" },
       { label: "Remark", stated: product.remark || "—", verified: product.remark || "—" },
-      { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
+      { label: "Final Disposition", stated:  normalizeFinalDiscrepancy(product.final_discrepancy) || "—", verified: normalizeFinalDiscrepancy(product.final_discrepancy) || "—" },
+      { label: "Check Status", stated: product.status.replace(/_/g, " ") || "—", verified: product.status.replace(/_/g, " ") || "—" },
     ]);
   }
 
@@ -156,9 +162,10 @@ const getProductTableRows = (product, data = {}) => {
       { label: "PAN Card", stated: data.pan_card || "—", verified: data.verify_pan_card || "—" },
       { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
-      { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Final Description", stated: product.final_desc || "—", verified: product.final_desc || "—" },
       { label: "Remark", stated: product.remark || "—", verified: product.remark || "—" },
-      { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
+      { label: "Final Disposition", stated:  normalizeFinalDiscrepancy(product.final_discrepancy) || "—", verified: normalizeFinalDiscrepancy(product.final_discrepancy) || "—" },
+      { label: "Check Status", stated: product.status.replace(/_/g, " ") || "—", verified: product.status.replace(/_/g, " ") || "—" },
     ]);
   }
 
@@ -168,9 +175,10 @@ const getProductTableRows = (product, data = {}) => {
       { label: "Social Media ID", stated: data.social_media_id || "—", verified: data.verify_social_media_id || "—" },
       { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
       { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
-      { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+      { label: "Final Description", stated: product.final_desc || "—", verified: product.final_desc || "—" },
       { label: "Remark", stated: product.remark || "—", verified: product.remark || "—" },
-      { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
+      { label: "Final Disposition", stated:  normalizeFinalDiscrepancy(product.final_discrepancy) || "—", verified: normalizeFinalDiscrepancy(product.final_discrepancy) || "—" },
+      { label: "Check Status", stated: product.status.replace(/_/g, " ") || "—", verified: product.status.replace(/_/g, " ") || "—" },
     ]);
   }
 
@@ -178,9 +186,10 @@ const getProductTableRows = (product, data = {}) => {
     { label: "Product", stated: product.productTitle || "—", verified: product.productTitle || "—" },
     { label: "Mode of Verification", stated: product.mode_of_verification || "—", verified: product.mode_of_verification || "—" },
     { label: "Verifier's Comments", stated: product.verifier_comment || "—", verified: product.verifier_comment || "—" },
-    { label: "Final Disposition", stated: product.final_desc || "—", verified: product.final_desc || "—" },
+    { label: "Final Description", stated: product.final_desc || "—", verified: product.final_desc || "—" },
     { label: "Remark", stated: product.remark || "—", verified: product.remark || "—" },
-    { label: "Check Status", stated: product.status || "—", verified: product.status || "—" },
+    { label: "Final Disposition", stated:  normalizeFinalDiscrepancy(product.final_discrepancy) || "—", verified: normalizeFinalDiscrepancy(product.final_discrepancy) || "—" },
+    { label: "Check Status", stated: product.status.replace(/_/g, " ") || "—", verified: product.status.replace(/_/g, " ") || "—" },
   ]);
 };
 
@@ -224,8 +233,9 @@ const getProductTableSections = (product, data = {}) => {
   const summaryRows = markSingleValueRows([
     { label: "Mode of Response", stated: product.mode_of_verification || "_", verified: product.mode_of_verification || "_" },
     { label: "Verifier's Comments", stated: product.verifier_comment || "_", verified: product.verifier_comment || "_" },
-    { label: "Final Disposition", stated: product.final_desc || "_", verified: product.final_desc || "_" },
+    { label: "Final Description", stated: product.final_desc || "_", verified: product.final_desc || "_" },
     { label: "Remark", stated: product.remark || "_", verified: product.remark || "_" },
+    { label: "Final Disposition", stated: normalizeFinalDiscrepancy(product.final_discrepancy) || "—", verified: normalizeFinalDiscrepancy(product.final_discrepancy) || "—" },
     { label: "Check Status", stated: product.status || "_", verified: product.status || "_" },
   ]);
 
@@ -237,8 +247,8 @@ const isEmploymentVerificationSummarySection = (section) =>
 
 const DISCREPANCY_LEGEND = [
   { label: "CLEAR", ui: { dot: "#22c55e", bg: "#dcfce7", text: "#166534" }, pdf: { dot: [34, 197, 94], bg: [220, 252, 231], text: [22, 101, 52] } },
-  { label: "MINOR DISCREPANCY", ui: { dot: "#f59e0b", bg: "#fef3c7", text: "#c18833" }, pdf: { dot: [245, 158, 11], bg: [254, 243, 199], text: [146, 64, 14] } },
-  { label: "MAJOR DISCREPANCY", ui: { dot: "#ef4444", bg: "#fee2e2", text: "#a42929" }, pdf: { dot: [239, 68, 68], bg: [254, 226, 226], text: [153, 27, 27] } },
+  { label: "MINOR DISCREPANCY", ui: { dot: "#f59e0b", bg: "#fef3c7", text: "#f9a322" }, pdf: { dot: [245, 158, 11], bg: [254, 243, 199], text: [146, 64, 14] } },
+  { label: "DISCREPANCY", ui: { dot: "#ef4444", bg: "#fee2e2", text: "#a42929" }, pdf: { dot: [239, 68, 68], bg: [254, 226, 226], text: [153, 27, 27] } },
 ];
 
 const normalizeFinalDiscrepancy = (value = "") => {
@@ -249,7 +259,7 @@ const normalizeFinalDiscrepancy = (value = "") => {
 
   if (["CLEAR", "CLEARED"].includes(normalized)) return "CLEAR";
   if (["MINOR", "MINOR DISCREPANCY"].includes(normalized)) return "MINOR DISCREPANCY";
-  if (["DISCREPANCY", "MAJOR", "MAJOR DISCREPANCY"].includes(normalized)) return "MAJOR DISCREPANCY";
+  if (["DISCREPANCY", "MAJOR", "MAJOR DISCREPANCY"].includes(normalized)) return "DISCREPANCY";
   return "";
 };
 
@@ -802,7 +812,7 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     colWidths: overviewColW,
   });
 
-  const statusHeaders = ["Product", "Status", "Final Discrepancy"];
+  const statusHeaders = ["Product", "Status", "Final Disposition"];
   const statusColW = [CW * 0.44, CW * 0.24, CW * 0.32];
   const executiveSummaryStatusRows = products.map((sv) => {
     const discrepancy = normalizeFinalDiscrepancy(sv.final_discrepancy);
@@ -1345,7 +1355,7 @@ const BGVReportPage = () => {
                     <tr>
                       <th style={{ background: "#ff2f8f", color: "#fff", padding: "9px 10px", textAlign: "left", fontWeight: 700, fontSize: 11, border: "1px solid #f7b5d7" }}>Product</th>
                       <th style={{ background: "#ff2f8f", color: "#fff", padding: "9px 10px", textAlign: "left", fontWeight: 700, fontSize: 11, border: "1px solid #f7b5d7" }}>Status</th>
-                      <th style={{ background: "#ff2f8f", color: "#fff", padding: "9px 10px", textAlign: "left", fontWeight: 700, fontSize: 11, border: "1px solid #f7b5d7" }}>Final Discrepancy</th>
+                      <th style={{ background: "#ff2f8f", color: "#fff", padding: "9px 10px", textAlign: "left", fontWeight: 700, fontSize: 11, border: "1px solid #f7b5d7" }}>Final Disposition</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1380,7 +1390,7 @@ const BGVReportPage = () => {
               ? (sv.updatedAt ? new Date(sv.updatedAt).toLocaleDateString("en-IN") : updateDate)
               : "_ _ _";
             const productSections = getProductTableSections(sv, data);
-
+            // console.log("Sections for", svcName, productSections);
             return (
               <div className="rs" key={sv.id}>
                 <SectionDivider title={svcName} />

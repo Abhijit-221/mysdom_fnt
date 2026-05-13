@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 export default function ServiceDetailPage() {
     const {id} = useParams();
     const user = JSON.parse(localStorage.getItem('user'));
-    console.log("Service ID:", id);
+    // console.log("Service ID:", id);
     const navigate = useNavigate();
     const [service, setService] = useState({});
     const [multiservice, setMultiservice] = useState([]);
@@ -26,16 +26,16 @@ export default function ServiceDetailPage() {
         try {
             const res = await axiosInstance.get(`/service/getby/${id}`);
             const serviceData = res?.data?.data || {};
-            console.log("service details data:", serviceData);
+            // console.log("service details data:", serviceData);
             setService(serviceData);
 
             const servicesRespones = await axiosInstance.get(`/service/get`);
             const multiResp = servicesRespones?.data?.data || [];
-            console.log("services data:", multiResp);
+            // console.log("services data:", multiResp);
             setMultiservice(multiResp);
             
-            console.log("servicesData:",serviceData?.moredetails);
-            const mid = Math.ceil(serviceData.moredetails?.extradetailList.length / 2);
+            // console.log("servicesData:",serviceData?.moredetails);
+            const mid = Math.ceil(serviceData?.moredetails?.extradetailList.length / 2);
             setExtradetailSubTitle(serviceData?.moredetails?.extradetailList[0] || "");;
             const firstCol = serviceData?.moredetails?.extradetailList.slice(1, mid);
             const secondCol = serviceData?.moredetails?.extradetailList.slice(mid);
@@ -52,7 +52,7 @@ export default function ServiceDetailPage() {
     };
     useEffect(() => {
         fetchServiceDetails(id);
-    }, []);
+    }, [id]);
     
     
     
@@ -65,7 +65,7 @@ export default function ServiceDetailPage() {
         <div className="banner-overlay" />
         <div className="banner-content">
           <p className="banner-eyebrow" onClick={()=>(navigate('/'))}>Home</p>
-          <h1 className="banner-title">{service.name}</h1>
+          <h1 className="banner-title">{service?.name}</h1>
           <div className="banner-accent" />
         </div>
       </section>
@@ -121,7 +121,7 @@ export default function ServiceDetailPage() {
               <h2 className="service-title">{service.name}</h2>
 
               <p className="service-para">
-                {service.description}
+                {service?.description}
               </p>
               <p className="service-para">
                {service?.moredetails?.detaildescription}
@@ -140,7 +140,7 @@ export default function ServiceDetailPage() {
               </ul>
 
               <h3 className="section-heading">
-                {service.moredetails?.extradetailTitle}
+                {service?.moredetails?.extradetailTitle}
               </h3>
               <p className="service-para">
                 {extradetailSubTitle}
@@ -178,12 +178,12 @@ export default function ServiceDetailPage() {
                       onClick={() => setOpenFaq(openFaq === i ? -1 : i)}
                     >
                       <span className="faq-icon">?</span>
-                      <span>{faq.question}</span>
+                      <span>{faq?.question}</span>
                       <span className="faq-toggle">{openFaq === i ? "−" : "+"}</span>
                     </button>
                     {openFaq === i && (
                       <div className="faq-answer">
-                        <p>{faq.answer}</p>
+                        <p>{faq?.answer}</p>
                       </div>
                     )}
                   </div>
