@@ -4,6 +4,18 @@ import axiosInstance from "../../api/axiosInstance";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
+const EMPTY_SERVICE = {
+    name: "",
+    description: "",
+    moredetails: {
+        detaildescription: "",
+        keybenifits: [],
+        extradetailTitle: "",
+        extradetailList: [],
+        frequentlyaskedquestions: [],
+    },
+};
+
 export default function ServiceDetailPage() {
     const {id} = useParams();
     const user = JSON.parse(localStorage.getItem('user'));
@@ -25,7 +37,15 @@ export default function ServiceDetailPage() {
     const fetchServiceDetails = async (id) => {
         try {
             const res = await axiosInstance.get(`/service/getby/${id}`);
-            const serviceData = res?.data?.data || {};
+            const apiServiceData = res?.data?.data || {};
+            const serviceData = {
+                ...EMPTY_SERVICE,
+                ...apiServiceData,
+                moredetails: {
+                    ...EMPTY_SERVICE.moredetails,
+                    ...(apiServiceData?.moredetails || {}),
+                },
+            };
             // console.log("service details data:", serviceData);
             setService(serviceData);
 
@@ -35,14 +55,21 @@ export default function ServiceDetailPage() {
             setMultiservice(multiResp);
             
             // console.log("servicesData:",serviceData?.moredetails);
-            const mid = Math.ceil(serviceData?.moredetails?.extradetailList.length / 2);
-            setExtradetailSubTitle(serviceData?.moredetails?.extradetailList[0] || "");;
-            const firstCol = serviceData?.moredetails?.extradetailList.slice(1, mid);
-            const secondCol = serviceData?.moredetails?.extradetailList.slice(mid);
+            const extraDetailList = Array.isArray(serviceData?.moredetails?.extradetailList)
+                ? serviceData.moredetails.extradetailList
+                : [];
+            const mid = Math.ceil(extraDetailList.length / 2);
+            setExtradetailSubTitle(extraDetailList[0] || "");
+            const firstCol = extraDetailList.slice(1, mid);
+            const secondCol = extraDetailList.slice(mid);
             setProcessCol1(firstCol);
             setProcessCol2(secondCol);
-            console.log("extradetailSubTitle:", extradetailSubTitle);
-            setFaqs(serviceData?.moredetails?.frequentlyaskedquestions || []);
+            // console.log("extradetailSubTitle:", extradetailSubTitle);
+            setFaqs(
+                Array.isArray(serviceData?.moredetails?.frequentlyaskedquestions)
+                    ? serviceData.moredetails.frequentlyaskedquestions
+                    : []
+            );
 
         }
         catch (err) {
