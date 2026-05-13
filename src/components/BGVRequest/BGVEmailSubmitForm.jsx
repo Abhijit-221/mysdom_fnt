@@ -124,14 +124,35 @@ const validators = {
   },
   address: (form) => {
     const errors = {};
-    if (!form.current_address.trim()) errors.current_address = "Current address is required";
-    if (!form.current_landmark.trim()) errors.current_landmark = "Current landmark is required";
-    // if (!form.current_residency.trim()) errors.current_residency = "Residency status is required";
-    // if (!String(form.current_duration).trim()) errors.current_duration = "Duration of stay is required";
-    if (!form.permanent_address.trim()) errors.permanent_address = "Permanent address is required";
-    if (!form.permanent_landmark.trim()) errors.permanent_landmark = "Permanent landmark is required";
-    // if (!form.permanent_residency.trim()) errors.permanent_residency = "Residency status is required";
-    // if (!String(form.permanent_duration).trim()) errors.permanent_duration = "Duration of stay is required";
+    const hasCurrentAddressBlock = !!(
+      form.current_address.trim() ||
+      form.current_landmark.trim() ||
+      form.current_residency.trim() ||
+      form.current_duration.trim()
+    );
+    const hasPermanentAddressBlock = !!(
+      form.permanent_address.trim() ||
+      form.permanent_landmark.trim() ||
+      form.permanent_residency.trim() ||
+      form.permanent_duration.trim()
+    );
+
+    if (!hasCurrentAddressBlock && !hasPermanentAddressBlock) {
+      errors.current_address = "Enter either current address or permanent address";
+      errors.permanent_address = "Enter either current address or permanent address";
+      return errors;
+    }
+
+    if (hasCurrentAddressBlock) {
+      if (!form.current_address.trim()) errors.current_address = "Current address is required";
+      if (!form.current_landmark.trim()) errors.current_landmark = "Current landmark is required";
+    }
+
+    if (hasPermanentAddressBlock) {
+      if (!form.permanent_address.trim()) errors.permanent_address = "Permanent address is required";
+      if (!form.permanent_landmark.trim()) errors.permanent_landmark = "Permanent landmark is required";
+    }
+
     return errors;
   },
   criminal: (form) => {
@@ -578,15 +599,19 @@ function BGVEmailSubmitForm() {
         {/* ══ ADDRESS ══ */}
         {currentStepKey === "address" && (
           <div className="form-section">
+            <p className="form-section-hint">
+              Fill either the current address or the permanent address. You can also fill both.
+              If you use one address block, complete its required fields.
+            </p>
             <h4>Current Address</h4>
             <div className="form-grid">
               <div className="form-field">
-                <label>Address <span className="req-star">*</span></label>
+                <label>Address</label>
                 <input name="current_address" placeholder="Street, Area" value={form.current_address} onChange={handleChange} className={stepErrors.current_address ? "input-error" : ""} />
                 <FieldError message={stepErrors.current_address} />
               </div>
               <div className="form-field">
-                <label>Landmark <span className="req-star">*</span></label>
+                <label>Landmark</label>
                 <input name="current_landmark" placeholder="Nearest landmark" value={form.current_landmark} onChange={handleChange} className={stepErrors.current_landmark ? "input-error" : ""} />
                 <FieldError message={stepErrors.current_landmark} />
               </div>
@@ -610,14 +635,14 @@ function BGVEmailSubmitForm() {
             <h4>Permanent Address</h4>
             <div className="form-grid">
               <div className="form-field">
-                <label>Address <span className="req-star">*</span></label>
+                <label>Address</label>
                 <input name="permanent_address" placeholder="Street, Area" value={form.permanent_address} onChange={handleChange} className={stepErrors.permanent_address ? "input-error" : ""} />
                 <FieldError message={stepErrors.permanent_address} />
               </div>
               <div className="form-field">
                 <label>Landmark</label>
-                <input name="permanent_landmark" placeholder="Nearest landmark" value={form.permanent_landmark} onChange={handleChange} />
-                {/* <FieldError message={stepErrors.permanent_landmark} /> */}
+                <input name="permanent_landmark" placeholder="Nearest landmark" value={form.permanent_landmark} onChange={handleChange} className={stepErrors.permanent_landmark ? "input-error" : ""} />
+                <FieldError message={stepErrors.permanent_landmark} />
               </div>
               <div className="form-field">
                 <label>Residency Status </label>

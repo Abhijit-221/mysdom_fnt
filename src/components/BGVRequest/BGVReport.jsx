@@ -378,6 +378,14 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
     return dim.w; // already in mm for "mm" unit docs
   };
 
+  const getWrappedLines = (value, maxWidth, { size = 9, bold = false } = {}) => {
+    doc.setFontSize(size);
+    doc.setFont("helvetica", bold ? "bold" : "normal");
+    const safeText = sanitize(value);
+    const lines = maxWidth ? doc.splitTextToSize(safeText, maxWidth) : [safeText];
+    return Array.isArray(lines) && lines.length ? lines : [safeText];
+  };
+
   const checkPage = (needed = 20) => {
     if (y + needed > 282) { doc.addPage(); y = 0; drawHeader(); y += 6; }
   };
@@ -699,17 +707,79 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
   drawHeader();
 
   /* ── Cover card ── */
-  // Dynamic card height keeps all left-column content inside the card.
-  const bh = Math.max(92, 74 + products.length * 6);
+  const halfX = ML + CW * 0.52;
+  const leftTextW = halfX - ML - 12;
+  const rightTextW = ML + CW - halfX - 12;
+  const coverLineGap = 5;
+  const coverWrappedGap = 4.8;
+  const coverSectionGap = 3;
+
+  const leftDetailValues = [
+    data.candidate_name || "â€”",
+    data.candidate_email || "â€”",
+    data.candidate_phone || "â€”",
+    data.gender || "â€”",
+    data.dob || "â€”",
+    data.designation || "",
+    data.department || "",
+  ].filter(Boolean);
+  const leftDetailLines = leftDetailValues.map((value) =>
+    getWrappedLines(value, leftTextW, { size: 11, bold: true })
+  );
+  const packageLines = products.length
+    ? products.flatMap((p) => getWrappedLines(`- ${p.productTitle || "â€”"}`, leftTextW - 2, { size: 8 }))
+    : ["â€”"];
+  const companyLines = data.client?.companyName
+    ? getWrappedLines(data.client.companyName, leftTextW, { size: 8 })
+    : [];
+  const preparedByLines = ["Mysdom", "Bhubaneswar", "www.mysdom.com", "contactus@mysdom.com"]
+    .flatMap((value) => getWrappedLines(value, rightTextW, { size: 8 }));
+
+  const leftHeight =
+    8 +
+    6 +
+    leftDetailLines.reduce((total, lines) => total + lines.length * coverLineGap, 0) +
+    5 +
+    packageLines.length * coverWrappedGap +
+    coverSectionGap +
+    5 +
+    coverLineGap +
+    companyLines.length * coverWrappedGap +
+    8;
+  const rightHeight =
+    8 +
+    6 +
+    preparedByLines.length * coverWrappedGap +
+    8 +
+    5 +
+    5 +
+    8;
+
+  const bh = Math.max(92, leftHeight, rightHeight);
   fill(C.rowAlt); doc.roundedRect(ML, y, CW, bh, 3, 3, "F");
   stroke(C.lightGray); doc.setLineWidth(0.3);
   doc.roundedRect(ML, y, CW, bh, 3, 3, "S");
 
-  const halfX = ML + CW * 0.52;
-
   /* Left column */
   let ly = y + 8;
   txt("FINAL REPORT", ML + 6, ly, { bold: true, size: 7, color: C.green }); ly += 6;
+  leftDetailLines.forEach((lines) => {
+    txt(lines, ML + 6, ly, { bold: true, size: 11, color: C.navy });
+    ly += lines.length * coverLineGap;
+  });
+  txt("PACKAGE OPTED", ML + 6, ly, { bold: true, size: 7, color: C.navy }); ly += 5;
+  packageLines.forEach((line) => {
+    txt(line, ML + 8, ly, { size: 8, color: C.bodyText });
+    ly += coverWrappedGap;
+  });
+  ly += coverSectionGap;
+  txt("DATE OF REQUEST", ML + 6, ly, { bold: true, size: 7, color: C.navy }); ly += 5;
+  txt(reqDate, ML + 6, ly, { size: 8, color: C.bodyText }); ly += coverLineGap;
+  companyLines.forEach((line) => {
+    txt(line, ML + 6, ly, { size: 8, color: C.labelText });
+    ly += coverWrappedGap;
+  });
+  if (false) {
   txt(data.candidate_name || "—", ML + 6, ly, { bold: true, size: 11, color: C.navy }); ly += 7;
   txt(data.candidate_email || "—", ML + 6, ly, { bold: true, size: 11, color: C.navy }); ly += 7;
   txt(data.candidate_phone || "—", ML + 6, ly, { bold: true, size: 11, color: C.navy }); ly += 7;
@@ -730,6 +800,7 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
   if (data.client?.companyName) {
     txt(data.client.companyName, ML + 6, ly, { size: 8, color: C.labelText, maxWidth: halfX - ML - 10 });
   }
+  }
 
   /* Vertical divider */
   stroke(C.lightGray); doc.setLineWidth(0.3);
@@ -739,10 +810,17 @@ function buildPDF(jsPDF, data, base_url, imageCache = {}) {
   const rx = ML + CW - 6;
   let ry = y + 8;
   txt("PREPARED BY", rx, ry, { bold: true, size: 7, color: C.navy, align: "right" }); ry += 6;
+  preparedByLines.forEach((line) => {
+    txt(line, rx, ry, { size: 8, color: C.labelText, align: "right" });
+    ry += coverWrappedGap;
+  });
+  ry += 8;
+  if (false) {
   ["Mysdom", "Bhubaneswar", "www.mysdom.com", "contactus@mysdom.com"].forEach(v => {
     txt(v, rx, ry, { size: 8, color: C.labelText, align: "right" }); ry += 5;
   });
   ry += 8;
+  }
 
   // Report No label + value (left of two-col footer)
   const midRx = halfX + (rx - halfX) / 2 - 4;
@@ -1426,7 +1504,7 @@ const BGVReportPage = () => {
                                 <th
                                   key={head}
                                   style={{
-                                    background: "#ff2f8f",
+                                    background: "#FF61AE",
                                     color: "#fff",
                                     border: "1px solid #1f2937",
                                     textAlign: "left",
@@ -1442,7 +1520,7 @@ const BGVReportPage = () => {
                           <tbody>
                             {section.rows.map((row) => (
                               <tr key={`${section.title || "row"}-${row.label}`}>
-                                <td style={{ background: "#ff2f8f", color: "#fff", border: "1px solid #1f2937", padding: "8px", fontWeight: 600 }}>{row.label}</td>
+                                <td style={{ background: "#FF61AE", color: "#fff", border: "1px solid #1f2937", padding: "8px", fontWeight: 600 }}>{row.label}</td>
                                 <td
                                   colSpan={row.singleValue ? 2 : 1}
                                   style={{ border: "1px solid #1f2937", padding: "8px", color: "#1f2937" }}

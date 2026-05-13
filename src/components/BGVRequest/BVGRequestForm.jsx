@@ -135,10 +135,35 @@ const validators = {
 
   address: (form) => {
     const errors = {};
-    if (!form.current_address.trim()) errors.current_address = "Current address is required";
-    if (!form.current_landmark.trim()) errors.current_landmark = "Current landmark is required";
-    if (!form.permanent_address.trim()) errors.permanent_address = "Permanent address is required";
-    if (!form.permanent_landmark.trim()) errors.permanent_landmark = "Permanent landmark is required";
+    const hasCurrentAddressBlock = !!(
+      form.current_address.trim() ||
+      form.current_landmark.trim() ||
+      form.current_residency.trim() ||
+      form.current_duration.trim()
+    );
+    const hasPermanentAddressBlock = !!(
+      form.permanent_address.trim() ||
+      form.permanent_landmark.trim() ||
+      form.permanent_residency.trim() ||
+      form.permanent_duration.trim()
+    );
+
+    if (!hasCurrentAddressBlock && !hasPermanentAddressBlock) {
+      errors.current_address = "Enter either current address or permanent address";
+      errors.permanent_address = "Enter either current address or permanent address";
+      return errors;
+    }
+
+    if (hasCurrentAddressBlock) {
+      if (!form.current_address.trim()) errors.current_address = "Current address is required";
+      if (!form.current_landmark.trim()) errors.current_landmark = "Current landmark is required";
+    }
+
+    if (hasPermanentAddressBlock) {
+      if (!form.permanent_address.trim()) errors.permanent_address = "Permanent address is required";
+      if (!form.permanent_landmark.trim()) errors.permanent_landmark = "Permanent landmark is required";
+    }
+
     return errors;
   },
 
@@ -829,12 +854,15 @@ function BgvRequestForm() {
         {currentStep === "address" && (
           <div className="form-section">
             <h4>Address Verification</h4>
-            <p className="form-section-hint">Fields marked <span className="req-star">*</span> are mandatory.</p>
+            <p className="form-section-hint">
+              Fill either the current address or the permanent address. You can also fill both.
+              If you use one address block, complete its required fields.
+            </p>
 
             <h5 className="sub-section-title">Current Address</h5>
             <div className="form-grid">
               <div className="form-field">
-                <label>Address <span className="req-star">*</span></label>
+                <label>Address</label>
                 <input
                   name="current_address"
                   placeholder="Street, Area"
@@ -845,7 +873,7 @@ function BgvRequestForm() {
                 <FieldError message={stepErrors.current_address} />
               </div>
               <div className="form-field">
-                <label>Landmark <span className="req-star">*</span></label>
+                <label>Landmark</label>
                 <input
                   name="current_landmark"
                   placeholder="Nearest landmark"
@@ -877,7 +905,7 @@ function BgvRequestForm() {
             <h5 className="sub-section-title">Permanent Address</h5>
             <div className="form-grid">
               <div className="form-field">
-                <label>Address <span className="req-star">*</span></label>
+                <label>Address</label>
                 <input
                   name="permanent_address"
                   placeholder="Street, Area"
@@ -888,7 +916,7 @@ function BgvRequestForm() {
                 <FieldError message={stepErrors.permanent_address} />
               </div>
               <div className="form-field">
-                <label>Landmark <span className="req-star">*</span></label>
+                <label>Landmark</label>
                 <input
                   name="permanent_landmark"
                   placeholder="Nearest landmark"
