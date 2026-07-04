@@ -1,125 +1,245 @@
-import React, { useEffect } from "react";
-import "./footer.css";
+import React, { useEffect, useState } from "react";
+import {
+    Box,
+    Container,
+    Grid,
+    Typography,
+    Stack,
+    IconButton,
+    Divider,
+    GlobalStyles,
+} from "@mui/material";
 import { PiLinkedinLogo } from "react-icons/pi";
 import { BsTwitter } from "react-icons/bs";
-import axiosInstance from "../api/axiosInstance";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import CallOutlinedIcon from "@mui/icons-material/CallOutlined";
+import MailOutlineRoundedIcon from "@mui/icons-material/MailOutlineRounded";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify"; // was referenced but not imported in the original file
+import axiosInstance from "../api/axiosInstance";
+
+// ── Theme tokens (brand-locked) ──
+const INK = "#0B2B33";
+const INK_SOFT = "#123B45";
+const AMBER = "#F2A65A";
 
 const Footer = () => {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
+    const [services, setServices] = useState([]);
 
-  const [services,setServices] = React.useState([]);
-  useEffect(()=>{
-    // fetch services
-    const fetchServices = async () => {
-      try {
-        const res = await axiosInstance.get("/service/get", {
-        });
-        const serviceData = res?.data?.data || [];
-        console.log("services res:", res);
-        setServices(serviceData);
-      } catch (err) {
-        toast.error(err.response?.data?.message || "Failed to load Services");
-      }
-    };
-    fetchServices();
-  },[]);
-  return (
-    <footer className="footer" id="contact">
-      <div className="footer-top">
-        {/* Company Info */}
-        <div className="footer-column company">
-          <h2 className="footer-logo">
-            <span className="logo-green">About</span>
-            <span className="logo-pink"> Us</span>
-          </h2>
-          <p>
-            At Mysdom, we thrive to help our client’s
-            business grow by providing expert consulting,
-            tailored hiring through our Smart screening solutions
-            which is at par with industry standard background verification services.
-          </p>
-          <div className="footer-social">
-            <a href="#" className="social-icon">
-              <BsTwitter size={18} />
-            </a>
-            <a href="https://www.linkedin.com/company/mysdom/" className="social-icon">
-              <PiLinkedinLogo size={18} />
-            </a>
-          </div>
-          {/* <p>📧 contact@mysdom.com</p>
-          <p>📞 +91 7077669661</p>
-          <p>
-            📍 Plot No.89, State Bank of India complex,
-            Satya Nagar, Bhubaneswar, Odisha, India
-          </p> */}
-        </div>
-
-        {/* Services */}
-        <div className="footer-column">
-          <h4>Services</h4>
-          <ul>
-            {
-              services.map((service) => (
-                <li key={service.id} onClick={()=>navigate(`/service/detail/${service.id}`)}>{service.name}</li>
-              ))
+    useEffect(() => {
+        const fetchServices = async () => {
+            try {
+                const res = await axiosInstance.get("/service/get", {});
+                const serviceData = res?.data?.data || [];
+                console.log("services res:", res);
+                setServices(serviceData);
+            } catch (err) {
+                toast.error(err.response?.data?.message || "Failed to load Services");
             }
-            {/* <li>Regular Employee Verification</li>
-            <li>Contractual Verification</li>
-            <li>Third-Party Verification</li>
-            <li>Tenant Verification</li>
-            <li>Individual Verification</li> */}
-            {/* <li>Reference Checks</li> */}
-          </ul>
-        </div>
+        };
+        fetchServices();
+    }, []);
 
-        {/* Industries */}
-        {/* <div className="footer-column">
-          <h4>Industries</h4>
-          <ul>
-            <li>IT & Technology</li>
-            <li>Banking & Finance</li>
-            <li>Healthcare</li>
-            <li>E-commerce</li>
-            <li>Manufacturing</li>
-            <li>Education</li>
-          </ul>
-        </div> */}
+    return (
+        <>
+            <GlobalStyles
+                styles={{
+                    "@import":
+                        "url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&display=swap')",
+                }}
+            />
+            <Box
+                component="footer"
+                id="contact"
+                sx={{
+                    position: "relative",
+                    bgcolor: INK,
+                    background: `linear-gradient(160deg, ${INK} 0%, ${INK_SOFT} 100%)`,
+                    color: "rgba(255,255,255,0.85)",
+                    fontFamily: "'Inter', sans-serif",
+                    overflow: "hidden",
+                    pt: { xs: 7, md: 9 },
+                }}
+            >
+                {/* signature glow, echoes the contact panel above it on the page */}
+                <Box
+                    sx={{
+                        position: "absolute",
+                        top: -120,
+                        left: "8%",
+                        width: 320,
+                        height: 320,
+                        borderRadius: "50%",
+                        background: `radial-gradient(circle, ${AMBER} 0%, rgba(242,166,90,0) 70%)`,
+                        opacity: 0.14,
+                        pointerEvents: "none",
+                    }}
+                />
 
-        {/* Company */}
-        <div className="footer-column">
-          <h4>Contact Details</h4>
-          <ul>
-            <li>📍 Plot No.89, State Bank of India Complex, Satya Nagar, Bhubaneswar- 751007</li>
-            <li>📞 +91 7077669661</li>
-            <li>📧 contactus@mysdom.com</li>
-            {/* <li>Contact Us</li>
-            <li>Privacy Policy</li>
-            <li>Terms of Service</li> */}
-          </ul>
-        </div>
+                <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
+                    <Grid container spacing={{ xs: 5, md: 4 }}>
+                        {/* ── Company / About ── */}
+                        <Grid item xs={12} md={4}>
+                            <Typography
+                                sx={{
+                                    fontFamily: "'Fraunces', serif",
+                                    fontWeight: 600,
+                                    fontSize: 22,
+                                    color: "#fff",
+                                    mb: 2,
+                                }}
+                            >
+                                About <Box component="span" sx={{ color: AMBER }}>Us</Box>
+                            </Typography>
+                            <Typography
+                                sx={{
+                                    fontSize: 14.5,
+                                    lineHeight: 1.7,
+                                    color: "rgba(255,255,255,0.6)",
+                                    maxWidth: 340,
+                                }}
+                            >
+                                At Mysdom, we thrive to help our clients' business grow by
+                                providing expert consulting and tailored hiring through our
+                                Smart Screening solutions — at par with industry-standard
+                                background verification services.
+                            </Typography>
 
-        {/* Resources */}
-        {/* <div className="footer-column">
-          <h4>Resources</h4>
-          <ul>
-            <li>Blog</li>
-            <li>Case Studies</li>
-            <li>Webinars</li>
-            <li>eBooks</li>
-            <li>Help Center</li>
-            <li>API Documentation</li>
-          </ul>
-        </div> */}
-      </div>
+                            <Stack direction="row" spacing={1.25} sx={{ mt: 3.5 }}>
+                                <IconButton
+                                    component="a"
+                                    href="#"
+                                    size="small"
+                                    disableRipple
+                                    sx={{
+                                        width: 38,
+                                        height: 38,
+                                        color: "#fff",
+                                        border: "1px solid rgba(255,255,255,0.18)",
+                                        "&:hover": { bgcolor: "transparent" },
+                                    }}
+                                >
+                                    <BsTwitter size={15} />
+                                </IconButton>
+                                <IconButton
+                                    component="a"
+                                    href="https://www.linkedin.com/company/mysdom/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    size="small"
+                                    disableRipple
+                                    sx={{
+                                        width: 38,
+                                        height: 38,
+                                        color: "#fff",
+                                        border: "1px solid rgba(255,255,255,0.18)",
+                                        "&:hover": { bgcolor: "transparent" },
+                                    }}
+                                >
+                                    <PiLinkedinLogo size={16} />
+                                </IconButton>
+                            </Stack>
+                        </Grid>
 
-      <div className="footer-bottom">
-        <p>
-          Copyright 2024 Mysdom - All Rights Reserved
-        </p>
-      </div>
-    </footer>
-  );
+                        {/* ── Services (dynamic) ── */}
+                        <Grid item xs={12} sm={6} md={3}>
+                            <Typography
+                                sx={{
+                                    fontSize: 12.5,
+                                    fontWeight: 600,
+                                    letterSpacing: "0.14em",
+                                    color: AMBER,
+                                    mb: 2.5,
+                                }}
+                            >
+                                SERVICES
+                            </Typography>
+                            <Stack spacing={1.4} component="ul" sx={{ listStyle: "none", p: 0, m: 0 }}>
+                                {services.length > 0 ? (
+                                    services.map((service) => (
+                                        <Typography
+                                            key={service.id}
+                                            component="li"
+                                            onClick={() => navigate(`/service/detail/${service.id}`)}
+                                            sx={{
+                                                fontSize: 14.5,
+                                                color: "rgba(255,255,255,0.65)",
+                                                cursor: "pointer",
+                                                width: "fit-content",
+                                            }}
+                                        >
+                                            {service.name}
+                                        </Typography>
+                                    ))
+                                ) : (
+                                    <Typography sx={{ fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
+                                        Loading services…
+                                    </Typography>
+                                )}
+                            </Stack>
+                        </Grid>
+
+                        {/* ── Contact Details ── */}
+                        <Grid item xs={12} sm={6} md={5}>
+                            <Typography
+                                sx={{
+                                    fontSize: 12.5,
+                                    fontWeight: 600,
+                                    letterSpacing: "0.14em",
+                                    color: AMBER,
+                                    mb: 2.5,
+                                }}
+                            >
+                                CONTACT DETAILS
+                            </Typography>
+                            <Stack spacing={2}>
+                                <Stack direction="row" spacing={1.5} alignItems="flex-start">
+                                    <LocationOnOutlinedIcon sx={{ color: AMBER, fontSize: 20, mt: 0.2 }} />
+                                    <Typography sx={{ fontSize: 14.5, color: "rgba(255,255,255,0.7)", lineHeight: 1.6 }}>
+                                        Plot No. 89, State Bank of India Complex, Satya Nagar,
+                                        Bhubaneswar – 751007
+                                    </Typography>
+                                </Stack>
+                                <Stack direction="row" spacing={1.5} alignItems="center">
+                                    <CallOutlinedIcon sx={{ color: AMBER, fontSize: 20 }} />
+                                    <Typography sx={{ fontSize: 14.5, color: "rgba(255,255,255,0.7)" }}>
+                                        +91 7077669661
+                                    </Typography>
+                                </Stack>
+                                <Stack direction="row" spacing={1.5} alignItems="center">
+                                    <MailOutlineRoundedIcon sx={{ color: AMBER, fontSize: 20 }} />
+                                    <Typography sx={{ fontSize: 14.5, color: "rgba(255,255,255,0.7)" }}>
+                                        contactus@mysdom.com
+                                    </Typography>
+                                </Stack>
+                            </Stack>
+                        </Grid>
+                    </Grid>
+                </Container>
+
+                <Divider sx={{ borderColor: "rgba(255,255,255,0.1)", mt: { xs: 6, md: 7 } }} />
+
+                <Container maxWidth="lg">
+                    <Box
+                        sx={{
+                            py: 2.75,
+                            display: "flex",
+                            flexDirection: { xs: "column", sm: "row" },
+                            gap: 1,
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                        }}
+                    >
+                        <Typography sx={{ fontSize: 13, color: "rgba(255,255,255,0.45)" }}>
+                            Copyright 2024 Mysdom — All Rights Reserved
+                        </Typography>
+                        <Box sx={{ width: 28, height: 2, bgcolor: AMBER, opacity: 0.6 }} />
+                    </Box>
+                </Container>
+            </Box>
+        </>
+    );
 };
 
 export default Footer;
