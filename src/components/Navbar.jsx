@@ -1,7 +1,6 @@
 import React, { useContext, useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { keyframes } from "@emotion/react";
 
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
@@ -20,6 +19,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 import Fade from "@mui/material/Fade";
 import Slide from "@mui/material/Slide";
+import GlobalStyles from "@mui/material/GlobalStyles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import useScrollTrigger from "@mui/material/useScrollTrigger";
 import { useTheme } from "@mui/material/styles";
@@ -29,6 +29,10 @@ import CloseIcon from "@mui/icons-material/Close";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
+// ── Brand-locked tokens ──
+const INK = "#0B2B33";
+const AMBER = "#F2A65A";
+
 const NAV_LINKS = [
   { label: "Home", path: "/" },
   { label: "About Us", path: "/about" },
@@ -36,24 +40,6 @@ const NAV_LINKS = [
   { label: "Product", path: "/product" },
   { label: "Contact Us", path: "/contact" },
 ];
-
-/* ---- Keyframes ---- */
-const shimmer = keyframes`
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-`;
-
-const pulseRing = keyframes`
-  0% { box-shadow: 0 0 0 0 rgba(242, 166, 90, 0.55); }
-  70% { box-shadow: 0 0 0 8px rgba(242, 166, 90, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(242, 166, 90, 0); }
-`;
-
-const dropIn = keyframes`
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
 
 /* Hides the AppBar on scroll-down, reveals on scroll-up */
 function HideOnScroll({ children }) {
@@ -65,7 +51,59 @@ function HideOnScroll({ children }) {
   );
 }
 
-/* Nav link with animated center-out underline */
+/* ── Wordmark logo: monogram badge + "MYSDOM" ── */
+const Logo = ({ onClick, light = false }) => (
+  <Box
+    onClick={onClick}
+    sx={{
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      gap: 1.1,
+      transition: "opacity 0.2s ease",
+      "&:hover": { opacity: 0.85 },
+    }}
+  >
+    <Box
+      sx={{
+        width: 38,
+        height: 38,
+        borderRadius: "10px",
+        bgcolor: light ? AMBER : INK,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}
+    >
+      <Typography
+        sx={{
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontWeight: 800,
+          fontSize: 18,
+          lineHeight: 1,
+          color: light ? INK : AMBER,
+        }}
+      >
+        M
+      </Typography>
+    </Box>
+    <Typography
+      sx={{
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        fontWeight: 800,
+        fontSize: 21,
+        letterSpacing: "-0.01em",
+        color: light ? "#fff" : INK,
+      }}
+    >
+      MYS
+      <Box component="span" sx={{ color: AMBER }}>DOM</Box>
+    </Typography>
+  </Box>
+);
+
+/* Nav link with a quiet underline that slides in on hover/active */
 const NavLink = ({ label, onClick, active }) => (
   <Box
     onClick={onClick}
@@ -76,9 +114,9 @@ const NavLink = ({ label, onClick, active }) => (
       cursor: "pointer",
       fontWeight: 500,
       fontSize: "0.95rem",
-      color: active ? "#0B2B33" : "rgba(11,43,51,0.75)",
-      transition: "color 0.25s ease",
-      "&:hover": { color: "#0B2B33" },
+      color: active ? INK : "rgba(11,43,51,0.65)",
+      transition: "color 0.2s ease",
+      "&:hover": { color: INK },
       "&::after": {
         content: '""',
         position: "absolute",
@@ -86,11 +124,11 @@ const NavLink = ({ label, onClick, active }) => (
         bottom: 2,
         transform: active ? "translateX(-50%) scaleX(1)" : "translateX(-50%) scaleX(0)",
         transformOrigin: "center",
-        width: "70%",
+        width: "60%",
         height: 2,
         borderRadius: 2,
-        background: "linear-gradient(90deg, #F2A65A, #0B2B33)",
-        transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        bgcolor: AMBER,
+        transition: "transform 0.25s ease",
       },
       "&:hover::after": {
         transform: "translateX(-50%) scaleX(1)",
@@ -123,90 +161,94 @@ const Navbar = () => {
 
   return (
     <>
+      <GlobalStyles
+        styles={{
+          "@import":
+            "url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap')",
+        }}
+      />
+
       {/* Utility strip */}
-      <Fade in timeout={500}>
-        <Box
-          sx={{
-            bgcolor: "#0B2B33",
-            color: "rgba(255,255,255,0.85)",
-            fontSize: "0.8rem",
-          }}
-        >
-          <Container >
+      <Box
+        sx={{
+          bgcolor: INK,
+          color: "rgba(255,255,255,0.8)",
+          fontSize: "0.8rem",
+        }}
+      >
+        <Container>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              minHeight: 36,
+            }}
+          >
             <Box
+              onClick={() => go("/contact")}
               sx={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "space-between",
-                minHeight: 36,
+                gap: 0.5,
+                cursor: "pointer",
+                "&:hover": { color: AMBER },
+                transition: "color 0.2s ease",
               }}
             >
-              <Box
-                onClick={() => go("/contact")}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                  cursor: "pointer",
-                  position: "relative",
-                  "&:hover": { color: "#F2A65A" },
-                  transition: "color 0.2s ease",
-                }}
-              >
-                <Typography variant="body2">Get Help</Typography>
-              </Box>
+              <Typography variant="body2">Get Help</Typography>
+            </Box>
 
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                {user ? (
-                  <>
-                    <Box
-                      onClick={() => go(`/users/${user.id}`)}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 0.75,
-                        cursor: "pointer",
-                        "&:hover": { color: "#fff" },
-                        transition: "color 0.2s ease",
-                      }}
-                    >
-                      <AccountCircleIcon sx={{ fontSize: 18 }} />
-                      <Typography variant="body2">{user.username}</Typography>
-                    </Box>
-                    <Button
-                      onClick={logout}
-                      size="small"
-                      sx={{
-                        color: "rgba(255,255,255,0.85)",
-                        textTransform: "none",
-                        minWidth: "auto",
-                        px: 1,
-                        "&:hover": { color: "#F2A65A", bgcolor: "transparent" },
-                      }}
-                    >
-                      Logout
-                    </Button>
-                  </>
-                ) : (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              {user ? (
+                <>
+                  <Box
+                    onClick={() => go(`/users/${user.id}`)}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 0.75,
+                      cursor: "pointer",
+                      "&:hover": { color: "#fff" },
+                      transition: "color 0.2s ease",
+                    }}
+                  >
+                    <AccountCircleIcon sx={{ fontSize: 18 }} />
+                    <Typography variant="body2">{user.username}</Typography>
+                  </Box>
                   <Button
-                    onClick={() => go("/login")}
+                    onClick={logout}
                     size="small"
                     sx={{
-                      color: "rgba(255,255,255,0.85)",
+                      color: "rgba(255,255,255,0.8)",
                       textTransform: "none",
                       minWidth: "auto",
                       px: 1,
-                      "&:hover": { color: "#F2A65A", bgcolor: "transparent" },
+                      "&:hover": { color: AMBER, bgcolor: "transparent" },
                     }}
                   >
-                    Login
+                    Logout
                   </Button>
-                )}
-              </Box>
+                </>
+              ) : (
+                <Button
+                  onClick={() => go("/login")}
+                  size="small"
+                  sx={{
+                    color: "rgba(255,255,255,0.8)",
+                    textTransform: "none",
+                    minWidth: "auto",
+                    px: 1,
+                    "&:hover": { color: AMBER, bgcolor: "transparent" },
+                  }}
+                >
+                  Login
+                </Button>
+              )}
             </Box>
-          </Container>
-        </Box>
-      </Fade>
+          </Box>
+        </Container>
+      </Box>
 
       {/* Main nav */}
       <HideOnScroll>
@@ -214,28 +256,17 @@ const Navbar = () => {
           position="sticky"
           elevation={0}
           sx={{
-            bgcolor: "rgba(255,255,255,0.85)",
+            bgcolor: "rgba(255,255,255,0.92)",
             backdropFilter: "blur(10px)",
             borderBottom: "1px solid rgba(11,43,51,0.08)",
-            color: "#0B2B33",
-            transition: "box-shadow 0.3s ease",
+            color: INK,
           }}
         >
-          <Container >
-            <Toolbar disableGutters sx={{ minHeight: 72, transition: "min-height 0.25s ease" }}>
+          <Container>
+            <Toolbar disableGutters sx={{ minHeight: 72 }}>
               {/* Logo */}
-              <Box
-                onClick={() => go("/")}
-                sx={{
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  flexGrow: { xs: 1, md: 0 },
-                  transition: "transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                  "&:hover": { transform: "scale(1.06) rotate(-1deg)" },
-                }}
-              >
-                <img src="/logo.png" alt="Logo" style={{ height: 36 }} />
+              <Box sx={{ flexGrow: { xs: 1, md: 0 } }}>
+                <Logo onClick={() => go("/")} />
               </Box>
 
               {/* Desktop links */}
@@ -266,22 +297,19 @@ const Navbar = () => {
                     <Button
                       onClick={() => go("/contact")}
                       variant="contained"
+                      disableElevation
                       sx={{
                         textTransform: "none",
                         fontWeight: 600,
-                        color: "#0B2B33",
+                        color: INK,
+                        bgcolor: AMBER,
                         px: 2.75,
                         py: 1,
-                        borderRadius: 2.5,
-                        boxShadow: "0 4px 14px rgba(242,166,90,0.4)",
-                        backgroundImage:
-                          "linear-gradient(120deg, #F2A65A 0%, #FFCB8E 25%, #F2A65A 50%, #FFCB8E 75%, #F2A65A 100%)",
-                        backgroundSize: "200% 100%",
-                        animation: `${shimmer} 5s ease infinite`,
-                        transition: "transform 0.25s ease, box-shadow 0.25s ease",
+                        borderRadius: 2,
+                        transition: "background-color 0.2s ease, box-shadow 0.2s ease",
                         "&:hover": {
-                          transform: "translateY(-2px) scale(1.03)",
-                          boxShadow: "0 8px 20px rgba(242,166,90,0.55)",
+                          bgcolor: "#E4934A",
+                          boxShadow: "0 6px 16px rgba(242,166,90,0.35)",
                         },
                       }}
                     >
@@ -296,16 +324,15 @@ const Navbar = () => {
                         sx={{
                           p: 0.5,
                           borderRadius: 3,
-                          transition: "background-color 0.2s ease",
+                          "&:hover": { bgcolor: "rgba(11,43,51,0.05)" },
                         }}
                       >
                         <Avatar
                           sx={{
                             width: 34,
                             height: 34,
-                            bgcolor: "#0B2B33",
+                            bgcolor: INK,
                             fontSize: 14,
-                            animation: `${pulseRing} 2.4s infinite`,
                           }}
                         >
                           {user.username?.[0]?.toUpperCase()}
@@ -314,8 +341,8 @@ const Navbar = () => {
                           sx={{
                             fontSize: 18,
                             ml: 0.3,
-                            color: "#0B2B33",
-                            transition: "transform 0.25s ease",
+                            color: INK,
+                            transition: "transform 0.2s ease",
                             transform: profileMenuOpen ? "rotate(180deg)" : "rotate(0deg)",
                           }}
                         />
@@ -345,9 +372,8 @@ const Navbar = () => {
                 <IconButton
                   onClick={() => setDrawerOpen(true)}
                   sx={{
-                    color: "#0B2B33",
-                    transition: "transform 0.25s ease",
-                    "&:hover": { transform: "rotate(90deg)" },
+                    color: INK,
+                    "&:hover": { bgcolor: "rgba(11,43,51,0.05)" },
                   }}
                 >
                   <MenuIcon />
@@ -363,45 +389,37 @@ const Navbar = () => {
         anchor="right"
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        PaperProps={{ sx: { width: 280, bgcolor: "#0B2B33", color: "#fff" } }}
+        PaperProps={{ sx: { width: 280, bgcolor: INK, color: "#fff" } }}
       >
-        <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1.5 }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 2 }}>
+          <Logo onClick={() => go("/")} light />
           <IconButton
             onClick={() => setDrawerOpen(false)}
-            sx={{
-              color: "#fff",
-              transition: "transform 0.25s ease",
-              "&:hover": { transform: "rotate(90deg)" },
-            }}
+            sx={{ color: "#fff", "&:hover": { bgcolor: "rgba(255,255,255,0.08)" } }}
           >
             <CloseIcon />
           </IconButton>
         </Box>
 
         {user && (
-          <Fade in timeout={400}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, pb: 2 }}>
-              <Avatar sx={{ bgcolor: "#F2A65A", color: "#0B2B33", animation: `${pulseRing} 2.4s infinite` }}>
-                {user.username?.[0]?.toUpperCase()}
-              </Avatar>
-              <Typography sx={{ fontWeight: 600 }}>{user.username}</Typography>
-            </Box>
-          </Fade>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, pb: 2 }}>
+            <Avatar sx={{ bgcolor: AMBER, color: INK }}>
+              {user.username?.[0]?.toUpperCase()}
+            </Avatar>
+            <Typography sx={{ fontWeight: 600 }}>{user.username}</Typography>
+          </Box>
         )}
 
         <Divider sx={{ borderColor: "rgba(255,255,255,0.15)" }} />
 
         <List>
-          {NAV_LINKS.map((link, i) => (
+          {NAV_LINKS.map((link) => (
             <ListItemButton
               key={link.path}
               onClick={() => go(link.path)}
               sx={{
-                opacity: 0,
-                animation: `${dropIn} 0.4s ease forwards`,
-                animationDelay: `${i * 60}ms`,
-                "&:hover": { bgcolor: "rgba(242,166,90,0.12)", pl: 2.5 },
-                transition: "padding-left 0.2s ease, background-color 0.2s ease",
+                "&:hover": { bgcolor: "rgba(242,166,90,0.12)" },
+                transition: "background-color 0.2s ease",
               }}
             >
               <ListItemText primary={link.label} />
@@ -413,11 +431,8 @@ const Navbar = () => {
               <ListItemButton
                 onClick={() => go("/clients")}
                 sx={{
-                  opacity: 0,
-                  animation: `${dropIn} 0.4s ease forwards`,
-                  animationDelay: `${NAV_LINKS.length * 60}ms`,
-                  "&:hover": { bgcolor: "rgba(242,166,90,0.12)", pl: 2.5 },
-                  transition: "padding-left 0.2s ease, background-color 0.2s ease",
+                  "&:hover": { bgcolor: "rgba(242,166,90,0.12)" },
+                  transition: "background-color 0.2s ease",
                 }}
               >
                 <ListItemText primary="Clients" />
@@ -425,11 +440,8 @@ const Navbar = () => {
               <ListItemButton
                 onClick={() => go("/manage-users")}
                 sx={{
-                  opacity: 0,
-                  animation: `${dropIn} 0.4s ease forwards`,
-                  animationDelay: `${(NAV_LINKS.length + 1) * 60}ms`,
-                  "&:hover": { bgcolor: "rgba(242,166,90,0.12)", pl: 2.5 },
-                  transition: "padding-left 0.2s ease, background-color 0.2s ease",
+                  "&:hover": { bgcolor: "rgba(242,166,90,0.12)" },
+                  transition: "background-color 0.2s ease",
                 }}
               >
                 <ListItemText primary="Manage Users" />
@@ -445,17 +457,14 @@ const Navbar = () => {
             <Button
               onClick={() => go("/contact")}
               variant="contained"
+              disableElevation
               fullWidth
               sx={{
                 textTransform: "none",
                 fontWeight: 600,
-                color: "#0B2B33",
-                backgroundImage:
-                  "linear-gradient(120deg, #F2A65A 0%, #FFCB8E 25%, #F2A65A 50%, #FFCB8E 75%, #F2A65A 100%)",
-                backgroundSize: "200% 100%",
-                animation: `${shimmer} 5s ease infinite`,
-                "&:hover": { transform: "scale(1.02)" },
-                transition: "transform 0.2s ease",
+                color: INK,
+                bgcolor: AMBER,
+                "&:hover": { bgcolor: "#E4934A" },
               }}
             >
               Talk to sales

@@ -1,372 +1,563 @@
-import React, { useState } from "react";
-import {
-    Box,
-    Grid,
-    Paper,
-    TextField,
-    Button,
-    Typography,
-    Alert,
-    Collapse,
-    CircularProgress,
-    Avatar,
-    Stack,
-    GlobalStyles,
-} from "@mui/material";
-import CallIcon from "@mui/icons-material/CallOutlined";
-import MailIcon from "@mui/icons-material/MailOutlineRounded";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForwardRounded";
-import HandshakeIcon from "@mui/icons-material/HandshakeRounded";
+import React, { useEffect, useState } from "react";
+import { keyframes } from "@emotion/react";
 import axiosInstance from "../../api/axiosInstance";
 
-// ── Theme tokens (do not change — client brand colors) ──
-const INK = "#0B2B33";   // deep teal — grounding, authority
-const AMBER = "#F2A65A"; // warm amber — signal, accent
-const CREAM = "#FBF6EF"; // paper background
-const INK_SOFT = "#123B45"; // lighter teal for panel gradient
-const MUTED = "#5C7178"; // muted teal-grey for secondary text
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
+import InputAdornment from "@mui/material/InputAdornment";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import {
+  Phone,
+  Mail,
+  CheckCircle2,
+  XCircle,
+  ArrowRight,
+  User,
+  Tag,
+  MessageSquare,
+} from "lucide-react";
+
+/* ---- Keyframes ---- */
+const swingInLeft = keyframes`
+  from { opacity: 0; transform: perspective(1200px) rotateY(35deg) translateX(-40px); }
+  to { opacity: 1; transform: perspective(1200px) rotateY(0deg) translateX(0); }
+`;
+
+const swingInRight = keyframes`
+  from { opacity: 0; transform: perspective(1200px) rotateY(-35deg) translateX(40px); }
+  to { opacity: 1; transform: perspective(1200px) rotateY(0deg) translateX(0); }
+`;
+
+const sweep = keyframes`
+  from { transform: translateX(-120%) skewX(-20deg); }
+  to { transform: translateX(220%) skewX(-20deg); }
+`;
+
+const fadeUp = keyframes`
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
+const shimmer = keyframes`
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+`;
+
+const shake = keyframes`
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+`;
+
+const pulseDot = keyframes`
+  0%, 100% { box-shadow: 0 0 0 0 rgba(242,166,90,0.55); }
+  70% { box-shadow: 0 0 0 6px rgba(242,166,90,0); }
+`;
+
+const floatBlob = keyframes`
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(16px, -22px); }
+`;
+
+const PANEL_DURATION = 700;
+const SWEEP_DELAY = PANEL_DURATION + 150;
+const CONTENT_START = PANEL_DURATION * 0.55;
 
 const fieldSx = {
-    "& .MuiOutlinedInput-root": {
-        borderRadius: "10px",
-        backgroundColor: "#FFFFFF",
-        "& fieldset": { borderColor: "rgba(11,43,51,0.15)" },
-        "&:hover fieldset": { borderColor: AMBER },
-        "&.Mui-focused fieldset": { borderColor: AMBER, borderWidth: "2px" },
-    },
-    "& .MuiInputLabel-root.Mui-focused": { color: INK },
+  "& .MuiOutlinedInput-root": {
+    borderRadius: 2.5,
+    bgcolor: "#fff",
+    transition: "box-shadow 0.25s ease, transform 0.2s ease",
+    "& fieldset": { borderColor: "rgba(11,43,51,0.15)" },
+    "&:hover fieldset": { borderColor: "rgba(11,43,51,0.3)" },
+    "&.Mui-focused fieldset": { borderColor: "#F2A65A", borderWidth: 2 },
+    "&.Mui-focused": { boxShadow: "0 0 0 4px rgba(242,166,90,0.15)" },
+  },
 };
 
 const ContactSection = () => {
-    const [form, setForm] = useState({
-        fullName: "",
-        email: "",
-        subject: "",
-        message: "",
-    });
-    const [status, setStatus] = useState("idle"); // idle | loading | success | error
-    const [errorMsg, setErrorMsg] = useState("");
+  const [form, setForm] = useState({
+    fullName: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+  const [status, setStatus] = useState("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [showSweep, setShowSweep] = useState(false);
 
-    const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    };
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSweep(true), SWEEP_DELAY);
+    return () => clearTimeout(timer);
+  }, []);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-        const { fullName, email, subject, message } = form;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const { fullName, email, subject, message } = form;
 
-        if (!fullName || !email || !subject || !message) {
-            setErrorMsg("Please fill in all fields.");
-            setStatus("error");
-            return;
-        }
+    if (!fullName || !email || !subject || !message) {
+      setErrorMsg("Please fill in all fields.");
+      setStatus("error");
+      return;
+    }
 
-        setStatus("loading");
-        setErrorMsg("");
+    setStatus("loading");
+    setErrorMsg("");
 
-        try {
-            const response = await axiosInstance.post("/mail/send", { fullName, email, subject, message });
-            const data = response.data;
+    try {
+      const response = await axiosInstance.post("/mail/send", { fullName, email, subject, message });
+      const data = response.data;
 
-            if (data.success === true) {
-                setStatus("success");
-                setForm({ fullName: "", email: "", subject: "", message: "" });
-                setTimeout(() => setStatus("idle"), 5000);
-            } else {
-                setErrorMsg(data.error || "Something went wrong. Please try again.");
-                setStatus("error");
-            }
-        } catch (err) {
-            console.log("Error sending contact form:", err);
-            setErrorMsg("Unable to reach the server. Please try again later.");
-            setStatus("error");
-        }
-    };
+      if (data.success === true) {
+        setStatus("success");
+        setForm({ fullName: "", email: "", subject: "", message: "" });
+        setTimeout(() => setStatus("idle"), 5000);
+      } else {
+        setErrorMsg(data.error || "Something went wrong. Please try again.");
+        setStatus("error");
+      }
+    } catch (err) {
+      console.log("Error sending contact form:", err);
+      setErrorMsg("Unable to reach the server. Please try again later.");
+      setStatus("error");
+    }
+  };
 
-    return (
-        <>
-            <GlobalStyles
-                styles={{
-                    "@import": "url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap')",
+  return (
+    <Box component="section" sx={{ py: { xs: 8, md: 11 }, bgcolor: "#F7FAFA" }}>
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            position: "relative",
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            borderRadius: 5,
+            overflow: "hidden",
+            boxShadow: "0 30px 70px rgba(11,43,51,0.15)",
+            perspective: "1200px",
+          }}
+        >
+          {showSweep && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "35%",
+                height: "160%",
+                background:
+                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)",
+                animation: `${sweep} 1.1s ease-out forwards`,
+                zIndex: 5,
+                pointerEvents: "none",
+              }}
+            />
+          )}
+
+          {/* LEFT — form */}
+          <Box
+            sx={{
+              flex: 1.1,
+              bgcolor: "#fff",
+              p: { xs: 4, md: 6 },
+              position: "relative",
+              transformOrigin: "left center",
+              opacity: 0,
+              animation: `${swingInLeft} ${PANEL_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1) forwards`,
+            }}
+          >
+            <Box
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 1,
+                mb: 1.25,
+                opacity: 0,
+                animation: `${fadeUp} 0.5s ease ${CONTENT_START}ms forwards`,
+              }}
+            >
+              <Box
+                sx={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: "50%",
+                  bgcolor: "#F2A65A",
+                  animation: `${pulseDot} 2s ease infinite`,
                 }}
+              />
+              <Typography
+                sx={{ fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.12em", color: "#F2A65A" }}
+              >
+                GET IN TOUCH
+              </Typography>
+            </Box>
+
+            <Typography
+              variant="h2"
+              sx={{
+                fontSize: { xs: "1.7rem", md: "2.1rem" },
+                fontWeight: 700,
+                color: "#0B2B33",
+                mb: 3.5,
+                opacity: 0,
+                animation: `${fadeUp} 0.55s ease ${CONTENT_START + 60}ms forwards`,
+              }}
+            >
+              Free Consultation
+            </Typography>
+
+            {status === "success" && (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.25,
+                  p: 2,
+                  mb: 2.5,
+                  borderRadius: 2.5,
+                  bgcolor: "rgba(46,160,90,0.1)",
+                  color: "#1E7A45",
+                  animation: `${fadeUp} 0.4s ease`,
+                }}
+              >
+                <CheckCircle2 size={20} />
+                <Typography sx={{ fontSize: "0.9rem", fontWeight: 500 }}>
+                  Message sent successfully! We'll get back to you soon.
+                </Typography>
+              </Box>
+            )}
+            {status === "error" && (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.25,
+                  p: 2,
+                  mb: 2.5,
+                  borderRadius: 2.5,
+                  bgcolor: "rgba(211,60,60,0.08)",
+                  color: "#B23A3A",
+                  animation: `${shake} 0.4s ease`,
+                }}
+              >
+                <XCircle size={20} />
+                <Typography sx={{ fontSize: "0.9rem", fontWeight: 500 }}>{errorMsg}</Typography>
+              </Box>
+            )}
+
+            <Box component="form" onSubmit={handleSubmit} noValidate>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 2,
+                  mb: 2,
+                  opacity: 0,
+                  animation: `${fadeUp} 0.5s ease ${CONTENT_START + 120}ms forwards`,
+                }}
+              >
+                <TextField
+                  name="fullName"
+                  label="Full Name"
+                  value={form.fullName}
+                  onChange={handleChange}
+                  disabled={status === "loading"}
+                  required
+                  fullWidth
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <User size={17} color="rgba(11,43,51,0.4)" />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ ...fieldSx, flex: "1 1 220px" }}
+                />
+                <TextField
+                  type="email"
+                  name="email"
+                  label="Email Address"
+                  value={form.email}
+                  onChange={handleChange}
+                  disabled={status === "loading"}
+                  required
+                  fullWidth
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Mail size={17} color="rgba(11,43,51,0.4)" />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ ...fieldSx, flex: "1 1 220px" }}
+                />
+              </Box>
+
+              <TextField
+                name="subject"
+                label="Subject"
+                value={form.subject}
+                onChange={handleChange}
+                disabled={status === "loading"}
+                required
+                fullWidth
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Tag size={17} color="rgba(11,43,51,0.4)" />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  ...fieldSx,
+                  mb: 2,
+                  opacity: 0,
+                  animation: `${fadeUp} 0.5s ease ${CONTENT_START + 170}ms forwards`,
+                }}
+              />
+
+              <TextField
+                name="message"
+                label="Message"
+                value={form.message}
+                onChange={handleChange}
+                disabled={status === "loading"}
+                required
+                fullWidth
+                multiline
+                rows={5}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start" sx={{ alignSelf: "flex-start", mt: 1.5 }}>
+                      <MessageSquare size={17} color="rgba(11,43,51,0.4)" />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  ...fieldSx,
+                  mb: 3,
+                  opacity: 0,
+                  animation: `${fadeUp} 0.5s ease ${CONTENT_START + 220}ms forwards`,
+                }}
+              />
+
+              <Box
+                sx={{
+                  opacity: 0,
+                  animation: `${fadeUp} 0.5s ease ${CONTENT_START + 280}ms forwards`,
+                }}
+              >
+                <Button
+                  type="submit"
+                  disabled={status === "loading"}
+                  endIcon={
+                    status !== "loading" && (
+                      <Box component="span" className="cta-arrow" sx={{ display: "flex" }}>
+                        <ArrowRight size={18} />
+                      </Box>
+                    )
+                  }
+                  sx={{
+                    px: 4,
+                    py: 1.6,
+                    borderRadius: 3,
+                    fontWeight: 700,
+                    fontSize: "0.9rem",
+                    letterSpacing: "0.04em",
+                    color: "#0B2B33",
+                    textTransform: "none",
+                    backgroundImage:
+                      "linear-gradient(120deg, #F2A65A 0%, #FFCB8E 25%, #F2A65A 50%, #FFCB8E 75%, #F2A65A 100%)",
+                    backgroundSize: "200% 100%",
+                    animation: `${shimmer} 5s ease infinite`,
+                    boxShadow: "0 8px 22px rgba(242,166,90,0.35)",
+                    transition: "transform 0.25s ease, box-shadow 0.25s ease",
+                    "&:hover": {
+                      transform: "translateY(-2px) scale(1.02)",
+                      boxShadow: "0 12px 28px rgba(242,166,90,0.5)",
+                    },
+                    "&:hover .cta-arrow": { transform: "translateX(4px)" },
+                    "& .cta-arrow": { transition: "transform 0.25s ease" },
+                    "&.Mui-disabled": {
+                      backgroundImage: "none",
+                      bgcolor: "rgba(11,43,51,0.15)",
+                      animation: "none",
+                    },
+                  }}
+                >
+                  {status === "loading" ? (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
+                      <CircularProgress size={16} sx={{ color: "#0B2B33" }} />
+                      SENDING...
+                    </Box>
+                  ) : (
+                    "SUBMIT MESSAGE"
+                  )}
+                </Button>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* RIGHT — dark content panel */}
+          <Box
+            sx={{
+              flex: 0.9,
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              p: { xs: 4, md: 6 },
+              background: "linear-gradient(135deg, #071c21 0%, #0b2b33 55%, #123f4a 100%)",
+              color: "#fff",
+              overflow: "hidden",
+              transformOrigin: "right center",
+              opacity: 0,
+              animation: `${swingInRight} ${PANEL_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1) forwards`,
+            }}
+          >
+            <Box
+              sx={{
+                position: "absolute",
+                inset: 0,
+                backgroundImage:
+                  "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0)",
+                backgroundSize: "24px 24px",
+              }}
+            />
+
+            <Box
+              sx={{
+                position: "absolute",
+                width: 300,
+                height: 300,
+                borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(242,166,90,0.18), transparent 70%)",
+                top: -80,
+                right: -80,
+                animation: `${floatBlob} 8s ease-in-out infinite`,
+              }}
             />
             <Box
-                component="section"
-                sx={{
-                    bgcolor: CREAM,
-                    py: { xs: 8, md: 12 },
-                    px: { xs: 2, sm: 4, md: 8 },
-                    fontFamily: "'Inter', sans-serif",
-                }}
+              sx={{
+                position: "absolute",
+                width: 220,
+                height: 220,
+                borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(90,200,200,0.14), transparent 70%)",
+                bottom: -60,
+                left: -60,
+                animation: `${floatBlob} 10s ease-in-out infinite reverse`,
+              }}
+            />
+
+            <Typography
+              variant="h3"
+              sx={{
+                position: "relative",
+                fontSize: { xs: "1.5rem", md: "1.9rem" },
+                fontWeight: 700,
+                lineHeight: 1.35,
+                mb: 4,
+                opacity: 0,
+                animation: `${fadeUp} 0.6s ease ${CONTENT_START + 100}ms forwards`,
+              }}
             >
-                <Grid sx={{
-                    display:'flex'
-                }}>
-                    {/* ── DARK PANEL: pitch + contact channels ── */}
-                    <Grid item  md={6}>
-                        <Box
-                            sx={{
-                                position: "relative",
-                                height: "100%",
-                                bgcolor: INK,
-                                background: `linear-gradient(155deg, ${INK} 0%, ${INK_SOFT} 100%)`,
-                                borderRadius: { xs: "20px 20px 0 0", md: "20px 0 0 20px" },
-                                color: "#fff",
-                                p: { xs: 4, md: 6 },
-                                pr: { md: 8 },
-                                overflow: "hidden",
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "space-between",
-                                minHeight: { md: 480 },
-                            }}
-                        >
-                            {/* signature glow */}
-                            <Box
-                                sx={{
-                                    position: "absolute",
-                                    top: -60,
-                                    right: -60,
-                                    width: 220,
-                                    height: 220,
-                                    borderRadius: "50%",
-                                    background: `radial-gradient(circle, ${AMBER} 0%, rgba(242,166,90,0) 70%)`,
-                                    opacity: 0.55,
-                                }}
-                            />
-                            <Box
-                                sx={{
-                                    position: "absolute",
-                                    bottom: -40,
-                                    right: 40,
-                                    width: 3,
-                                    height: 120,
-                                    bgcolor: "rgba(242,166,90,0.4)",
-                                    display: { xs: "none", md: "block" },
-                                }}
-                            />
+              Unlock your small business potential with tailored consulting services.
+            </Typography>
 
-                            <Box sx={{ position: "relative", zIndex: 1 }}>
-                                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 3 }}>
-                                    <Box sx={{ width: 28, height: 2, bgcolor: AMBER }} />
-                                    <Typography
-                                        sx={{
-                                            fontFamily: "'Inter', sans-serif",
-                                            fontSize: 13,
-                                            fontWeight: 600,
-                                            letterSpacing: "0.18em",
-                                            color: AMBER,
-                                        }}
-                                    >
-                                        GET IN TOUCH
-                                    </Typography>
-                                </Stack>
+            <Box sx={{ position: "relative", display: "flex", flexDirection: "column", gap: 2.5 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  p: 2,
+                  borderRadius: 3,
+                  bgcolor: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  opacity: 0,
+                  animation: `${fadeUp} 0.55s ease ${CONTENT_START + 180}ms forwards`,
+                  transition: "background-color 0.25s ease, transform 0.25s ease",
+                  "&:hover": { bgcolor: "rgba(255,255,255,0.1)", transform: "translateX(4px)" },
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 42,
+                    height: 42,
+                    flexShrink: 0,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    bgcolor: "rgba(242,166,90,0.18)",
+                    color: "#F2A65A",
+                    animation: `${pulseDot} 2.4s ease infinite`,
+                  }}
+                >
+                  <Phone size={18} />
+                </Box>
+                <Box>
+                  <Typography sx={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.6)" }}>
+                    Talk To Us
+                  </Typography>
+                  <Typography sx={{ fontWeight: 700, fontSize: "1rem" }}>+91 7077669661</Typography>
+                </Box>
+              </Box>
 
-                                <Typography
-                                    sx={{
-                                        fontFamily: "'Fraunces', serif",
-                                        fontWeight: 600,
-                                        fontSize: { xs: 34, md: 42 },
-                                        lineHeight: 1.15,
-                                        letterSpacing: "-0.01em",
-                                    }}
-                                >
-                                    Unlock your small
-                                    business potential with
-                                    tailored consulting.
-                                </Typography>
-
-                                <Typography
-                                    sx={{
-                                        mt: 2.5,
-                                        color: "rgba(255,255,255,0.65)",
-                                        fontSize: 15,
-                                        maxWidth: 360,
-                                    }}
-                                >
-                                    Tell us where things stand and where you want to be.
-                                    A strategist replies within one business day.
-                                </Typography>
-                            </Box>
-
-                            <Stack spacing={2.5} sx={{ position: "relative", zIndex: 1 }}>
-                                <Stack direction="row" spacing={2} alignItems="center">
-                                    <Avatar sx={{ bgcolor: "rgba(242,166,90,0.15)", color: AMBER, width: 44, height: 44 }}>
-                                        <CallIcon fontSize="small" />
-                                    </Avatar>
-                                    <Box>
-                                        <Typography sx={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)" }}>
-                                            Talk to us
-                                        </Typography>
-                                        <Typography sx={{ fontSize: 15.5, fontWeight: 600 }}>
-                                            +91 7077669661
-                                        </Typography>
-                                    </Box>
-                                </Stack>
-                                <Stack direction="row" spacing={2} alignItems="center">
-                                    <Avatar sx={{ bgcolor: "rgba(242,166,90,0.15)", color: AMBER, width: 44, height: 44 }}>
-                                        <MailIcon fontSize="small" />
-                                    </Avatar>
-                                    <Box>
-                                        <Typography sx={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)" }}>
-                                            Reach out to us
-                                        </Typography>
-                                        <Typography sx={{ fontSize: 15.5, fontWeight: 600 }}>
-                                            contactus@mysdom.com
-                                        </Typography>
-                                    </Box>
-                                </Stack>
-                            </Stack>
-                        </Box>
-                    </Grid>
-
-                    {/* ── FORM CARD: overlaps the dark panel like a slipped-out card ── */}
-                    <Grid item  md={6}>
-                        <Paper
-                            elevation={0}
-                            sx={{
-                                position: "relative",
-                                height: "100%",
-                                bgcolor: "#fff",
-                                borderRadius: { xs: "0 0 20px 20px", md: "0 20px 20px 0" },
-                                border: "1px solid rgba(11,43,51,0.08)",
-                                borderLeft: { md: "none" },
-                                p: { xs: 4, md: 6 },
-                                pl: { md: 8 },
-                                boxShadow: { md: "0 30px 60px -20px rgba(11,43,51,0.18)" },
-                            }}
-                        >
-                            {/* wax-seal style badge marking the handoff point between panels */}
-                            <Avatar
-                                sx={{
-                                    display: { xs: "none", md: "flex" },
-                                    position: "absolute",
-                                    left: -28,
-                                    top: 48,
-                                    width: 56,
-                                    height: 56,
-                                    bgcolor: AMBER,
-                                    color: INK,
-                                    border: `4px solid ${CREAM}`,
-                                    boxShadow: "0 6px 16px rgba(11,43,51,0.25)",
-                                }}
-                            >
-                                <HandshakeIcon />
-                            </Avatar>
-
-                            <Typography
-                                sx={{
-                                    fontFamily: "'Fraunces', serif",
-                                    fontWeight: 600,
-                                    fontSize: 24,
-                                    color: INK,
-                                    mb: 3,
-                                }}
-                            >
-                                Free Consultation
-                            </Typography>
-
-                            <Collapse in={status === "success"}>
-                                <Alert severity="success" sx={{ mb: 2.5, borderRadius: "10px" }}>
-                                    Message sent successfully! We'll get back to you soon.
-                                </Alert>
-                            </Collapse>
-                            <Collapse in={status === "error"}>
-                                <Alert severity="error" sx={{ mb: 2.5, borderRadius: "10px" }}>
-                                    {errorMsg}
-                                </Alert>
-                            </Collapse>
-
-                            <Box component="form" onSubmit={handleSubmit} noValidate>
-                                <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 2 }}>
-                                    <TextField
-                                        fullWidth
-                                        label="Full Name"
-                                        name="fullName"
-                                        value={form.fullName}
-                                        onChange={handleChange}
-                                        disabled={status === "loading"}
-                                        required
-                                        sx={fieldSx}
-                                    />
-                                    <TextField
-                                        fullWidth
-                                        type="email"
-                                        label="Email Address"
-                                        name="email"
-                                        value={form.email}
-                                        onChange={handleChange}
-                                        disabled={status === "loading"}
-                                        required
-                                        sx={fieldSx}
-                                    />
-                                </Stack>
-
-                                <TextField
-                                    fullWidth
-                                    label="Subject"
-                                    name="subject"
-                                    value={form.subject}
-                                    onChange={handleChange}
-                                    disabled={status === "loading"}
-                                    required
-                                    sx={{ mb: 2, ...fieldSx }}
-                                />
-
-                                <TextField
-                                    fullWidth
-                                    multiline
-                                    rows={5}
-                                    label="Message"
-                                    name="message"
-                                    value={form.message}
-                                    onChange={handleChange}
-                                    disabled={status === "loading"}
-                                    required
-                                    sx={{ mb: 3, ...fieldSx }}
-                                />
-
-                                <Button
-                                    type="submit"
-                                    fullWidth
-                                    disabled={status === "loading"}
-                                    endIcon={
-                                        status === "loading" ? (
-                                            <CircularProgress size={16} sx={{ color: INK }} />
-                                        ) : (
-                                            <ArrowForwardIcon />
-                                        )
-                                    }
-                                    sx={{
-                                        bgcolor: AMBER,
-                                        color: INK,
-                                        fontWeight: 600,
-                                        fontSize: 14.5,
-                                        letterSpacing: "0.04em",
-                                        py: 1.5,
-                                        borderRadius: "10px",
-                                        textTransform: "uppercase",
-                                        boxShadow: "none",
-                                        "&:hover": {
-                                            bgcolor: "#E4934A",
-                                            boxShadow: "none",
-                                        },
-                                        "&.Mui-disabled": {
-                                            bgcolor: "rgba(242,166,90,0.5)",
-                                            color: INK,
-                                        },
-                                    }}
-                                >
-                                    {status === "loading" ? "Sending" : "Submit Message"}
-                                </Button>
-                            </Box>
-                        </Paper>
-                    </Grid>
-                </Grid>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  p: 2,
+                  borderRadius: 3,
+                  bgcolor: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  opacity: 0,
+                  animation: `${fadeUp} 0.55s ease ${CONTENT_START + 240}ms forwards`,
+                  transition: "background-color 0.25s ease, transform 0.25s ease",
+                  "&:hover": { bgcolor: "rgba(255,255,255,0.1)", transform: "translateX(4px)" },
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 42,
+                    height: 42,
+                    flexShrink: 0,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    bgcolor: "rgba(242,166,90,0.18)",
+                    color: "#F2A65A",
+                    animation: `${pulseDot} 2.4s ease infinite`,
+                    animationDelay: "0.4s",
+                  }}
+                >
+                  <Mail size={18} />
+                </Box>
+                <Box>
+                  <Typography sx={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.6)" }}>
+                    Reach Out To Us 
+                  </Typography> 
+                  <Typography sx={{ fontWeight: 700, fontSize: "1rem" }}>contactus@mysdom.com</Typography>
+                </Box>
+              </Box>
             </Box>
-        </>
-    );
+          </Box>
+        </Box>
+      </Container>
+    </Box>
+  );
 };
 
 export default ContactSection;

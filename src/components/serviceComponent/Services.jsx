@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Pagination from '../commn/Pagination';
 import ServiceGrid from '../ServiceGrid';
 import axiosInstance from '../../api/axiosInstance';
@@ -39,6 +39,28 @@ const fieldSx = {
     "& .MuiInputLabel-root.Mui-focused": { color: INK },
 };
 
+// Reveals an element the first time it scrolls into view
+const useReveal = () => {
+    const ref = useRef(null);
+    const [visible, setVisible] = useState(false);
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setVisible(true);
+                    observer.unobserve(el);
+                }
+            },
+            { threshold: 0.2 }
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
+    return [ref, visible];
+};
+
 function Services() {
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
@@ -47,6 +69,8 @@ function Services() {
     const [services, setServices] = useState([]);
     const navigate = useNavigate();
     let user = JSON.parse(localStorage.getItem('user'));
+
+    const [bottomRef, bottomVisible] = useReveal();
 
     const fetchServices = async () => {
         try {
@@ -163,6 +187,10 @@ function Services() {
                 styles={{
                     "@import":
                         "url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap')",
+                    "@keyframes cardRise": {
+                        from: { opacity: 0, transform: "translateY(24px)" },
+                        to: { opacity: 1, transform: "translateY(0)" },
+                    },
                 }}
             />
             <Box sx={{ fontFamily: "'Inter', sans-serif", bgcolor: CREAM, color: INK }}>
@@ -295,15 +323,7 @@ function Services() {
                         </Box>
 
                         {/* GRID */}
-                        <Box
-                            sx={{
-                                "& > *": {
-                                    // ServiceGrid is an external component; give its cards a consistent frame
-                                },
-                            }}
-                        >
-                            <ServiceGrid services={services} user={user} deleteService={deleteServiceHandler} />
-                        </Box>
+                        <ServiceGrid services={services} user={user} deleteService={deleteServiceHandler} />
 
                         {/* PAGINATION */}
                         <Box sx={{ display: "flex", justifyContent: "center", mt: 6 }}>
@@ -452,7 +472,7 @@ function Services() {
                 </Box>
 
                 {/* ── BOTTOM SECTION ── */}
-                <Box sx={{ pb: { xs: 10, md: 14 } }}>
+                <Box ref={bottomRef} sx={{ pb: { xs: 10, md: 14 } }}>
                     <Container maxWidth="lg">
                         <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: { xs: 6, md: 8 } }}>
 
@@ -494,6 +514,7 @@ function Services() {
                                         key={index}
                                         elevation={0}
                                         sx={{
+                                            position: "relative",
                                             display: "flex",
                                             alignItems: "flex-start",
                                             gap: 2.5,
@@ -501,15 +522,49 @@ function Services() {
                                             borderRadius: "16px",
                                             border: `1px solid ${LINE}`,
                                             boxShadow: "0 16px 34px -24px rgba(11,43,51,0.25)",
+                                            overflow: "hidden",
+                                            opacity: bottomVisible ? 1 : 0,
+                                            animation: bottomVisible
+                                                ? `cardRise 0.6s ease ${index * 0.12}s both`
+                                                : "none",
+                                            transition: "transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease",
+                                            "&:hover": {
+                                                transform: "translateY(-8px)",
+                                                boxShadow: "0 26px 48px -20px rgba(11,43,51,0.32)",
+                                                borderColor: "rgba(242,166,90,0.45)",
+                                            },
+                                            "&:hover .svc-card-accent": {
+                                                width: "100%",
+                                            },
+                                            "&:hover .svc-card-icon": {
+                                                transform: "rotate(-8deg) scale(1.08)",
+                                                bgcolor: AMBER,
+                                                color: INK,
+                                            },
                                         }}
                                     >
-                                        <Avatar
+                                        {/* accent line that grows on hover */}
+                                        <Box
+                                            className="svc-card-accent"
                                             sx={{
-                                                width: 52,
-                                                height: 52,
+                                                position: "absolute",
+                                                left: 0,
+                                                bottom: 0,
+                                                height: 3,
+                                                width: "28%",
+                                                bgcolor: AMBER,
+                                                transition: "width 0.4s ease",
+                                            }}
+                                        />
+                                        <Avatar
+                                            className="svc-card-icon"
+                                            sx={{
+                                                width: 54,
+                                                height: 54,
                                                 bgcolor: "rgba(242,166,90,0.15)",
                                                 color: AMBER,
                                                 flexShrink: 0,
+                                                transition: "transform 0.35s ease, background-color 0.35s ease, color 0.35s ease",
                                             }}
                                         >
                                             {item.logo}
